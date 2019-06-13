@@ -25,7 +25,7 @@ module.exports = async function(deployer) {
   const tokenRegistry = await deployer.deploy(EnableTokenRegistry);
 
   const debtTokenFactory = await deployer.deploy(DebtTokenFactory, enableRegistry.address);
-  // const studentLoanTermsContract = await deployer.deploy(StudentLoanTermsContract, enableRegistry.address);
+  const studentLoanTermsContract = await deployer.deploy(StudentLoanTermsContract, enableRegistry.address);
   const studentLoanTermsStorage = await deployer.deploy(StudentLoanTermsStorage, enableRegistry.address);
   const studentLoanCrowdfundFactory = await deployer.deploy(StudentLoanCrowdfundFactory, enableRegistry.address);
 
@@ -36,6 +36,7 @@ module.exports = async function(deployer) {
     debtTokenFactory.address,
     studentLoanCrowdfundFactory.address,
     studentLoanTermsStorage.address,
+    studentLoanTermsContract.address
   );
 
   const result = await enableRegistry.permissionsLib();

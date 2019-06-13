@@ -32,6 +32,7 @@ contract StudentLoanCrowdfund is ICrowdfund, Ownable {
 
     enum LoanStatus {
         NOT_STARTED,
+        STARTED,
         PARTIALLY_FUNDED,
         FULLY_FUNDED,
         LOAN_STARTED,
@@ -235,7 +236,7 @@ contract StudentLoanCrowdfund is ICrowdfund, Ownable {
       // return
     }
 
-    function () {
+    function () external {
       revert('Choose a function to call');
     }
 }

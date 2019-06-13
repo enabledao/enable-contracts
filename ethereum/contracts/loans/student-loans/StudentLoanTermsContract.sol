@@ -3,7 +3,7 @@ pragma solidity >=0.4.21 <0.6.0;
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "../../dharma-interface/TermsContract.sol";
-import "../../dharma-interface/ContractRegistry.sol";
+import "../../core/EnableContractRegistry.sol";
 
 import "./StudentLoanLibrary.sol";
 
@@ -36,7 +36,7 @@ contract StudentLoanTermsContract is TermsContract {
 
     mapping (bytes32 => uint) public valueRepaid; //This tracks the valuerepaid for every agreement that uses this contract.
 
-    ContractRegistry public dharmaContractRegistry;
+    EnableContractRegistry public enableRegistry;
 
     /*
         Events
@@ -60,17 +60,17 @@ contract StudentLoanTermsContract is TermsContract {
     */
 
     modifier onlyRouter() {
-        require(msg.sender == address(dharmaContractRegistry.repaymentRouter()));
+        // require(msg.sender == address(enableRegistry.repaymentRouter()));
         _;
     }
 
     modifier onlyMappedToThisContract(bytes32 agreementId) {
-        require(address(this) == dharmaContractRegistry.debtRegistry().getTermsContract(agreementId));
+        // require(address(this) == enableRegistry.debtRegistry().getTermsContract(agreementId));
         _;
     }
 
     modifier onlyDebtKernel() {
-        require(msg.sender == address(dharmaContractRegistry.debtKernel()));
+        // require(msg.sender == address(enableRegistry.debtKernel()));
         _;
     }
 
@@ -79,16 +79,16 @@ contract StudentLoanTermsContract is TermsContract {
     */
 
     constructor(
-        address _dharmaContractRegistry
+        address _enableRegistry
     ) public {
-        dharmaContractRegistry = ContractRegistry(_dharmaContractRegistry);
+        enableRegistry = EnableContractRegistry(_enableRegistry);
     }
 
     /*
         Public Functions
     */
 
-    function registerTermStart(bytes32 agreementId, address debtor) public returns (bool _success);
+    function registerTermStart(bytes32 agreementId, address debtor) public returns (bool _success){}
 
      /// When called, the registerRepayment function records the debtor's
      ///  repayment, as well as any auxiliary metadata needed by the contract
@@ -99,22 +99,22 @@ contract StudentLoanTermsContract is TermsContract {
      /// @param  beneficiary address. The address of the payment's beneficiary.
      /// @param  unitsOfRepayment uint. The units-of-value repaid in the transaction.
      /// @param  tokenAddress address. The address of the token with which the repayment transaction was executed.
-    function registerRepayment(bytes32 agreementId, address payer, address beneficiary, uint256 unitsOfRepayment, address tokenAddress) public returns (bool _success);
+    function registerRepayment(bytes32 agreementId, address payer, address beneficiary, uint256 unitsOfRepayment, address tokenAddress) public returns (bool _success){}
 
-    function getExpectedRepaymentValue(bytes32 agreementId, uint256 timestamp) public view returns (uint256 _expectedRepaymentValue);
+    function getExpectedRepaymentValue(bytes32 agreementId, uint256 timestamp) public view returns (uint256 _expectedRepaymentValue){}
 
-    function getValueRepaidToDate(bytes32 agreementId) public view returns (uint256);
+    function getValueRepaidToDate(bytes32 agreementId) public view returns (uint256){}
 
-    function getTermEndTimestamp(bytes32 _agreementId) public view returns (uint);
+    function getTermEndTimestamp(bytes32 _agreementId) public view returns (uint){}
 
     /*
         Internal Functions
     */
 
-    function _validateRepaymentSchedule() internal returns (bool);
-    function _getParamsForAgreementID(bytes32 agreementId) internal returns (StudentLoanLibrary.LoanParams memory);
+    function _validateRepaymentSchedule() internal returns (bool){}
+    function _getParamsForAgreementID(bytes32 agreementId) internal returns (StudentLoanLibrary.LoanParams memory){}
 
-    function unpackIndex(bytes32 parameters) public pure returns (uint _storageIndex);
+    function unpackIndex(bytes32 parameters) public pure returns (uint _storageIndex) {}
 
     /**
      * Calculates the total repayment value expected at the end of the loan's term.
@@ -124,7 +124,8 @@ contract StudentLoanTermsContract is TermsContract {
      * @param params StudentLoanParams. The parameters that define the loan.
      * @return uint The total repayment value expected at the end of the loan's term.
      */
-    function _calculateTotalPrincipalPlusInterest(StudentLoanLibrary.LoanParams memory params) internal returns (uint _principalPlusInterest);
+    function _calculateTotalPrincipalPlusInterest(StudentLoanLibrary.LoanParams memory params) internal returns (uint _principalPlusInterest) {
+    }
 
     function _numAmortizationUnitsForTimestamp(uint timestamp, StudentLoanLibrary.LoanParams memory params) internal pure returns (uint units) {
         uint delta = timestamp.sub(params.termStartUnixTimestamp);
