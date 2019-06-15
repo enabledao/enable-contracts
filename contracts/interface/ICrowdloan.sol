@@ -8,12 +8,4 @@ interface ICrowdloan {
     /// @notice Get a refund for a debt token owned by the sender
     /// @param debtTokenId Debt token ID
     function refund(uint debtTokenId) external;
-
-    /// @notice Withdraw current allowance for a debt token
-    /// @param debtTokenId Debt token ID
-    function withdraw(uint debtTokenId) external;
-
-    /// @notice Get current withdrawal allowance for a debt token
-    /// @param debtTokenId Debt token ID
-    function getWithdrawalAllowance(uint debtTokenId) external view returns (uint);
 }

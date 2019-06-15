@@ -1,8 +1,6 @@
 pragma solidity >= 0.4.22 <0.6.0;
 
 interface ITermsContract {
-    function repay(uint256 unitsOfRepayment) external;
-
      /// Returns the cumulative units-of-value expected to be repaid by a given block timestamp.
      ///  Note this is not a constant function -- this value can vary on basis of any number of
      ///  conditions (e.g. interest rates can be renegotiated if repayments are delinquent).

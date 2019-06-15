@@ -8,7 +8,7 @@ import "../interface/ICrowdloan.sol";
 import "../interface/ITermsContract.sol";
 import "../debt-token/DebtToken.sol";
 
-contract Crowdloan is ICrowdloan, ITermsContract, ReentrancyGuard {
+contract Crowdloan is ICrowdloan, ITermsContract, IRepaymentRouter, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
