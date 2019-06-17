@@ -26,7 +26,6 @@ contract Crowdloan is ICrowdloan, ITermsContract, IRepaymentRouter, ReentrancyGu
 
     struct LoanParams {
         IERC20 principalToken;
-        IERC20 principalToken;
         uint principal;
         LoanStatus loanStatus;
         AmortizationUnitType amortizationUnitType;
@@ -43,9 +42,9 @@ contract Crowdloan is ICrowdloan, ITermsContract, IRepaymentRouter, ReentrancyGu
     LoanParams loanParams;
     DebtToken debtToken;
 
-    event Fund();
-    event Refund();
-    event Withdraw();
+    event Fund(address indexed tokenHolder, uint indexed tokenId, uint amount);
+    event Refund(address indexed tokenHolder, uint indexed tokenId, uint amount);
+    event Withdraw(address indexed tokenHolder, uint indexed tokenId, uint amount);
 
     function contructor(
         address _principalTokenAddr,
@@ -93,5 +92,13 @@ contract Crowdloan is ICrowdloan, ITermsContract, IRepaymentRouter, ReentrancyGu
 
     function _getDebtTokenValueForAmount(uint amount) internal returns (uint debtTokenValue) {
         return amount;
+    }
+
+    /**
+     * @dev fallback function ***DO NOT OVERRIDE***
+     * Revert all native Ether payments
+     */
+    function () external payable {
+        revert("Ether not accepted");
     }
 }

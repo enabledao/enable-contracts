@@ -8,4 +8,23 @@ interface ICrowdloan {
     /// @notice Get a refund for a debt token owned by the sender
     /// @param debtTokenId Debt token ID
     function refund(uint debtTokenId) external;
+
+    function getLoanStatus() external view returns (uint loanStatus);
+
+    function getLoanParams() external view returns(
+        address principalToken;
+        uint principal;
+        uint loanStatus;
+        uint amortizationUnitType;
+        uint termLength;
+        uint termPayment;
+        uint gracePeriodLength;
+        uint gracePeriodPayment;
+        uint interestRate;
+        uint termStartUnixTimestamp;
+        uint gracePeriodEndUnixTimestamp;
+        uint termEndUnixTimestamp;
+    );
+
+    function getDebtToken() external view returns(address debtToken);
 }
