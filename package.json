@@ -1,0 +1,25 @@
+{
+  "name": "enable-contracts",
+  "version": "1.0.0",
+  "description": "Borderless peer-to-peer loans with social attestation",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enabledao/enable-contracts.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/enabledao/enable-contracts/issues"
+  },
+  "homepage": "https://github.com/onggunhao/enable#readme",
+  "dependencies": {
+    "openzeppelin-solidity": "2.2.0"
+  }
+}
