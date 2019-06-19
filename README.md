@@ -9,3 +9,7 @@ It's standalone, and designed with the minimum viable complexity in mind.
 **RepaymentRouter**: Handle repayments, and track withdrawal allowances for debt token holders.
 
 **TermsContract**: Get information about the terms of the loan and it's current status.
+
+
+### Future Plans
+We believe parts of this project could morph into generic standards useful to Ethereum community. We'll be expanding, modularizing, and genercizing as appropriate when the initial implementation is finished. 

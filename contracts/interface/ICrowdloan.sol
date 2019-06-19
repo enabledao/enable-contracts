@@ -12,18 +12,18 @@ interface ICrowdloan {
     function getLoanStatus() external view returns (uint loanStatus);
 
     function getLoanParams() external view returns(
-        address principalToken;
-        uint principal;
-        uint loanStatus;
-        uint amortizationUnitType;
-        uint termLength;
-        uint termPayment;
-        uint gracePeriodLength;
-        uint gracePeriodPayment;
-        uint interestRate;
-        uint termStartUnixTimestamp;
-        uint gracePeriodEndUnixTimestamp;
-        uint termEndUnixTimestamp;
+        address principalToken,
+        uint principal,
+        uint loanStatus,
+        uint amortizationUnitType,
+        uint termLength,
+        uint termPayment,
+        uint gracePeriodLength,
+        uint gracePeriodPayment,
+        uint interestRate,
+        uint termStartUnixTimestamp,
+        uint gracePeriodEndUnixTimestamp,
+        uint termEndUnixTimestamp
     );
 
     function getDebtToken() external view returns(address debtToken);
