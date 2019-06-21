@@ -6,6 +6,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
 import "../interface/ICrowdloan.sol";
 import "../interface/ITermsContract.sol";
+import "../interface/IRepaymentRouter.sol";
 import "../debt-token/DebtToken.sol";
 
 contract Crowdloan is ICrowdloan, ITermsContract, IRepaymentRouter, ReentrancyGuard {
@@ -47,29 +48,33 @@ contract Crowdloan is ICrowdloan, ITermsContract, IRepaymentRouter, ReentrancyGu
     event Withdraw(address indexed tokenHolder, uint indexed tokenId, uint amount);
 
     function contructor(
-        address _principalTokenAddr,
-        uint _principal,
-        uint _amortizationUnitType,
-        uint _termLength,
-        uint _termPayment,
-        uint _gracePeriodLength,
-        uint _gracePeriodPayment,
-        uint _interestRate
-    ) public {
-        loanParams = new LoanParams(
-            IERC20(_principalTokenAddr),
-            _principal,
-            _amortizationUnitType,
-            _termLength,
-            _termPayment,
-            _gracePeriodLength,
-            _gracePeriodPayment,
-            _interestRate,
-            0,
-            0,
-            0
-        );
-    }
+                address _principalTokenAddr,
+                uint _principal,
+                uint _amortizationUnitType,
+                uint _termLength,
+                uint _termPayment,
+                uint _gracePeriodLength,
+                uint _gracePeriodPayment,
+                uint _interestRate
+            )
+            public
+        {
+            loanParams = LoanParams({
+                principalToken: IERC20(_principalTokenAddr),
+                principal: _principal,
+                loanStatus: LoanStatus.NOT_STARTED,
+                amortizationUnitType: AmortizationUnitType(_amortizationUnitType),
+                termLength: _termLength,
+                termPayment: _termPayment,
+                gracePeriodLength: _gracePeriodLength,
+                gracePeriodPayment: _gracePeriodPayment,
+                interestRate: _interestRate,
+                // TODO: reassign constant values below
+                termStartUnixTimestamp: 0,
+                gracePeriodEndUnixTimestamp: 0,
+                termEndUnixTimestamp: 0
+            });
+        }
 
     /// @notice Fund the loan in exchange for a debt token
     /// @return debtTokenId Issued debt token ID

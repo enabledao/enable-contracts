@@ -22,7 +22,7 @@ contract ERC20FundedCrowdsale is Crowdsale {
      * @param fundingToken IERC20 Address of the token funds will be raised in (i.e. Dai Stablecoin, Crypto Franc (XCHF), etc...).
      */
     constructor (IERC20 fundingToken) internal {
-        require(fundingToken != address(0));
+        require(address(fundingToken) != address(0));
         _fundingToken = fundingToken;
     }
 
