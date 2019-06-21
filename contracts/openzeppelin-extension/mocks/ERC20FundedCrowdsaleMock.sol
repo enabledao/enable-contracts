@@ -6,7 +6,7 @@ import "../distribution/ERC20FundedCrowdsale.sol";
 contract ERC20FundedCrowdsaleMock is ERC20FundedCrowdsale {
     constructor (
         uint256 rate,
-        address wallet,
+        address payable wallet,
         IERC20 token,
         IERC20 fundingToken
     )
