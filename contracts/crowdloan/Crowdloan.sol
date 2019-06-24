@@ -1,6 +1,6 @@
 pragma solidity >= 0.4.22 <0.6.0;
 
-import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC721/IERC721.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
@@ -12,7 +12,6 @@ import "../debt-token/DebtToken.sol";
 
 contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, IRepaymentRouter, ReentrancyGuard {
     using SafeMath for uint256;
-    using SafeERC20 for IERC20;
 
     enum TimeUnitType { HOURS, DAYS, WEEKS, MONTHS, YEARS }
 
@@ -24,6 +23,12 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, IRepaymentRouter
         LOAN_STARTED,
         REPAYMENT_STARTED,
         REPAYMENT_COMPLETE
+    }
+
+    struct CrowdfundParams {
+        uint crowdFundLength;
+        uint crowdFundStart;
+        uint crowdFundEnd;
     }
 
     struct LoanParams {
@@ -42,6 +47,7 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, IRepaymentRouter
     }
 
     LoanParams loanParams;
+    CrowdfundParams crowdfundParams;
     DebtToken debtToken;
 
     event Refund(address indexed tokenHolder, uint amount);

@@ -1,7 +1,6 @@
 pragma solidity >= 0.4.22 <0.6.0;
 
 interface IClaimsToken {
-
 	/**
 	 * @dev This event emits when funds to be deposited are sent to the token contract
 	 * @param from contains the address of the sender of the received funds
