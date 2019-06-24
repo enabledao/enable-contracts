@@ -20,6 +20,10 @@
   },
   "homepage": "https://github.com/onggunhao/enable#readme",
   "dependencies": {
-    "openzeppelin-solidity": "2.2.0"
+    "openzeppelin-solidity": "2.2.0",
+    "truffle": "^5.0.24"
+  },
+  "devDependencies": {
+    "solidity-coverage": "^0.5.11"
   }
 }
