@@ -21,5 +21,8 @@
   "homepage": "https://github.com/onggunhao/enable#readme",
   "dependencies": {
     "openzeppelin-solidity": "2.2.0"
+  },
+  "devDependencies": {
+    "solidity-coverage": "^0.5.11"
   }
 }

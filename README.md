@@ -26,3 +26,15 @@ The Crowdloan functionality has been decomposed into the following categories:
 ## Future Plans
 
 We believe parts of this project could morph into generic standards useful to theEthereum community. We'll be expanding, modularizing, and genercizing as appropriate when the initial implementation is finished.
+
+
+# Contribute
+
+## Test solidity coverage
+
+We use [Solidity Coverage](https://github.com/sc-forks/solidity-coverage).
+```
+$(npm bin)/solidity-coverage
+```
+
+## Surya
