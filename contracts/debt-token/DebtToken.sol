@@ -14,5 +14,5 @@ import "openzeppelin-solidity/contracts/token/ERC721/ERC721Metadata.sol";
 contract DebtToken is ERC721, ERC721Enumerable, ERC721Metadata, ERC721Mintable {
         constructor (string memory name, string memory symbol) public ERC721Metadata(name, symbol) {
         // solhint-disable-previous-line no-empty-blocks
-    }
+        }
 }

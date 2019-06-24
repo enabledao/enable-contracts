@@ -5,15 +5,16 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
 import "../interface/ICrowdloan.sol";
+import "../interface/IClaimsToken.sol";
 import "../interface/ITermsContract.sol";
 import "../interface/IRepaymentRouter.sol";
 import "../debt-token/DebtToken.sol";
 
-contract Crowdloan is ICrowdloan, ITermsContract, IRepaymentRouter, ReentrancyGuard {
+contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, IRepaymentRouter, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    enum AmortizationUnitType { HOURS, DAYS, WEEKS, MONTHS, YEARS }
+    enum TimeUnitType { HOURS, DAYS, WEEKS, MONTHS, YEARS }
 
     enum LoanStatus {
         NOT_STARTED,
@@ -29,7 +30,7 @@ contract Crowdloan is ICrowdloan, ITermsContract, IRepaymentRouter, ReentrancyGu
         IERC20 principalToken;
         uint principal;
         LoanStatus loanStatus;
-        AmortizationUnitType amortizationUnitType;
+        TimeUnitType amortizationUnitType;
         uint termLength;
         uint termPayment;
         uint gracePeriodLength;
@@ -43,9 +44,7 @@ contract Crowdloan is ICrowdloan, ITermsContract, IRepaymentRouter, ReentrancyGu
     LoanParams loanParams;
     DebtToken debtToken;
 
-    event Fund(address indexed tokenHolder, uint indexed tokenId, uint amount);
-    event Refund(address indexed tokenHolder, uint indexed tokenId, uint amount);
-    event Withdraw(address indexed tokenHolder, uint indexed tokenId, uint amount);
+    event Refund(address indexed tokenHolder, uint amount);
 
     function contructor(
                 address _principalTokenAddr,
@@ -63,7 +62,7 @@ contract Crowdloan is ICrowdloan, ITermsContract, IRepaymentRouter, ReentrancyGu
                 principalToken: IERC20(_principalTokenAddr),
                 principal: _principal,
                 loanStatus: LoanStatus.NOT_STARTED,
-                amortizationUnitType: AmortizationUnitType(_amortizationUnitType),
+                amortizationUnitType: TimeUnitType(_amortizationUnitType),
                 termLength: _termLength,
                 termPayment: _termPayment,
                 gracePeriodLength: _gracePeriodLength,
