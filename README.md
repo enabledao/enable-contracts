@@ -30,6 +30,10 @@ We believe parts of this project could morph into generic standards useful to th
 
 # Contribute
 
+## CI Pipeline
+
+[https://circleci.com/gh/enabledao/enable-contracts](https://circleci.com/gh/enabledao/enable-contracts)
+
 ## Test solidity coverage
 
 We use [Solidity Coverage](https://github.com/sc-forks/solidity-coverage).
