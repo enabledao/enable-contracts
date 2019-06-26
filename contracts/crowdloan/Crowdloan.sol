@@ -59,16 +59,16 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, IRepaymentRouter
 
     // @notice Only payments that do not exceed the pricipal Amount allowed
      modifier belowMaxSupply (uint amount) {
-       require (debtToken.totalSupply().add(amount) <= loanParams.principal);
+       require (debtToken.totalDebt().add(amount) <= loanParams.principal);
        _;
      }
 
      modifier trackCrowdfundStatus () {
        _;
 
-       if (debtToken.totalSupply() > 0 && debtToken.totalSupply() <  loanParams.principal) {
+       if (debtToken.totalDebt() > 0 && debtToken.totalDebt() <  loanParams.principal) {
          _setLoanStatus(LoanStatus.FUNDING_STARTED);
-       } else if (debtToken.totalSupply() >=  loanParams.principal && totalRepaid() == 0) {
+       } else if (debtToken.totalDebt() >=  loanParams.principal && totalRepaid() == 0) {
          _setLoanStatus(LoanStatus.FUNDING_COMPLETE);
        }
      }
@@ -138,16 +138,17 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, IRepaymentRouter
     /// @param debtTokenId Debt token ID
     function withdraw(uint debtTokenId) public;
 
-    function getLoanStatus() external view returns (uint loanStatus) {
-        return uint(loanParams.loanStatus);
-    }
-
     /// @notice Get current withdrawal allowance for a debt token
     /// @param debtTokenId Debt token ID
     function getWithdrawalAllowance(uint debtTokenId) public view returns (uint);
 
     /// @notice Total amount of the Loan repaid by the borrower
     function totalRepaid() public view returns (uint);
+
+    function getLoanStatus() external view returns (uint loanStatus) {
+        return uint(loanParams.loanStatus);
+    }
+
 
     function getLoanParams() external view returns(
         address principalToken,
