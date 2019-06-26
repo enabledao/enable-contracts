@@ -25,10 +25,14 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, IRepaymentRouter
         REPAYMENT_COMPLETE
     }
 
+    struct Borrower {
+      address debtor;
+    }
+
     struct CrowdfundParams {
-        uint crowdFundLength;
-        uint crowdFundStart;
-        uint crowdFundEnd;
+        uint crowdfundLength;
+        uint crowdfundStart;
+        uint crowdfundEnd;
     }
 
     struct LoanParams {
@@ -46,11 +50,28 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, IRepaymentRouter
         uint termEndUnixTimestamp;
     }
 
+    Borrower debtor;
     LoanParams loanParams;
     CrowdfundParams crowdfundParams;
     DebtToken debtToken;
 
     event Refund(address indexed tokenHolder, uint amount);
+
+    // @notice Only payments that do not exceed the pricipal Amount allowed
+     modifier belowMaxSupply (uint amount) {
+       require (debtToken.totalSupply().add(amount) <= loanParams.principal);
+       _;
+     }
+
+     modifier trackCrowdfundStatus () {
+       _;
+
+       if (debtToken.totalSupply() > 0 && debtToken.totalSupply() <  loanParams.principal) {
+         _setLoanStatus(LoanStatus.FUNDING_STARTED);
+       } else if (debtToken.totalSupply() >=  loanParams.principal && totalRepaid() == 0) {
+         _setLoanStatus(LoanStatus.FUNDING_COMPLETE);
+       }
+     }
 
     function contructor(
                 address _principalTokenAddr,
@@ -60,10 +81,13 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, IRepaymentRouter
                 uint _termPayment,
                 uint _gracePeriodLength,
                 uint _gracePeriodPayment,
-                uint _interestRate
+                uint _interestRate,
+                uint _crowdfundLength,
+                uint _crowdfundStart
             )
             public
         {
+            debtor = Borrower(msg.sender); //Needs to be update, once factory is setup
             loanParams = LoanParams({
                 principalToken: IERC20(_principalTokenAddr),
                 principal: _principal,
@@ -79,12 +103,30 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, IRepaymentRouter
                 gracePeriodEndUnixTimestamp: 0,
                 termEndUnixTimestamp: 0
             });
+            crowdfundParams = CrowdfundParams(_crowdfundLength, _crowdfundStart, 0);
         }
+
+    function _getDebtTokenValueForAmount(uint amount) internal view returns (uint debtTokenValue) {
+        return amount;
+    }
+
+    // @notice set the present state of the Loan;
+    function _setLoanStatus(LoanStatus _loanStatus) internal {
+        if (loanParams.loanStatus != _loanStatus) {
+            loanParams.loanStatus = _loanStatus;
+        }
+    }
+
+    function kickOffCrowdfund () public {
+        require (crowdfundParams.crowdfundStart == 0 || crowdfundParams.crowdfundStart > now, 'KickOff already passed');
+        crowdfundParams.crowdfundStart = now;
+        _setLoanStatus(LoanStatus.FUNDING_STARTED);
+    }
 
     /// @notice Fund the loan in exchange for a debt token
     /// @return debtTokenId Issued debt token ID
-    function fund(uint amount) public returns (uint debtTokenId) {
-        _getDebtTokenValueForAmount(amount);
+    function fund(uint amount) public belowMaxSupply(amount) trackCrowdfundStatus returns (uint debtTokenId) {
+        uint effectiveAmount = _getDebtTokenValueForAmount(amount);
         //Mint new debt token and transfer to sender
     }
 
@@ -96,12 +138,45 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, IRepaymentRouter
     /// @param debtTokenId Debt token ID
     function withdraw(uint debtTokenId) public;
 
+    function getLoanStatus() external view returns (uint loanStatus) {
+        return uint(loanParams.loanStatus);
+    }
+
     /// @notice Get current withdrawal allowance for a debt token
     /// @param debtTokenId Debt token ID
     function getWithdrawalAllowance(uint debtTokenId) public view returns (uint);
 
-    function _getDebtTokenValueForAmount(uint amount) internal returns (uint debtTokenValue) {
-        return amount;
+    /// @notice Total amount of the Loan repaid by the borrower
+    function totalRepaid() public view returns (uint);
+
+    function getLoanParams() external view returns(
+        address principalToken,
+        uint principal,
+        uint loanStatus,
+        uint amortizationUnitType,
+        uint termLength,
+        uint termPayment,
+        uint gracePeriodLength,
+        uint gracePeriodPayment,
+        uint interestRate,
+        uint termStartUnixTimestamp,
+        uint gracePeriodEndUnixTimestamp,
+        uint termEndUnixTimestamp
+    ) {
+        return (
+          address(loanParams.principalToken),
+          loanParams.principal,
+          uint(loanParams.loanStatus),
+          uint(loanParams.amortizationUnitType),
+          loanParams.termLength,
+          loanParams.termPayment,
+          loanParams.gracePeriodLength,
+          loanParams.gracePeriodPayment,
+          loanParams.interestRate,
+          loanParams.termStartUnixTimestamp,
+          loanParams.gracePeriodEndUnixTimestamp,
+          loanParams.termEndUnixTimestamp
+        );
     }
 
     /**
