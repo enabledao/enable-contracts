@@ -57,20 +57,10 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, IRepaymentRouter
 
     event Refund(address indexed tokenHolder, uint amount);
 
-    // @notice Only payments that do not exceed the pricipal Amount allowed
-     modifier belowMaxSupply (uint amount) {
-       require (debtToken.totalDebt().add(amount) <= loanParams.principal);
-       _;
-     }
-
      modifier trackCrowdfundStatus () {
-       _;
-
-       if (debtToken.totalDebt() > 0 && debtToken.totalDebt() <  loanParams.principal) {
-         _setLoanStatus(LoanStatus.FUNDING_STARTED);
-       } else if (debtToken.totalDebt() >=  loanParams.principal && totalRepaid() == 0) {
-         _setLoanStatus(LoanStatus.FUNDING_COMPLETE);
-       }
+        _updateCrowdfundStatus();
+        _;
+        _updateCrowdfundStatus();
      }
 
     function contructor(
@@ -110,6 +100,20 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, IRepaymentRouter
         return amount;
     }
 
+    // @notice additional payment does not exceed the pricipal Amount
+     function _isBelowMaxSupply (uint amount) internal returns (bool) {
+       return debtToken.totalDebt().add(amount) <= loanParams.principal;
+     }
+
+     // @notice reconcile the loans funding status
+    function _updateCrowdfundStatus () internal {
+        if (debtToken.totalDebt() > 0 && debtToken.totalDebt() <  loanParams.principal) {
+          _setLoanStatus(LoanStatus.FUNDING_STARTED);
+        } else if (debtToken.totalDebt() >=  loanParams.principal && totalRepaid() == 0) {
+          _setLoanStatus(LoanStatus.FUNDING_COMPLETE);
+        }
+    }
+
     // @notice set the present state of the Loan;
     function _setLoanStatus(LoanStatus _loanStatus) internal {
         if (loanParams.loanStatus != _loanStatus) {
@@ -125,8 +129,9 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, IRepaymentRouter
 
     /// @notice Fund the loan in exchange for a debt token
     /// @return debtTokenId Issued debt token ID
-    function fund(uint amount) public belowMaxSupply(amount) trackCrowdfundStatus returns (uint debtTokenId) {
+    function fund(uint amount) public trackCrowdfundStatus returns (uint) {
         uint effectiveAmount = _getDebtTokenValueForAmount(amount);
+        require(_isBelowMaxSupply(effectiveAmount), 'Amount exceeds capital');
         //Mint new debt token and transfer to sender
     }
 

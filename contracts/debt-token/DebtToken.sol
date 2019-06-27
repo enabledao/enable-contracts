@@ -8,7 +8,6 @@ import "../debt-contracts/DebtManager.sol";
 /*
     A debt token representing a stake in a crowdfunded loan.
     It represents a given percentage of ownership.
-
     The minter contract has minting rights
 */
 contract DebtToken is DebtManager, ERC721Enumerable, ERC721Metadata, ERC721Mintable {
@@ -17,15 +16,21 @@ contract DebtToken is DebtManager, ERC721Enumerable, ERC721Metadata, ERC721Minta
         // solhint-disable-previous-line no-empty-blocks
         }
 
-        function mint(address to, uint256 debtAmount) public returns (uint tokenId) {
-            _tokenId = totalSupply();
-            super.mint(to, tokenId);
-            _addDebtValue(to, debtAmount)
-            return _tokenId;
+        function mint(address, uint256) public onlyMinter returns (bool) {
+            revert('function: addDebtHolder(address to, uint256 debtAmount) public onlyMinter returns (bool)');
         }
 
-        function burn(address to, uint256 tokenId) public returns (bool) {
-            _removeDebtValue(to, debtAmount)
+        function addDebt(address holder, uint256 debtAmount) public onlyMinter returns (bool) {
+            uint _tokenId = totalSupply();
+            super.mint(holder, _tokenId);
+            _addDebtValue(_tokenId, debtAmount);
             return true;
         }
+
+        function removeDebt(address holder, uint256 tokenId) public onlyMinter returns (bool) {
+            require(holder == ownerOf(tokenId), 'Not token owner');
+            _removeDebtValue(tokenId);
+            return true;
+        }
+
 }

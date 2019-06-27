@@ -1,7 +1,7 @@
 pragma solidity ^0.5.2;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "../debt-interface/IDebtManager.sol";
+import "../interface/IDebtManager.sol";
 
 /*
     A debt token representing a stake in a crowdfunded loan.
@@ -14,7 +14,7 @@ contract DebtManager is IDebtManager {
         using SafeMath for uint;
 
         uint _totalDebt;
-        mapping (uint => uint) private _tokenDebtValue
+        mapping (uint => uint) private _tokenDebtValue;
 
         function _addDebtValue (uint tokenId, uint debtValue) internal returns (bool) {
             require(_tokenDebtValue[tokenId] == 0, 'Debt value already set and can only be cleared');
@@ -22,7 +22,7 @@ contract DebtManager is IDebtManager {
             _tokenDebtValue[tokenId] = debtValue;
         }
 
-        function _removeDebtValue (uint tokenId) returns (bool) {
+        function _removeDebtValue (uint tokenId) internal returns (bool) {
             uint debtValue = _tokenDebtValue[tokenId];
             _tokenDebtValue[tokenId] = 0;
             _totalDebt = _totalDebt.sub(debtValue);
@@ -32,7 +32,8 @@ contract DebtManager is IDebtManager {
             return _totalDebt;
         }
 
-        function debtValue (uint tokenId) public view returns (uint debtValue) {
+        function debtValue (uint tokenId) public view returns (uint) {
             return _tokenDebtValue[tokenId];
         }
+
 }
