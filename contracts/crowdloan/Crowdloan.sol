@@ -53,7 +53,7 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, IRepaymentRouter
     Borrower debtor;
     LoanParams loanParams;
     CrowdfundParams crowdfundParams;
-    DebtToken debtToken;
+    DebtToken public debtToken;
 
     event Refund(address indexed tokenHolder, uint amount);
 
@@ -63,7 +63,8 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, IRepaymentRouter
         _updateCrowdfundStatus();
      }
 
-    function contructor(
+    constructor (
+                address _debtToken,
                 address _principalTokenAddr,
                 uint _principal,
                 uint _amortizationUnitType,
@@ -78,6 +79,7 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, IRepaymentRouter
             public
         {
             debtor = Borrower(msg.sender); //Needs to be update, once factory is setup
+            debtToken = DebtToken(_debtToken);
             loanParams = LoanParams({
                 principalToken: IERC20(_principalTokenAddr),
                 principal: _principal,
