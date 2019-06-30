@@ -17,7 +17,7 @@ contract DebtToken is DebtManager, ERC721Enumerable, ERC721Metadata, ERC721Minta
         }
 
         function mint(address, uint256) public onlyMinter returns (bool) {
-            revert('function: addDebtHolder(address to, uint256 debtAmount) public onlyMinter returns (bool)');
+            revert('function: addDebt(address to, uint256 debtAmount) public onlyMinter returns (bool)');
         }
 
         function addDebt(address holder, uint256 debtAmount) public onlyMinter returns (bool) {

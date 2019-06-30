@@ -1,16 +1,16 @@
 pragma solidity >= 0.4.22 <0.6.0;
 
-import "openzeppelin-solidity/contracts/token/ERC721/IERC721.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/token/ERC721/IERC721.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
 import "../interface/ICrowdloan.sol";
 import "../interface/IClaimsToken.sol";
 import "../interface/ITermsContract.sol";
-import "../interface/IRepaymentRouter.sol";
+import "../debt-contracts/RepaymentRouter.sol";
 import "../debt-token/DebtToken.sol";
 
-contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, IRepaymentRouter, ReentrancyGuard {
+contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, RepaymentRouter, ReentrancyGuard {
     using SafeMath for uint256;
 
     enum TimeUnitType { HOURS, DAYS, WEEKS, MONTHS, YEARS }
@@ -135,27 +135,32 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, IRepaymentRouter
         uint effectiveAmount = _getDebtTokenValueForAmount(amount);
         require(_isBelowMaxSupply(effectiveAmount), 'Amount exceeds capital');
         //Mint new debt token and transfer to sender
+        debtToken.addDebt(msg.sender, amount);
+        emit FundsReceived(msg.sender, amount);
     }
 
     /// @notice Get a refund for a debt token owned by the sender
     /// @param debtTokenId Debt token ID
     function refund(uint debtTokenId) public;
 
+    /// @notice Repay a given portion of loan
+    /// @param unitsOfRepayment Tokens to repay
+    function repay(uint256 unitsOfRepayment) public {
+        _repay(loanParams.principalToken, msg.sender, address(this), unitsOfRepayment);
+        emit FundsReceived(msg.sender, unitsOfRepayment);
+    }
+
     /// @notice Withdraw current allowance for a debt token
     /// @param debtTokenId Debt token ID
-    function withdraw(uint debtTokenId) public;
+    function withdraw(uint debtTokenId) public {
+        require(debtToken.ownerOf(debtTokenId) == msg.sender, 'You are not the owner of token');
+        _withdraw(loanParams.principalToken, msg.sender, debtTokenId);
+    }
 
-    /// @notice Get current withdrawal allowance for a debt token
-    /// @param debtTokenId Debt token ID
-    function getWithdrawalAllowance(uint debtTokenId) public view returns (uint);
-
-    /// @notice Total amount of the Loan repaid by the borrower
-    function totalRepaid() public view returns (uint);
 
     function getLoanStatus() external view returns (uint loanStatus) {
         return uint(loanParams.loanStatus);
     }
-
 
     function getLoanParams() external view returns(
         address principalToken,
