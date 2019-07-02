@@ -103,7 +103,7 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, RepaymentRouter,
     }
 
     // @notice additional payment does not exceed the pricipal Amount
-     function _isBelowMaxSupply (uint amount) internal returns (bool) {
+     function _isBelowMaxSupply (uint amount) internal view returns (bool) {
        return debtToken.totalDebt().add(amount) <= loanParams.principal;
      }
 
@@ -141,7 +141,13 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, RepaymentRouter,
 
     /// @notice Get a refund for a debt token owned by the sender
     /// @param debtTokenId Debt token ID
-    function refund(uint debtTokenId) public;
+    function refund(uint debtTokenId) public {
+        require(uint(loanParams.loanStatus) < uint(LoanStatus.FUNDING_COMPLETE), 'Funding already complete. Refund Impossible');
+        uint _refund = debtToken.debtValue(debtTokenId);
+        debtToken.removeDebt(msg.sender, debtTokenId);
+        _transferERC20(loanParams.principalToken, msg.sender, _refund);
+        emit FundsWithdrawn(msg.sender, _refund);
+    }
 
     /// @notice Repay a given portion of loan
     /// @param unitsOfRepayment Tokens to repay
@@ -153,10 +159,41 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, RepaymentRouter,
     /// @notice Withdraw current allowance for a debt token
     /// @param debtTokenId Debt token ID
     function withdraw(uint debtTokenId) public {
+      //TODO needs re-thinking
         require(debtToken.ownerOf(debtTokenId) == msg.sender, 'You are not the owner of token');
+        uint _amount = getWithdrawalAllowance(debtTokenId);
         _withdraw(loanParams.principalToken, msg.sender, debtTokenId);
+        emit FundsWithdrawn(msg.sender, _amount);
     }
 
+    /**
+     * @dev Withdraws available funds for user.
+     */
+    function withdrawFunds() public {
+      //TODO Decide whether to handle only the first owned token or to iterate through all owned tokens If possible
+        uint tokenId =  debtToken.tokenOfOwnerByIndex(msg.sender, 0);
+        withdraw(tokenId);
+    }
+
+  	/**
+  	 * @dev Returns the amount of funds a given address is able to withdraw currently.
+  	 * @param _forAddress Address of ClaimsToken holder
+  	 * @return A uint256 representing the available funds for a given account
+  	 */
+  	function availableFunds(address _forAddress) external view returns (uint256) {
+      //TODO Decide whether to handle only the first owned token or to iterate through all owned tokens If possible
+        uint tokenId =  debtToken.tokenOfOwnerByIndex(msg.sender, 0);
+        return getWithdrawalAllowance(tokenId);
+    }
+
+    /**
+     * @dev Get cumulative funds received by ClaimsToken.
+     * @return A uint256 representing the total funds received by ClaimsToken
+     */
+    function totalReceivedFunds() external view returns (uint256) {
+      //TODO what should this refer to in our context: Total funds received, or TOtal principal before loan starts, and total Repayment afterwards, or addition of both , or is it just bloat
+        return loanParams.principal.add(totalRepaid());
+    }
 
     function getLoanStatus() external view returns (uint loanStatus) {
         return uint(loanParams.loanStatus);

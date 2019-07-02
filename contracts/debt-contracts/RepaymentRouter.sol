@@ -43,6 +43,7 @@ contract RepaymentRouter {
 
     /// @notice Withdraw current allowance for a debt token
     function _withdraw(IERC20 token, address to, uint debtTokenId) internal {
+      //TODO needs re-thinking
         uint previousWithdrawal = _withdrawnByTokenId[debtTokenId];
         uint _amount = getWithdrawalAllowance(debtTokenId);
         _withdrawnByTokenId[debtTokenId] = previousWithdrawal.add(_amount);
@@ -51,7 +52,7 @@ contract RepaymentRouter {
 
     /// @notice Get current withdrawal allowance for a debt token
     /// @param debtTokenId Debt token ID
-    function getWithdrawalAllowance(uint debtTokenId) public view returns (uint);
+    function getWithdrawalAllowance(uint debtTokenId) public view returns (uint) {}
 
     /// @notice Total amount of the Loan repaid by the borrower
     function totalRepaid() public view returns (uint) {
