@@ -6,11 +6,11 @@ import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
 import "../interface/ICrowdloan.sol";
 import "../interface/IClaimsToken.sol";
-import "../interface/ITermsContract.sol";
 import "../debt-contracts/RepaymentRouter.sol";
+import "../debt-contracts/TermsContract.sol";
 import "../debt-token/DebtToken.sol";
 
-contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, RepaymentRouter, ReentrancyGuard {
+contract Crowdloan is ICrowdloan, IClaimsToken, TermsContract, RepaymentRouter, ReentrancyGuard {
     using SafeMath for uint256;
 
     enum TimeUnitType { HOURS, DAYS, WEEKS, MONTHS, YEARS }
@@ -53,7 +53,7 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, RepaymentRouter,
     Borrower debtor;
     LoanParams loanParams;
     CrowdfundParams crowdfundParams;
-    DebtToken public debtToken;
+    DebtToken private debtToken;
 
     event Refund(address indexed tokenHolder, uint amount);
 
@@ -146,6 +146,7 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, RepaymentRouter,
         uint _refund = debtToken.debtValue(debtTokenId);
         debtToken.removeDebt(msg.sender, debtTokenId);
         _transferERC20(loanParams.principalToken, msg.sender, _refund);
+        emit Refund(msg.sender, _refund);
         emit FundsWithdrawn(msg.sender, _refund);
     }
 
@@ -169,10 +170,9 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, RepaymentRouter,
     /**
      * @dev Withdraws available funds for user.
      */
-    function withdrawFunds() public {
-      //TODO Decide whether to handle only the first owned token or to iterate through all owned tokens If possible
-        uint tokenId =  debtToken.tokenOfOwnerByIndex(msg.sender, 0);
-        withdraw(tokenId);
+    function withdrawFunds() public payable {
+      //BLOAT???
+        revert ('call: function withdraw(uint debtTokenId)');
     }
 
   	/**
@@ -181,6 +181,7 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, RepaymentRouter,
   	 * @return A uint256 representing the available funds for a given account
   	 */
   	function availableFunds(address _forAddress) external view returns (uint256) {
+      //BLOAT???
       //TODO Decide whether to handle only the first owned token or to iterate through all owned tokens If possible
         uint tokenId =  debtToken.tokenOfOwnerByIndex(msg.sender, 0);
         return getWithdrawalAllowance(tokenId);
@@ -191,8 +192,13 @@ contract Crowdloan is ICrowdloan, ITermsContract, IClaimsToken, RepaymentRouter,
      * @return A uint256 representing the total funds received by ClaimsToken
      */
     function totalReceivedFunds() external view returns (uint256) {
+      //BLOAT???
       //TODO what should this refer to in our context: Total funds received, or TOtal principal before loan starts, and total Repayment afterwards, or addition of both , or is it just bloat
         return loanParams.principal.add(totalRepaid());
+    }
+
+    function getDebtToken() external view returns(address) {
+        return address(debtToken);
     }
 
     function getLoanStatus() external view returns (uint loanStatus) {

@@ -27,20 +27,20 @@ contract CrowdloanFactory is Ownable {
         uint _crowdfundLength,
         uint _crowdfundStart
     ) public returns (address) {
-        // Crowdloan crowdloan = new Crowdloan (
-        //       _debtToken,
-        //       _principalTokenAddr,
-        //       _principal,
-        //       _amortizationUnitType,
-        //       _termLength,
-        //       _termPayment,
-        //       _gracePeriodLength,
-        //       _gracePeriodPayment,
-        //       _interestRate,
-        //       _crowdfundLength,
-        //       _crowdfundStart
-        // );
-        // emit loanCreated(msg.sender, address(crowdloan.debtToken), _principal);
-        // return address(crowdloan);
+        Crowdloan crowdloan = new Crowdloan (
+              _debtToken,
+              _principalTokenAddr,
+              _principal,
+              _amortizationUnitType,
+              _termLength,
+              _termPayment,
+              _gracePeriodLength,
+              _gracePeriodPayment,
+              _interestRate,
+              _crowdfundLength,
+              _crowdfundStart
+        );
+        emit loanCreated(msg.sender, crowdloan.getDebtToken(), _principal);
+        return address(crowdloan);
     }
 }
