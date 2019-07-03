@@ -53,7 +53,7 @@ contract Crowdloan is ICrowdloan, IClaimsToken, TermsContract, RepaymentRouter, 
     Borrower debtor;
     LoanParams loanParams;
     CrowdfundParams crowdfundParams;
-    DebtToken private debtToken;
+    DebtToken debtToken;
 
     event Refund(address indexed tokenHolder, uint amount);
 

@@ -44,7 +44,7 @@ contract CrowdloanFactory is Ownable {
               _crowdfundLength,
               _crowdfundStart
         );
-        emit loanCreated(msg.sender, address(crowdloan.debtToken), _principal);
+        emit loanCreated(msg.sender, address(_debtToken), _principal);
         return address(crowdloan);
     }
 }
