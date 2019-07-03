@@ -1,17 +1,22 @@
-let BN = web3.utils.BN;
-const CrowdloanFactory = artifacts.require("CrowdloanFactory");
-import { catchRevert } from "../utils/exceptionsHelpers";
+import {
+  BN,
+  constants,
+  expectEvent,
+  expectRevert
+} from "openzeppelin-test-helpers";
 
-// TODO(Dan): Generate random numbers for each test
-const _principal = 60000 * 10 ** 18;
+const CrowdloanFactory = artifacts.require("CrowdloanFactory");
 
 contract("CrowdloanFactory", accounts => {
   let crowdloanFactoryInstance;
+  let crowdloanInstanceAddress;
   let crowdloanInstance;
-  let owner = accounts[0];
+  var owner = accounts[0];
 
   before(async () => {
-    crowdloanFactoryInstance = await CrowdloanFactory.deployed();
+    crowdloanFactoryInstance = await CrowdloanFactory.new(
+      constants.ZERO_ADDRESS // TODO(Dan): Replace with actual DebtTokenFactory address?
+    );
   });
 
   it("should deploy successfully", async () => {
@@ -39,6 +44,10 @@ contract("CrowdloanFactory", accounts => {
         { from: owner }
       );
       console.log(tx);
+      assert.exists(tx);
+
+      // assert tx exists
+      crowdloanInstanceAddress = tx.logs;
     });
     it("should have the correct terms", async () => {
       console.log(crowdloanInstance);
@@ -47,19 +56,4 @@ contract("CrowdloanFactory", accounts => {
 
     xit("should emit a loanCreated event", async () => {});
   });
-
-  //  describe("dai loan terms contract", async () => {
-  //   describe("should deploy loan contract", async () => {
-  //     it("should have the correct terms", async () => {
-  //       let crowdloanParams = await crowdloanInstance.getLoanParams();
-  //       Object.keys(loanParams).forEach(key => {
-  //         let expected = loanParams[key].toString();
-  //         let actual = crowdloanParams[key].toString();
-  //         if (expected != actual) {
-  //           return false;
-  //         }
-  //       });
-  //       return true;
-  //     });
-  //   });
 });
