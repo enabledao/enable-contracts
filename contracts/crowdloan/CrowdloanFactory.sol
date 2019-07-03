@@ -8,6 +8,8 @@ contract CrowdloanFactory is Ownable {
 
     DebtTokenFactory debtTokenFactory;
 
+    address[] public crowdloanRegistry;
+
     event loanCreated(address indexed borrower, address indexed debtToken, uint indexed amount);
 
     constructor (address _debtTokenFactory) public {
@@ -44,6 +46,7 @@ contract CrowdloanFactory is Ownable {
               _crowdfundLength,
               _crowdfundStart
         );
+        crowdloanRegistry.push(address(crowdloan));
         emit loanCreated(msg.sender, address(_debtToken), _principal);
         return address(crowdloan);
     }
