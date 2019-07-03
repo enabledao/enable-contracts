@@ -136,7 +136,7 @@ contract Crowdloan is ICrowdloan, IClaimsToken, TermsContract, RepaymentRouter, 
         require(_isBelowMaxSupply(effectiveAmount), 'Amount exceeds capital');
         //Mint new debt token and transfer to sender
         debtToken.addDebt(msg.sender, amount);
-        emit FundsReceived(msg.sender, amount);
+        // emit FundsReceived(msg.sender, amount);  // TODO(Dan): Remove comments once IClaimsToken is implemented
     }
 
     /// @notice Get a refund for a debt token owned by the sender
@@ -154,7 +154,7 @@ contract Crowdloan is ICrowdloan, IClaimsToken, TermsContract, RepaymentRouter, 
     /// @param unitsOfRepayment Tokens to repay
     function repay(uint256 unitsOfRepayment) public {
         _repay(loanParams.principalToken, msg.sender, address(this), unitsOfRepayment);
-        emit FundsReceived(msg.sender, unitsOfRepayment);
+        // emit FundsReceived(msg.sender, unitsOfRepayment);    // TODO(Dan): Remove comments once IClaimsToken is implemented
     }
 
     /// @notice Withdraw current allowance for a debt token

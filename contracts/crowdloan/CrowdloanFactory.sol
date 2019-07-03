@@ -26,7 +26,11 @@ contract CrowdloanFactory is Ownable {
         uint _interestRate,
         uint _crowdfundLength,
         uint _crowdfundStart
-    ) public returns (address) {
+    )
+        public
+        returns (address)
+    {
+        // TODO(Dan): Asserts and require statements
         Crowdloan crowdloan = new Crowdloan (
               _debtToken,
               _principalTokenAddr,
@@ -40,7 +44,7 @@ contract CrowdloanFactory is Ownable {
               _crowdfundLength,
               _crowdfundStart
         );
-        emit loanCreated(msg.sender, crowdloan.getDebtToken(), _principal);
+        emit loanCreated(msg.sender, address(crowdloan.debtToken), _principal);
         return address(crowdloan);
     }
 }
