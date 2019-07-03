@@ -1,5 +1,6 @@
 let BN = web3.utils.BN;
 const CrowdloanFactory = artifacts.require("CrowdloanFactory");
+import { catchRevert } from "../utils/exceptionsHelpers";
 
 // TODO(Dan): Generate random numbers for each test
 const _principal = 60000 * 10 ** 18;
@@ -9,7 +10,7 @@ contract("CrowdloanFactory", accounts => {
   let crowdloanInstance;
   let owner = accounts[0];
 
-  beforeEach(async () => {
+  before(async () => {
     crowdloanFactoryInstance = await CrowdloanFactory.deployed();
   });
 
