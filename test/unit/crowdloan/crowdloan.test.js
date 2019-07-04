@@ -2,14 +2,14 @@ import {
   BN,
   constants,
   expectEvent,
-  expectRevert
-} from "openzeppelin-test-helpers";
+  expectRevert,
+} from 'openzeppelin-test-helpers';
 
-const DebtTokenFactory = artifacts.require("DebtTokenFactory");
-const DebtToken = artifacts.require("DebtToken");
-const Crowdloan = artifacts.require("Crowdloan");
+const DebtTokenFactory = artifacts.require('DebtTokenFactory');
+const DebtToken = artifacts.require('DebtToken');
+const Crowdloan = artifacts.require('Crowdloan');
 
-contract("Crowdloan", accounts => {
+contract('Crowdloan', (accounts) => {
   // let crowdloan;
   // let debtToken;
   // let debtTokenFactory;
