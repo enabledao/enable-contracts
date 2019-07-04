@@ -8,10 +8,12 @@
   },
   "scripts": {
     "test": "truffle test",
-    "eslint": "eslint ./",
-    "eslint:fix": "eslint ./ --fix",
-    "solhint": "solhint -f table contracts/**/*.sol",
-    "prettier:solidity": "./node_modules/.bin/prettier --write contracts/**/*.sol"
+    "eslint": "./node_modules/.bin/eslint ./",
+    "eslint:fix": "./node_modules/.bin/eslint ./ --fix",
+    "solhint": "./node_modules/.bin/solhint contracts/**/*.sol",
+    "prettier:solidity": "./node_modules/.bin/prettier --write contracts/**/*.sol",
+    "solium": "./node_modules/.bin/solium -d contracts/",
+    "solium:fix": "./node_modules/.bin/solium -d contracts/ --fix"
   },
   "repository": {
     "type": "git",
@@ -39,6 +41,7 @@
     "eslint-plugin-import": "^2.18.0",
     "eslint-plugin-mocha": "^5.3.0",
     "eslint-plugin-prettier": "^3.1.0",
+    "ethlint": "^1.2.4",
     "openzeppelin-test-helpers": "^0.4.0",
     "prettier": "^1.18.2",
     "prettier-plugin-solidity": "^1.0.0-alpha.27",
