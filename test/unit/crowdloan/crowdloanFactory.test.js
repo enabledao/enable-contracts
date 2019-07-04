@@ -1,9 +1,4 @@
-import {
-  BN,
-  constants,
-  expectEvent,
-  expectRevert,
-} from 'openzeppelin-test-helpers';
+import { BN, constants, expectEvent, expectRevert } from 'openzeppelin-test-helpers';
 
 const DebtTokenFactory = artifacts.require('DebtTokenFactory');
 const CrowdloanFactory = artifacts.require('CrowdloanFactory');
@@ -19,10 +14,10 @@ const loanParams = {
   gracePeriodPayment: 0,
   interestRate: 50,
   crowdfundLength: 10,
-  crowdfundStart: 10,
+  crowdfundStart: 10
 };
 
-contract('CrowdloanFactory', (accounts) => {
+contract('CrowdloanFactory', accounts => {
   let debtTokenFactoryInstance;
   let crowdloanFactoryInstance;
   let crowdloanInstance;
@@ -32,15 +27,13 @@ contract('CrowdloanFactory', (accounts) => {
 
   beforeEach(async () => {
     debtTokenFactoryInstance = await DebtTokenFactory.new();
-    crowdloanFactoryInstance = await CrowdloanFactory.new(
-      debtTokenFactoryInstance.address,
-    );
+    crowdloanFactoryInstance = await CrowdloanFactory.new(debtTokenFactoryInstance.address);
   });
 
   it('should deploy successfully', async () => {
     assert.exists(
       crowdloanFactoryInstance.address,
-      'crowdloanFactoryInstance was not successfully deployed',
+      'crowdloanFactoryInstance was not successfully deployed'
     );
   });
 
@@ -48,11 +41,11 @@ contract('CrowdloanFactory', (accounts) => {
     // Deploys Crowdloan instance
     const params = Object.values(loanParams);
     const { logs } = await crowdloanFactoryInstance.createCrowdloan(...params, {
-      from: borrower,
+      from: borrower
     });
     expectEvent.inLogs(logs, 'loanCreated', {
       borrower,
-      amount: borrowAmount,
+      amount: borrowAmount
     });
   });
 

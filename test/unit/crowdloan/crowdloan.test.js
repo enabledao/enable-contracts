@@ -1,20 +1,14 @@
-import {
-  BN,
-  constants,
-  expectEvent,
-  expectRevert,
-} from 'openzeppelin-test-helpers';
+import { BN, constants, expectEvent, expectRevert } from 'openzeppelin-test-helpers';
 
 const DebtTokenFactory = artifacts.require('DebtTokenFactory');
 const DebtToken = artifacts.require('DebtToken');
 const Crowdloan = artifacts.require('Crowdloan');
 
-contract('Crowdloan', (accounts) => {
+contract('Crowdloan', accounts => {
   // let crowdloan;
   // let debtToken;
   // let debtTokenFactory;
   // // let crowdloanFactoryInstance;
-
   // const tokenDetails = {
   //   name: "Ines Cornell Loan",
   //   symbol: "ICL"
@@ -31,7 +25,6 @@ contract('Crowdloan', (accounts) => {
   //   _crowdfundLength: 864000,
   //   _crowdfundStart: 0
   // };
-
   // beforeEach(async () => {
   //   debtTokenFactory = await DebtTokenFactory.new();
   //   assert.exists(
@@ -39,7 +32,6 @@ contract('Crowdloan', (accounts) => {
   //     "DebtTokenFactory not successfully deployed with an address"
   //   );
   // });
-
   // it("should successfully create crowdloan", async () => {
   //   const owner = accounts[0];
   //   const tx = await debtTokenFactory.createDebtToken(
@@ -59,17 +51,14 @@ contract('Crowdloan', (accounts) => {
   //   let name = await debtToken.name();
   //   assert.equal(name, tokenDetails.name);
   // });
-
   // TODO(Dan): Implement
   // it("should have the correct terms", async () => {
   //   let addr = await crowdloanFactoryInstance.registry(0);
   //   crowdloanInstance = await Crowdloan.at(addr);
   //   let params = await crowdloanInstance.getLoanParams();
   //   console.log(params);
-
   //   // console.log(crowdloanInstance);
   //   // expect;
-
   //   return true;
   // });
 });

@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "truffle test",
+    "test": "npm run lint && truffle test",
     "lint": "eslint ./",
     "lint:fix": "eslint ./ --fix"
   },
@@ -22,20 +22,23 @@
   },
   "homepage": "https://github.com/onggunhao/enable#readme",
   "dependencies": {
+    "@babel/register": "^7.4.4",
+    "@babel/polyfill": "^7.4.4",
     "openzeppelin-solidity": "2.2.0",
     "truffle": "^5.0.24"
   },
   "devDependencies": {
     "@babel/core": "^7.4.5",
-    "@babel/polyfill": "^7.4.4",
     "@babel/preset-env": "^7.4.5",
-    "@babel/register": "^7.4.4",
     "chai": "^4.2.0",
     "eslint": "^5.16.0",
     "eslint-config-airbnb-base": "^13.2.0",
+    "eslint-config-prettier": "^6.0.0",
     "eslint-plugin-import": "^2.18.0",
     "eslint-plugin-mocha": "^5.3.0",
+    "eslint-plugin-prettier": "^3.1.0",
     "openzeppelin-test-helpers": "^0.4.0",
+    "prettier": "^1.18.2",
     "solidity-coverage": "^0.5.11"
   }
 }
