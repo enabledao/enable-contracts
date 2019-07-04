@@ -1,9 +1,6 @@
 {
-  "extends": "solhint:default",
-  "plugins": [],
+  "extends": ["solhint:recommended"],
   "rules": {
-    "avoid-throw": false,
-    "avoid-suicide": "error",
-    "avoid-sha3": "warn"
+    "no-empty-blocks": "warn"
   }
 }
