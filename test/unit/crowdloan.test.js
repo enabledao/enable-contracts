@@ -26,7 +26,7 @@ contract("Crowdloan", accounts => {
   };
 
   before(async () => {
-    debtTokenFactory = await DebtTokenFactory.deployed();
+    debtTokenFactory = await DebtTokenFactory.new();
     assert.exists(
       debtTokenFactory.address,
       "DebtTokenFactory not successfully deployed with an address"
