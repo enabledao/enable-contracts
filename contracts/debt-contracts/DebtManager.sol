@@ -10,30 +10,29 @@ import "../interface/IDebtManager.sol";
     The minter contract has minting rights
 */
 contract DebtManager is IDebtManager {
+    using SafeMath for uint256;
 
-        using SafeMath for uint;
+    uint256 _totalDebt;
+    mapping(uint256 => uint256) private _tokenDebtValue;
 
-        uint _totalDebt;
-        mapping (uint => uint) private _tokenDebtValue;
+    function _addDebtValue(uint256 tokenId, uint256 debtValue) internal returns (bool) {
+        require(_tokenDebtValue[tokenId] == 0, "Debt value already set and can only be cleared");
+        _totalDebt = _totalDebt.add(debtValue);
+        _tokenDebtValue[tokenId] = debtValue;
+    }
 
-        function _addDebtValue (uint tokenId, uint debtValue) internal returns (bool) {
-            require(_tokenDebtValue[tokenId] == 0, 'Debt value already set and can only be cleared');
-            _totalDebt = _totalDebt.add(debtValue);
-            _tokenDebtValue[tokenId] = debtValue;
-        }
+    function _removeDebtValue(uint256 tokenId) internal returns (bool) {
+        uint256 debtValue = _tokenDebtValue[tokenId];
+        _tokenDebtValue[tokenId] = 0;
+        _totalDebt = _totalDebt.sub(debtValue);
+    }
 
-        function _removeDebtValue (uint tokenId) internal returns (bool) {
-            uint debtValue = _tokenDebtValue[tokenId];
-            _tokenDebtValue[tokenId] = 0;
-            _totalDebt = _totalDebt.sub(debtValue);
-        }
+    function totalDebt() public view returns (uint256) {
+        return _totalDebt;
+    }
 
-        function totalDebt() public view returns (uint) {
-            return _totalDebt;
-        }
-
-        function debtValue (uint tokenId) public view returns (uint) {
-            return _tokenDebtValue[tokenId];
-        }
+    function debtValue(uint256 tokenId) public view returns (uint256) {
+        return _tokenDebtValue[tokenId];
+    }
 
 }

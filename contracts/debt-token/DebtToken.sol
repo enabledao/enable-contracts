@@ -11,26 +11,27 @@ import "../debt-contracts/DebtManager.sol";
     The minter contract has minting rights
 */
 contract DebtToken is DebtManager, ERC721Enumerable, ERC721Metadata, ERC721Mintable {
-
-        constructor (string memory name, string memory symbol) public ERC721Metadata(name, symbol) {
+    constructor(string memory name, string memory symbol) public ERC721Metadata(name, symbol) {
         // solhint-disable-previous-line no-empty-blocks
-        }
+    }
 
-        function mint(address, uint256) public onlyMinter returns (bool) {
-            revert('function: addDebt(address to, uint256 debtAmount) public onlyMinter returns (bool)');
-        }
+    function mint(address, uint256) public onlyMinter returns (bool) {
+        revert(
+            "function: addDebt(address to, uint256 debtAmount) public onlyMinter returns (bool)"
+        );
+    }
 
-        function addDebt(address holder, uint256 debtAmount) public onlyMinter returns (bool) {
-            uint _tokenId = totalSupply();
-            super.mint(holder, _tokenId);
-            _addDebtValue(_tokenId, debtAmount);
-            return true;
-        }
+    function addDebt(address holder, uint256 debtAmount) public onlyMinter returns (bool) {
+        uint256 _tokenId = totalSupply();
+        super.mint(holder, _tokenId);
+        _addDebtValue(_tokenId, debtAmount);
+        return true;
+    }
 
-        function removeDebt(address holder, uint256 tokenId) public onlyMinter returns (bool) {
-            require(holder == ownerOf(tokenId), 'Not token owner');
-            _removeDebtValue(tokenId);
-            return true;
-        }
+    function removeDebt(address holder, uint256 tokenId) public onlyMinter returns (bool) {
+        require(holder == ownerOf(tokenId), "Not token owner");
+        _removeDebtValue(tokenId);
+        return true;
+    }
 
 }

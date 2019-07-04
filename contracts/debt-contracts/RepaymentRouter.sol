@@ -6,27 +6,36 @@ import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 contract RepaymentRouter {
     using SafeMath for uint256;
 
-    uint private _totalRepaid;
-    mapping(uint => uint) private _withdrawnByTokenId;
+    uint256 private _totalRepaid;
+    mapping(uint256 => uint256) private _withdrawnByTokenId;
 
     /**
   	 * @dev This event emits when repayment is made to the loan
   	 */
-  	event Repayment(address indexed from, uint256 fundsRepaid);
+    event Repayment(address indexed from, uint256 fundsRepaid);
 
-    function _transferERC20 (IERC20 token, address _to, uint256 _amount) internal returns (bool) {
+    function _transferERC20(IERC20 token, address _to, uint256 _amount) internal returns (bool) {
         //Separate function to ensure the amount is sent, a sort of safeTransferFrom
-        uint previousBalance = token.balanceOf(_to);
+        uint256 previousBalance = token.balanceOf(_to);
         token.transferFrom(address(this), _to, _amount);
-        require(token.balanceOf(_to) >= previousBalance.add(_amount), 'Token value not successfully transferred');
+        require(
+            token.balanceOf(_to) >= previousBalance.add(_amount),
+            "Token value not successfully transferred"
+        );
         return true;
     }
 
-    function _transferERC20 (IERC20 token, address _from, address _to, uint256 _amount) internal returns (bool) {
+    function _transferERC20(IERC20 token, address _from, address _to, uint256 _amount)
+        internal
+        returns (bool)
+    {
         //Separate function to ensure the amount is sent, a sort of safeTransferFrom
-        uint previousBalance = token.balanceOf(_to);
+        uint256 previousBalance = token.balanceOf(_to);
         token.transferFrom(_from, _to, _amount);
-        require(token.balanceOf(_to) >= previousBalance.add(_amount), 'Token value not successfully transferred');
+        require(
+            token.balanceOf(_to) >= previousBalance.add(_amount),
+            "Token value not successfully transferred"
+        );
         return true;
     }
 
@@ -42,32 +51,28 @@ contract RepaymentRouter {
     }
 
     /// @notice Withdraw current allowance for a debt token
-    function _withdraw(IERC20 token, address to, uint debtTokenId) internal {
-      //TODO needs re-thinking
-        uint previousWithdrawal = _withdrawnByTokenId[debtTokenId];
-        uint _amount = getWithdrawalAllowance(debtTokenId);
+    function _withdraw(IERC20 token, address to, uint256 debtTokenId) internal {
+        //TODO needs re-thinking
+        uint256 previousWithdrawal = _withdrawnByTokenId[debtTokenId];
+        uint256 _amount = getWithdrawalAllowance(debtTokenId);
         _withdrawnByTokenId[debtTokenId] = previousWithdrawal.add(_amount);
         _transferERC20(token, to, _amount);
     }
 
     /// @notice Get current withdrawal allowance for a debt token
     /// @param debtTokenId Debt token ID
-    function getWithdrawalAllowance(uint debtTokenId)
-        public
-        view
-        returns (uint)
-    {
+    function getWithdrawalAllowance(uint256 debtTokenId) public view returns (uint256) {
         // TODO(Dan): Implement
-        return uint(1); // TODO(Dan): Remove placeholder
+        return uint256(1); // TODO(Dan): Remove placeholder
     }
 
     /// @notice Total amount of the Loan repaid by the borrower
-    function totalRepaid() public view returns (uint) {
+    function totalRepaid() public view returns (uint256) {
         return _totalRepaid;
     }
 
     /// @notice Total amount of the Loan repayment withdrawn by each tokenId
-    function totalWithdrawn(uint debtTokenId) public view returns (uint) {
+    function totalWithdrawn(uint256 debtTokenId) public view returns (uint256) {
         return _withdrawnByTokenId[debtTokenId];
     }
 }

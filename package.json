@@ -7,10 +7,11 @@
     "test": "test"
   },
   "scripts": {
-    "test": "npm run lint && truffle test",
+    "test": "truffle test",
     "eslint": "eslint ./",
     "eslint:fix": "eslint ./ --fix",
-    "solhint": "solhint -f table contracts/**/*.sol"
+    "solhint": "solhint -f table contracts/**/*.sol",
+    "prettier:solidity": "./node_modules/.bin/prettier --write contracts/**/*.sol"
   },
   "repository": {
     "type": "git",
