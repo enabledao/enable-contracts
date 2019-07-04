@@ -7,15 +7,31 @@ import {
 
 const DebtTokenFactory = artifacts.require("DebtTokenFactory");
 const CrowdloanFactory = artifacts.require("CrowdloanFactory");
+const Crowdloan = artifacts.require("Crowdloan");
+
+const loanParams = {
+  debtToken: "0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359",
+  principalTokenAddr: "0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359",
+  principal: web3.utils.toWei("60000", "ether"), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
+  amortizationUnitType: 3,
+  termLength: 6,
+  termPayment: 600,
+  gracePeriodLength: 0,
+  gracePeriodPayment: 0,
+  interestRate: 50,
+  crowdfundLength: 10,
+  crowdfundStart: 10
+};
 
 contract("CrowdloanFactory", accounts => {
   let debtTokenFactoryInstance;
   let crowdloanFactoryInstance;
   let crowdloanInstance;
   let crowdloanInstanceAddress;
-  var owner = accounts[0];
+  let borrowAmount = web3.utils.toWei("60000", "ether");
+  var borrower = accounts[0];
 
-  before(async () => {
+  beforeEach(async () => {
     debtTokenFactoryInstance = await DebtTokenFactory.new();
     crowdloanFactoryInstance = await CrowdloanFactory.new(
       debtTokenFactoryInstance.address
@@ -29,35 +45,17 @@ contract("CrowdloanFactory", accounts => {
     );
   });
 
-  it("should successfully create a crowdloan", async () => {
+  it("should emit a loanCreated event on successful createCrowdloan", async () => {
     // Deploys Crowdloan instance
-    const tx = await crowdloanFactoryInstance.createCrowdloan.call(
-      "0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359",
-      "0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359",
-      web3.utils.toWei("60000", "ether"), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
-      3, // Months
-      6, // Term length
-      600, // Term payment
-      0, // Grace period length
-      0, // Grace period payment
-      50, // interest rate (basis points)
-      10,
-      10,
-      { from: owner }
-    );
-    console.log(tx);
-    assert.exists(tx);
-    let crowdloans = await crowdloanFactoryInstance.crowdloans;
-    console.log(crowdloans);
-
-    // assert tx exists
-    // crowdloanInstanceAddress = tx.logs;
-    // console.log(crowdloanInstance);
-  });
-  it("should have the correct terms", async () => {
-    // console.log(crowdloanInstance);
-    return true;
+    let params = Object.values(loanParams);
+    const { logs } = await crowdloanFactoryInstance.createCrowdloan(...params, {
+      from: borrower
+    });
+    expectEvent.inLogs(logs, "loanCreated", {
+      borrower: borrower,
+      amount: borrowAmount
+    });
   });
 
-  xit("should emit a loanCreated event", async () => {});
+  xit("should revert if invalid arguments", async () => {});
 });

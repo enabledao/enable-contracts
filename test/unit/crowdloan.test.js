@@ -8,6 +8,8 @@ contract("Crowdloan", accounts => {
   let crowdloan;
   let debtToken;
   let debtTokenFactory;
+  // let crowdloanFactoryInstance;
+
   const tokenDetails = {
     name: "Ines Cornell Loan",
     symbol: "ICL"
@@ -25,7 +27,7 @@ contract("Crowdloan", accounts => {
     _crowdfundStart: 0
   };
 
-  before(async () => {
+  beforeEach(async () => {
     debtTokenFactory = await DebtTokenFactory.new();
     assert.exists(
       debtTokenFactory.address,
@@ -42,19 +44,27 @@ contract("Crowdloan", accounts => {
         from: owner
       }
     );
+    // TODO(Dan): Refactor more elegant method to get token address
     const tokenAddress =
       tx.logs &&
       tx.logs.find(
         log => log.event === "tokenCreated" && log.args.owner === owner
       ).args.token;
     debtToken = await DebtToken.at(tokenAddress);
-    assert.exists(
-      debtToken.name.call() === tokenDetails.name,
-      "Deployed DebtToken has invalid information"
-    );
-
-    // const ctx = await Crowdloan.new(
-    //     crowdloanDetails
-    // )
+    let name = await debtToken.name();
+    assert.equal(name, tokenDetails.name);
   });
+
+  // TODO(Dan): Implement
+  // it("should have the correct terms", async () => {
+  //   let addr = await crowdloanFactoryInstance.registry(0);
+  //   crowdloanInstance = await Crowdloan.at(addr);
+  //   let params = await crowdloanInstance.getLoanParams();
+  //   console.log(params);
+
+  //   // console.log(crowdloanInstance);
+  //   // expect;
+
+  //   return true;
+  // });
 });
