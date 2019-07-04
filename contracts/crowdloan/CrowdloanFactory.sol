@@ -8,7 +8,9 @@ contract CrowdloanFactory is Ownable {
 
     DebtTokenFactory debtTokenFactory;
 
-    event loanCreated(address indexed borrower, address indexed debtToken, uint indexed amount);
+    address[] public registry;
+
+    event loanCreated(address indexed borrower, address indexed addr, uint indexed amount);
 
     constructor (address _debtTokenFactory) public {
         debtTokenFactory = DebtTokenFactory(_debtTokenFactory);
@@ -26,7 +28,11 @@ contract CrowdloanFactory is Ownable {
         uint _interestRate,
         uint _crowdfundLength,
         uint _crowdfundStart
-    ) public returns (address) {
+    )
+        public
+        returns (address)
+    {
+        // TODO(Dan): Asserts and require statements
         Crowdloan crowdloan = new Crowdloan (
               _debtToken,
               _principalTokenAddr,
@@ -40,7 +46,8 @@ contract CrowdloanFactory is Ownable {
               _crowdfundLength,
               _crowdfundStart
         );
-        emit loanCreated(msg.sender, crowdloan.getDebtToken(), _principal);
+        registry.push(address(crowdloan));
+        emit loanCreated(msg.sender, address(crowdloan), _principal);
         return address(crowdloan);
     }
 }

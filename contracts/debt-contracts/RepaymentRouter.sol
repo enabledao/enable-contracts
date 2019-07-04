@@ -7,7 +7,7 @@ contract RepaymentRouter {
     using SafeMath for uint256;
 
     uint private _totalRepaid;
-    mapping( uint => uint) private _withdrawnByTokenId;
+    mapping(uint => uint) private _withdrawnByTokenId;
 
     /**
   	 * @dev This event emits when repayment is made to the loan
@@ -52,7 +52,14 @@ contract RepaymentRouter {
 
     /// @notice Get current withdrawal allowance for a debt token
     /// @param debtTokenId Debt token ID
-    function getWithdrawalAllowance(uint debtTokenId) public view returns (uint) {}
+    function getWithdrawalAllowance(uint debtTokenId)
+        public
+        view
+        returns (uint)
+    {
+        // TODO(Dan): Implement
+        return uint(1); // TODO(Dan): Remove placeholder
+    }
 
     /// @notice Total amount of the Loan repaid by the borrower
     function totalRepaid() public view returns (uint) {
@@ -63,4 +70,4 @@ contract RepaymentRouter {
     function totalWithdrawn(uint debtTokenId) public view returns (uint) {
         return _withdrawnByTokenId[debtTokenId];
     }
-  }
+}
