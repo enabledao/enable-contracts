@@ -17,7 +17,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-push": "npm run eslint:fix && npm run prettier:solidity"
+      "pre-push": "npm run prettier:solidity"
     }
   },
   "repository": {
