@@ -15,6 +15,11 @@
     "solium": "./node_modules/.bin/solium -d contracts/",
     "solium:fix": "./node_modules/.bin/solium -d contracts/ --fix"
   },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run eslint:fix && npm run prettier:solidity"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/enabledao/enable-contracts.git"
@@ -42,6 +47,7 @@
     "eslint-plugin-mocha": "^5.3.0",
     "eslint-plugin-prettier": "^3.1.0",
     "ethlint": "^1.2.4",
+    "husky": "^3.0.0",
     "openzeppelin-test-helpers": "^0.4.0",
     "prettier": "^1.18.2",
     "prettier-plugin-solidity": "^1.0.0-alpha.27",
