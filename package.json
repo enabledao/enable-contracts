@@ -7,7 +7,18 @@
     "test": "test"
   },
   "scripts": {
-    "test": "truffle test"
+    "test": "truffle test",
+    "eslint": "./node_modules/.bin/eslint ./",
+    "eslint:fix": "./node_modules/.bin/eslint ./ --fix",
+    "solhint": "./node_modules/.bin/solhint contracts/**/*.sol",
+    "prettier:solidity": "./node_modules/.bin/prettier --write contracts/**/*.sol",
+    "solium": "./node_modules/.bin/solium -d contracts/",
+    "solium:fix": "./node_modules/.bin/solium -d contracts/ --fix"
+  },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run prettier:solidity"
+    }
   },
   "repository": {
     "type": "git",
@@ -20,16 +31,28 @@
   },
   "homepage": "https://github.com/onggunhao/enable#readme",
   "dependencies": {
+    "@babel/polyfill": "^7.4.4",
+    "@babel/register": "^7.4.4",
     "openzeppelin-solidity": "2.2.0",
     "truffle": "^5.0.24"
   },
   "devDependencies": {
     "@babel/core": "^7.4.5",
-    "@babel/polyfill": "^7.4.4",
     "@babel/preset-env": "^7.4.5",
-    "@babel/register": "^7.4.4",
     "chai": "^4.2.0",
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb-base": "^13.2.0",
+    "eslint-config-prettier": "^6.0.0",
+    "eslint-plugin-import": "^2.18.0",
+    "eslint-plugin-mocha": "^5.3.0",
+    "eslint-plugin-prettier": "^3.1.0",
+    "ethlint": "^1.2.4",
+    "husky": "^3.0.0",
     "openzeppelin-test-helpers": "^0.4.0",
+    "prettier": "^1.18.2",
+    "prettier-plugin-solidity": "^1.0.0-alpha.27",
+    "solhint": "^2.1.0",
+    "solhint-plugin-prettier": "0.0.3",
     "solidity-coverage": "^0.5.11"
   }
 }

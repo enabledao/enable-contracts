@@ -5,46 +5,42 @@ import "../debt-token/DebtTokenFactory.sol";
 import "./Crowdloan.sol";
 
 contract CrowdloanFactory is Ownable {
-
     DebtTokenFactory debtTokenFactory;
 
     address[] public registry;
 
-    event loanCreated(address indexed borrower, address indexed addr, uint indexed amount);
+    event loanCreated(address indexed borrower, address indexed addr, uint256 indexed amount);
 
-    constructor (address _debtTokenFactory) public {
+    constructor(address _debtTokenFactory) public {
         debtTokenFactory = DebtTokenFactory(_debtTokenFactory);
     }
 
     function createCrowdloan(
         address _debtToken,
         address _principalTokenAddr,
-        uint _principal,
-        uint _amortizationUnitType,
-        uint _termLength,
-        uint _termPayment,
-        uint _gracePeriodLength,
-        uint _gracePeriodPayment,
-        uint _interestRate,
-        uint _crowdfundLength,
-        uint _crowdfundStart
-    )
-        public
-        returns (address)
-    {
+        uint256 _principal,
+        uint256 _amortizationUnitType,
+        uint256 _termLength,
+        uint256 _termPayment,
+        uint256 _gracePeriodLength,
+        uint256 _gracePeriodPayment,
+        uint256 _interestRate,
+        uint256 _crowdfundLength,
+        uint256 _crowdfundStart
+    ) public returns (address) {
         // TODO(Dan): Asserts and require statements
-        Crowdloan crowdloan = new Crowdloan (
-              _debtToken,
-              _principalTokenAddr,
-              _principal,
-              _amortizationUnitType,
-              _termLength,
-              _termPayment,
-              _gracePeriodLength,
-              _gracePeriodPayment,
-              _interestRate,
-              _crowdfundLength,
-              _crowdfundStart
+        Crowdloan crowdloan = new Crowdloan(
+            _debtToken,
+            _principalTokenAddr,
+            _principal,
+            _amortizationUnitType,
+            _termLength,
+            _termPayment,
+            _gracePeriodLength,
+            _gracePeriodPayment,
+            _interestRate,
+            _crowdfundLength,
+            _crowdfundStart
         );
         registry.push(address(crowdloan));
         emit loanCreated(msg.sender, address(crowdloan), _principal);

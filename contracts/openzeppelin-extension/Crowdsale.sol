@@ -43,7 +43,12 @@ contract Crowdsale is ReentrancyGuard {
      * @param value weis paid for purchase
      * @param amount amount of tokens purchased
      */
-    event TokensPurchased(address indexed purchaser, address indexed beneficiary, uint256 value, uint256 amount);
+    event TokensPurchased(
+        address indexed purchaser,
+        address indexed beneficiary,
+        uint256 value,
+        uint256 amount
+    );
 
     /**
      * @param rate Number of token units a buyer gets per wei
@@ -53,7 +58,7 @@ contract Crowdsale is ReentrancyGuard {
      * @param wallet Address where collected funds will be forwarded to
      * @param token Address of the token being sold
      */
-    constructor (uint256 rate, address payable wallet, IERC20 token) public {
+    constructor(uint256 rate, address payable wallet, IERC20 token) public {
         require(rate > 0);
         require(wallet != address(0));
         require(address(token) != address(0));
@@ -69,7 +74,7 @@ contract Crowdsale is ReentrancyGuard {
      * of 2300, which is not enough to call buyTokens. Consider calling
      * buyTokens directly when purchasing tokens from a contract.
      */
-    function () external payable {
+    function() external payable {
         buyTokens(msg.sender);
     }
 
@@ -107,7 +112,7 @@ contract Crowdsale is ReentrancyGuard {
      * another `nonReentrant` function.
      * @param beneficiary Recipient of the token purchase
      */
-    function buyTokens(address beneficiary) public nonReentrant payable {
+    function buyTokens(address beneficiary) public payable nonReentrant {
         uint256 weiAmount = _weiAmount();
         _preValidatePurchase(beneficiary, weiAmount);
 
