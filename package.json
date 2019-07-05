@@ -31,8 +31,8 @@
   },
   "homepage": "https://github.com/onggunhao/enable#readme",
   "dependencies": {
-    "@babel/register": "^7.4.4",
     "@babel/polyfill": "^7.4.4",
+    "@babel/register": "^7.4.4",
     "openzeppelin-solidity": "2.2.0",
     "truffle": "^5.0.24"
   },

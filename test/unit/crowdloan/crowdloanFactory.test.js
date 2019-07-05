@@ -1,4 +1,4 @@
-import { BN, constants, expectEvent, expectRevert } from 'openzeppelin-test-helpers';
+import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
 
 const DebtTokenFactory = artifacts.require('DebtTokenFactory');
 const CrowdloanFactory = artifacts.require('CrowdloanFactory');
@@ -40,7 +40,7 @@ contract('CrowdloanFactory', accounts => {
   it('should emit a loanCreated event on successful createCrowdloan', async () => {
     // Deploys Crowdloan instance
     const params = Object.values(loanParams);
-    const { logs } = await crowdloanFactoryInstance.createCrowdloan(...params, {
+    const {logs} = await crowdloanFactoryInstance.createCrowdloan(...params, {
       from: borrower
     });
     expectEvent.inLogs(logs, 'loanCreated', {

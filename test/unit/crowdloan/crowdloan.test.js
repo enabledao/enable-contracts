@@ -1,4 +1,4 @@
-import { BN, constants, expectEvent, expectRevert } from 'openzeppelin-test-helpers';
+import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
 
 const DebtTokenFactory = artifacts.require('DebtTokenFactory');
 const DebtToken = artifacts.require('DebtToken');
