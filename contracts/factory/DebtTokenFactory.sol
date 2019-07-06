@@ -1,7 +1,7 @@
 pragma solidity ^0.5.2;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import "./DebtToken.sol";
+import "../debt-token/DebtToken.sol";
 
 contract DebtTokenFactory is Ownable {
     event tokenCreated(address indexed owner, address indexed token);

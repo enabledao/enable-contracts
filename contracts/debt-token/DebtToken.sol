@@ -3,7 +3,7 @@ pragma solidity ^0.5.2;
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Mintable.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Metadata.sol";
-import "../debt-contracts/DebtManager.sol";
+import "./DebtManager.sol";
 
 /*
     A debt token representing a stake in a crowdfunded loan.

@@ -1,5 +1,8 @@
 pragma solidity >=0.4.22 <0.6.0;
 
+/**
+ * This interface is for ERC20-based debt token. 
+ */
 interface IClaimsToken {
     /**
 	 * @dev This event emits when funds to be deposited are sent to the token contract

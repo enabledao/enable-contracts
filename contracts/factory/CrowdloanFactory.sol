@@ -1,15 +1,15 @@
 pragma solidity ^0.5.2;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import "../debt-token/DebtTokenFactory.sol";
-import "./Crowdloan.sol";
+import "./DebtTokenFactory.sol";
+import "../crowdloan/Crowdloan.sol";
 
 contract CrowdloanFactory is Ownable {
     DebtTokenFactory debtTokenFactory;
 
     address[] public registry;
 
-    event loanCreated(address indexed borrower, address indexed addr, uint256 indexed amount);
+    event LoanCreated(address indexed borrower, address indexed addr, uint256 indexed amount);
 
     constructor(address _debtTokenFactory) public {
         debtTokenFactory = DebtTokenFactory(_debtTokenFactory);
@@ -43,7 +43,7 @@ contract CrowdloanFactory is Ownable {
             _crowdfundStart
         );
         registry.push(address(crowdloan));
-        emit loanCreated(msg.sender, address(crowdloan), _principal);
+        emit LoanCreated(msg.sender, address(crowdloan), _principal);
         return address(crowdloan);
     }
 }

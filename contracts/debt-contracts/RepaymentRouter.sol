@@ -2,17 +2,26 @@ pragma solidity ^0.5.2;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+import "../interface/IRepaymentRouter.sol";
 
-contract RepaymentRouter {
+contract RepaymentRouter is IRepaymentRouter {
     using SafeMath for uint256;
 
     uint256 private _totalRepaid;
     mapping(uint256 => uint256) private _withdrawnByTokenId;
 
+    Crowdloan crowdloan;
+    DebtToken debtToken;
+
     /**
   	 * @dev This event emits when repayment is made to the loan
   	 */
     event Repayment(address indexed from, uint256 fundsRepaid);
+
+    constructor(address _crowdloan, address _debtToken) public {
+        crowdloan = Crowdloan(_crowdloan);
+        debtToken = DebtToken(_debtToken);
+    }
 
     function _transferERC20(IERC20 token, address _to, uint256 _amount) internal returns (bool) {
         //Separate function to ensure the amount is sent, a sort of safeTransferFrom
@@ -74,5 +83,22 @@ contract RepaymentRouter {
     /// @notice Total amount of the Loan repayment withdrawn by each tokenId
     function totalWithdrawn(uint256 debtTokenId) public view returns (uint256) {
         return _withdrawnByTokenId[debtTokenId];
+    }
+
+    /// @notice Repay a given portion of loan
+    /// @param unitsOfRepayment Tokens to repay
+    function repay(uint256 unitsOfRepayment) public {
+        _repay(loanParams.principalToken, msg.sender, address(this), unitsOfRepayment);
+        // emit FundsReceived(msg.sender, unitsOfRepayment);    // TODO(Dan): Remove comments once IClaimsToken is implemented
+    }
+
+    /// @notice Withdraw current allowance for a debt token
+    /// @param debtTokenId Debt token ID
+    function withdraw(uint256 debtTokenId) public {
+        //TODO needs re-thinking
+        require(debtToken.ownerOf(debtTokenId) == msg.sender, "You are not the owner of token");
+        uint256 _amount = getWithdrawalAllowance(debtTokenId);
+        _withdraw(loanParams.principalToken, msg.sender, debtTokenId);
+        emit FundsWithdrawn(msg.sender, _amount);
     }
 }
