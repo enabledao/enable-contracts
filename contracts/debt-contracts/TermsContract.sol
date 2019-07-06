@@ -4,7 +4,6 @@ import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "../interface/ITermsContract.sol";
 
 contract TermsContract is ITermsContract {
-
     enum TimeUnitType {HOURS, DAYS, WEEKS, MONTHS, YEARS}
 
     enum LoanStatus {
@@ -39,21 +38,15 @@ contract TermsContract is ITermsContract {
     LoanParams loanParams;
 
     modifier onlyDebtor() {
-        require (msg.sender == debtor, "Only debtor can call");
+        require(msg.sender == debtor, "Only debtor can call");
         _;
     }
 
-    modifier onlyAtStatus(LoanStatus status) {
+    modifier onlyAtStatus(LoanStatus status) {}
 
-    }
+    modifier onlyBeforeStatus(LoanStatus status) {}
 
-    modifier onlyBeforeStatus(LoanStatus status) { 
-
-    }
-
-    modifier onlyAfterStatus(LoanStatus status) {
-
-    }
+    modifier onlyAfterStatus(LoanStatus status) {}
 
     constructor(
         address _principalTokenAddr,

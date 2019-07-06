@@ -25,7 +25,7 @@ contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuar
 
     event Fund(address indexed sender, uint256 amount);
     event Refund(address indexed sender, uint256 amount);
-    event StatusChanged(uint loanStatus);
+    event StatusChanged(uint256 loanStatus);
 
     modifier trackCrowdfundStatus() {
         _updateCrowdfundStatus();
@@ -33,8 +33,11 @@ contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuar
         _updateCrowdfundStatus();
     }
 
-    modifier onlyDebtTokenOwner(uint debtTokenId) {
-        require(debtToken.ownerOf(debtTokenId) == msg.sender, "Only owner of specified debt token can call");
+    modifier onlyDebtTokenOwner(uint256 debtTokenId) {
+        require(
+            debtToken.ownerOf(debtTokenId) == msg.sender,
+            "Only owner of specified debt token can call"
+        );
     }
 
     constructor(
@@ -49,16 +52,18 @@ contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuar
         uint256 _interestRate,
         uint256 _crowdfundLength,
         uint256 _crowdfundStart
-    ) public TermsContract(
-        _principalTokenAddr,
-        _principal,
-        _amortizationUnitType,
-        _termLength,
-        _termPayment,
-        _gracePeriodLength,
-        _gracePeriodPayment,
-        _interestRate
     )
+        public
+        TermsContract(
+            _principalTokenAddr,
+            _principal,
+            _amortizationUnitType,
+            _termLength,
+            _termPayment,
+            _gracePeriodLength,
+            _gracePeriodPayment,
+            _interestRate
+        )
     {
         debtor = Borrower(msg.sender); //Needs to be update, once factory is setup
         debtToken = DebtToken(_debtToken);
