@@ -43,7 +43,7 @@ contract('CrowdloanFactory', accounts => {
     const {logs} = await crowdloanFactoryInstance.createCrowdloan(...params, {
       from: borrower
     });
-    expectEvent.inLogs(logs, 'loanCreated', {
+    expectEvent.inLogs(logs, 'LoanCreated', {
       borrower,
       amount: borrowAmount
     });

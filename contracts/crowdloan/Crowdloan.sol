@@ -10,6 +10,7 @@ import "../debt-contracts/RepaymentRouter.sol";
 import "../debt-contracts/TermsContract.sol";
 import "../debt-token/DebtToken.sol";
 
+// contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuard {
 contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuard {
     using SafeMath for uint256;
 
@@ -19,13 +20,17 @@ contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuar
         uint256 crowdfundEnd;
     }
 
+    struct Borrower {
+        address debtor;
+    }
+
     Borrower debtor;
     CrowdfundParams crowdfundParams;
     DebtToken debtToken;
 
     event Fund(address indexed sender, uint256 amount);
     event Refund(address indexed sender, uint256 amount);
-    event StatusChanged(uint loanStatus);
+    event StatusChanged(uint256 loanStatus);
 
     modifier trackCrowdfundStatus() {
         _updateCrowdfundStatus();
@@ -33,8 +38,12 @@ contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuar
         _updateCrowdfundStatus();
     }
 
-    modifier onlyDebtTokenOwner(uint debtTokenId) {
-        require(debtToken.ownerOf(debtTokenId) == msg.sender, "Only owner of specified debt token can call");
+    modifier onlyDebtTokenOwner(uint256 debtTokenId) {
+        require(
+            debtToken.ownerOf(debtTokenId) == msg.sender,
+            "Only owner of specified debt token can call"
+        );
+        _;
     }
 
     constructor(
@@ -49,16 +58,22 @@ contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuar
         uint256 _interestRate,
         uint256 _crowdfundLength,
         uint256 _crowdfundStart
-    ) public TermsContract(
-        _principalTokenAddr,
-        _principal,
-        _amortizationUnitType,
-        _termLength,
-        _termPayment,
-        _gracePeriodLength,
-        _gracePeriodPayment,
-        _interestRate
     )
+        public
+        TermsContract(
+            _principalTokenAddr,
+            _principal,
+            _amortizationUnitType,
+            _termLength,
+            _termPayment,
+            _gracePeriodLength,
+            _gracePeriodPayment,
+            _interestRate
+        )
+        RepaymentRouter(
+            address(this), //TODO: check if we can do away with passing address to RepaymentRouter contract
+            _debtToken
+        )
     {
         debtor = Borrower(msg.sender); //Needs to be update, once factory is setup
         debtToken = DebtToken(_debtToken);
