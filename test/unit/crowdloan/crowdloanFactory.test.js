@@ -1,10 +1,9 @@
 import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
 
-const DebtTokenFactory = artifacts.require('DebtTokenFactory');
 const CrowdloanFactory = artifacts.require('CrowdloanFactory');
+const App = artifacts.require('App');
 
 const loanParams = {
-  debtToken: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
   principalTokenAddr: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
   principal: web3.utils.toWei('60000', 'ether'), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
   amortizationUnitType: 3,
@@ -18,7 +17,6 @@ const loanParams = {
 };
 
 contract('CrowdloanFactory', accounts => {
-  let debtTokenFactoryInstance;
   let crowdloanFactoryInstance;
   let crowdloanInstance;
   let crowdloanInstanceAddress;
@@ -26,18 +24,17 @@ contract('CrowdloanFactory', accounts => {
   const borrower = accounts[0];
 
   beforeEach(async () => {
-    debtTokenFactoryInstance = await DebtTokenFactory.new();
-    crowdloanFactoryInstance = await CrowdloanFactory.new(debtTokenFactoryInstance.address);
+    crowdloanFactoryInstance = await CrowdloanFactory.new();
   });
 
-  it('should deploy successfully', async () => {
+  it('Factory should deploy successfully', async () => {
     assert.exists(
       crowdloanFactoryInstance.address,
       'crowdloanFactoryInstance was not successfully deployed'
     );
   });
 
-  it('should emit a loanCreated event on successful createCrowdloan', async () => {
+  it('should emit a LoanCreated event on successful deploy', async () => {
     // Deploys Crowdloan instance
     const params = Object.values(loanParams);
     const {logs} = await crowdloanFactoryInstance.createCrowdloan(...params, {
@@ -49,5 +46,17 @@ contract('CrowdloanFactory', accounts => {
     });
   });
 
-  xit('should revert if invalid arguments', async () => {});
+  it('should deploy all contracts on successful deploy', async () => {
+    // Deploys Crowdloan instance
+    const params = Object.values(loanParams);
+    const {logs} = await crowdloanFactoryInstance.createCrowdloan(...params, {
+      from: borrower
+    });
+
+    // debtToken = await DebtToken.at(tokenAddress);
+    // const name = await debtToken.name();
+    // assert.equal(name, tokenDetails.name);
+  });
+
+  it('should revert if invalid arguments', async () => {});
 });

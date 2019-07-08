@@ -1,9 +1,10 @@
 pragma solidity ^0.5.2;
 
-import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+import "openzeppelin-eth/contracts/token/ERC20/IERC20.sol";
+import "zos-lib/contracts/Initializable.sol";
 import "../interface/ITermsContract.sol";
 
-contract TermsContract is ITermsContract {
+contract TermsContract is Initializable, ITermsContract {
 
     enum TimeUnitType {HOURS, DAYS, WEEKS, MONTHS, YEARS}
 
@@ -46,7 +47,7 @@ contract TermsContract is ITermsContract {
 
     // modifier onlyAfterStatus(LoanStatus status) {}
 
-    constructor(
+    function initialize(
         address _principalTokenAddr,
         uint256 _principal,
         uint256 _amortizationUnitType,
@@ -55,7 +56,7 @@ contract TermsContract is ITermsContract {
         uint256 _gracePeriodLength,
         uint256 _gracePeriodPayment,
         uint256 _interestRate
-    ) public {
+    ) public initializer {
         loanParams = LoanParams({
             principalToken: IERC20(_principalTokenAddr),
             principal: _principal,
@@ -70,10 +71,6 @@ contract TermsContract is ITermsContract {
 
     function getLoanStatus() external view returns (uint256 loanStatus) {
         return uint256(loanParams.loanStatus);
-    }
-
-    function getDebtor() external view returns (address debtor) {
-        return debtor;
     }
 
     function getLoanParams()
