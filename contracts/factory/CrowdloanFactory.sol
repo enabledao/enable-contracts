@@ -2,6 +2,7 @@ pragma solidity ^0.5.2;
 
 import "zos-lib/contracts/Initializable.sol";
 import "zos-lib/contracts/application/App.sol";
+import "zos-lib/contracts/upgradeability/AdminUpgradeabilityProxy.sol";
 import "../crowdloan/Crowdloan.sol";
 import "../debt-contracts/RepaymentRouter.sol";
 import "../debt-contracts/TermsContract.sol";
@@ -25,43 +26,51 @@ contract CrowdloanFactory is Initializable {
         address repaymentRouter
     );
 
-    function initialize (address _appContractAddress) public initializer {
-      app = App(_appContractAddress);
+    event TestProxy(
+        address proxy
+    );
+
+    function initialize(address _appContractAddress) public initializer {
+        app = App(_appContractAddress);
     }
 
     function _createTermsContract(bytes memory _data) public returns (address proxy) {
-      address admin = msg.sender;
-      return address(app.create(ENABLE_CREDIT_PACKAGE, TERMS_CONTRACT, admin, _data));
+        address admin = address(0);
+        return address(app.create(ENABLE_CREDIT_PACKAGE, TERMS_CONTRACT, admin, _data));
     }
 
     function _createCrowdloan(bytes memory _data) public returns (address proxy) {
-      address admin = msg.sender;
-      return address(app.create(ENABLE_CREDIT_PACKAGE, CROWDLOAN, admin, _data));
+        address admin = address(0);
+        return address(app.create(ENABLE_CREDIT_PACKAGE, CROWDLOAN, admin, _data));
     }
 
     function _createDebtToken(bytes memory _data) public returns (address proxy) {
-      address admin = msg.sender;
-      return address(app.create(ENABLE_CREDIT_PACKAGE, DEBT_TOKEN, admin, _data));
+        address admin = address(0);
+        return address(app.create(ENABLE_CREDIT_PACKAGE, DEBT_TOKEN, admin, _data));
     }
 
     function _createRepaymentRouter(bytes memory _data) public returns (address proxy) {
-      address admin = msg.sender;
-      return address(app.create(ENABLE_CREDIT_PACKAGE, REPAYMENT_ROUTER, admin, _data));
+        address admin = address(0);
+        return address(app.create(ENABLE_CREDIT_PACKAGE, REPAYMENT_ROUTER, admin, _data));
     }
 
-    /// @param loanParams Array of loan parameters
-    //     [0] _principal,
-    //     [1] _amortizationUnitType,
-    //     [2] _termLength,
-    //     [3] _termPayment,
-    //     [4] _gracePeriodLength,
-    //     [5] _gracePeriodPayment,
-    //     [6] _interestRate,
-    //     [7] _crowdfundLength,
-    //     [8] _crowdfundStart
+    function createProxy(address _impl, address _admin) public payable returns (address) {
+        AdminUpgradeabilityProxy proxy = (new AdminUpgradeabilityProxy).value(msg.value)(_impl, _admin, "");
+        emit TestProxy(address(proxy));
+        return address(proxy);
+    }
+
     function deploy(
         address _principalTokenAddr,
-        uint256[9] memory loanParams
+        uint256 _principal,
+        uint256 _amortizationUnitType,
+        uint256 _termLength,
+        uint256 _termPayment,
+        uint256 _gracePeriodLength,
+        uint256 _gracePeriodPayment,
+        uint256 _interestRate,
+        uint256 _crowdfundLength,
+        uint256 _crowdfundStart
     ) public {
         // TODO(Dan): Asserts and require statements
 
@@ -70,49 +79,39 @@ contract CrowdloanFactory is Initializable {
         address crowdloanInstance = _createCrowdloan("");
         address repaymentRouterInstance = _createRepaymentRouter("");
 
-        // address(uint160(addr))
+        // // address(uint160(addr))
 
         TermsContract(termsContractInstance).initialize(
             _principalTokenAddr,
-            loanParams[0],
-            loanParams[1],
-            loanParams[2],
-            loanParams[3],
-            loanParams[4],
-            loanParams[5],
-            loanParams[6]
+            _principal,
+            _amortizationUnitType,
+            _termLength,
+            _termPayment,
+            _gracePeriodLength,
+            _gracePeriodPayment,
+            _interestRate
         );
 
-        DebtToken(debtTokenInstance).initialize(
-            "EnableDebtToken",
-            "EDT"
-        );
+        // DebtToken(debtTokenInstance).initialize("EnableDebtToken", "EDT");
 
-        Crowdloan(address(uint160(crowdloanInstance))).initialize(
-            debtTokenInstance,
-            loanParams[7],
-            loanParams[8]
-        );
+        // Crowdloan(address(uint160(crowdloanInstance))).initialize(
+        //     debtTokenInstance,
+        //     _crowdfundLength,
+        //     _crowdfundStart
+        // );
 
-        RepaymentRouter(repaymentRouterInstance).initialize(
-            address(uint160(crowdloanInstance)),
-            debtTokenInstance
-        );
+        // RepaymentRouter(repaymentRouterInstance).initialize(
+        //     address(uint160(crowdloanInstance)),
+        //     debtTokenInstance
+        // );
 
         emit LoanCreated(
             msg.sender,
-            loanParams[0],
+            _principal,
             termsContractInstance,
             debtTokenInstance,
             crowdloanInstance,
             repaymentRouterInstance
         );
-
-        // return (
-        //     termsContractInstance,
-        //     debtTokenInstance,
-        //     crowdloanInstance,
-        //     repaymentRouterInstance
-        // );
     }
 }

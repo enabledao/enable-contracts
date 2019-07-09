@@ -47,12 +47,9 @@ contract Crowdloan is Initializable, ICrowdloan, TermsContract, RepaymentRouter,
         _;
     }
 
-    function initialize(
-        address _debtToken,
-        uint256 _crowdfundLength,
-        uint256 _crowdfundStart
-    )
-        public initializer
+    function initialize(address _debtToken, uint256 _crowdfundLength, uint256 _crowdfundStart)
+        public
+        initializer
     {
         debtor = Borrower(msg.sender); //Needs to be update, once factory is setup
         debtToken = DebtToken(_debtToken);

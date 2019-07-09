@@ -5,7 +5,6 @@ import "zos-lib/contracts/Initializable.sol";
 import "../interface/ITermsContract.sol";
 
 contract TermsContract is Initializable, ITermsContract {
-
     enum TimeUnitType {HOURS, DAYS, WEEKS, MONTHS, YEARS}
 
     enum LoanStatus {
@@ -15,7 +14,7 @@ contract TermsContract is Initializable, ITermsContract {
         FUNDING_FAILED,
         LOAN_DISBURSED,
         REPAYMENT_CYCLE,
-        LATE,   // TODO(Dan): think through whether we want to differentiate late (90) and default (180)
+        LATE, // TODO(Dan): think through whether we want to differentiate late (90) and default (180)
         DEFAULT,
         REPAYMENT_COMPLETE
     }

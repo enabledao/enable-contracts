@@ -21,10 +21,7 @@ contract RepaymentRouter is Initializable, IRepaymentRouter {
   	 */
     event Repayment(address indexed from, uint256 fundsRepaid);
 
-    function initialize(
-        address payable _crowdloan,
-        address _debtToken
-    ) public initializer {
+    function initialize(address payable _crowdloan, address _debtToken) public initializer {
         crowdloan = Crowdloan(_crowdloan);
         debtToken = DebtToken(_debtToken);
     }
