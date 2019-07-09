@@ -4,7 +4,6 @@ import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "../interface/ITermsContract.sol";
 
 contract TermsContract is ITermsContract {
-
     enum TimeUnitType {HOURS, DAYS, WEEKS, MONTHS, YEARS}
 
     enum LoanStatus {

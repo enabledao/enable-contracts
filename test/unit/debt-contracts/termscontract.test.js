@@ -2,8 +2,8 @@ import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helper
 
 const TermsContract = artifacts.require('TermsContract');
 
-const termsContractParams = {
-  principalTokenAddr: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
+const params = {
+  principalToken: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
   principal: web3.utils.toWei('60000', 'ether'), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
   amortizationUnitType: 3,
   termLength: 6,
@@ -15,11 +15,13 @@ const termsContractParams = {
 
 contract('Terms Contract', accounts => {
   let termsContractInstance;
+  let termsContractParams;
   const borrower = accounts[0];
 
   beforeEach(async () => {
-    const params = Object.values(termsContractParams);
-    termsContractInstance = await TermsContract.new(...params, {from: borrower});
+    const values = Object.values(params);
+    termsContractInstance = await TermsContract.new(...values, {from: borrower});
+    termsContractParams = await termsContractInstance.getLoanParams();
   });
 
   it('should deploy successfully', async () => {
@@ -30,13 +32,21 @@ contract('Terms Contract', accounts => {
   });
 
   it('should record the loan parameters correctly', async () => {
-    const params = await termsContractInstance.getLoanParams();
-    console.log(params);
     console.log(termsContractParams);
+    console.log(termsContractParams);
+    console.log(typeof termsContractParams);
+    Object.keys(termsContractParams).forEach(key => {
+      console.log(key);
+      console.log(termsContractParams[key]);
+      console.log(termsContractParams[key]);
+      // expect(termsContractParams[key]).to.equal(params[key]);
+    });
   });
 
   xit('should revert if loan parameters are invalid', async () => {});
+
   xit('should getLoanStatus and initialize loanStatus as not started', async () => {});
+
   xit('should get the correct debtor', async () => {});
 
   xit('should generate an payments table without timestamps if loan has not been started', async () => {});
