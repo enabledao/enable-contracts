@@ -11,8 +11,10 @@ contract TermsContract is ITermsContract {
         FUNDING_STARTED,
         FUNDING_COMPLETE,
         FUNDING_FAILED,
-        LOAN_STARTED,
-        REPAYMENT_STARTED,
+        LOAN_DISBURSED,
+        REPAYMENT_CYCLE,
+        LATE, // TODO(Dan): think through whether we want to differentiate late (90) and default (180)
+        DEFAULT,
         REPAYMENT_COMPLETE
     }
 
