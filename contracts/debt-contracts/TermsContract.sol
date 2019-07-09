@@ -4,6 +4,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "../interface/ITermsContract.sol";
 
 contract TermsContract is ITermsContract {
+
     enum TimeUnitType {HOURS, DAYS, WEEKS, MONTHS, YEARS}
 
     enum LoanStatus {
@@ -18,37 +19,32 @@ contract TermsContract is ITermsContract {
         REPAYMENT_COMPLETE
     }
 
-    struct Borrower {
-        address debtor;
-    }
-
     struct LoanParams {
         IERC20 principalToken;
         uint256 principal;
         LoanStatus loanStatus;
         TimeUnitType amortizationUnitType;
         uint256 termLength;
-        uint256 termPayment;
-        uint256 gracePeriodLength;
-        uint256 gracePeriodPayment;
         uint256 interestRate;
+        // TODO(Dan): Evaluate whether we should get rid of start and end unix timestamps
         uint256 termStartUnixTimestamp;
-        uint256 gracePeriodEndUnixTimestamp;
         uint256 termEndUnixTimestamp;
     }
 
-    LoanParams loanParams;
+    address public borrower;
+    LoanParams public loanParams;
 
     modifier onlyDebtor() {
-        require(msg.sender == debtor, "Only debtor can call");
+        require(msg.sender == borrower, "Only debtor can call");
         _;
     }
 
-    modifier onlyAtStatus(LoanStatus status) {}
+    // TODO(Dan): To implement
+    // modifier onlyAtStatus(LoanStatus status) {}
 
-    modifier onlyBeforeStatus(LoanStatus status) {}
+    // modifier onlyBeforeStatus(LoanStatus status) {}
 
-    modifier onlyAfterStatus(LoanStatus status) {}
+    // modifier onlyAfterStatus(LoanStatus status) {}
 
     constructor(
         address _principalTokenAddr,
@@ -66,12 +62,8 @@ contract TermsContract is ITermsContract {
             loanStatus: LoanStatus.NOT_STARTED,
             amortizationUnitType: TimeUnitType(_amortizationUnitType),
             termLength: _termLength,
-            termPayment: _termPayment,
-            gracePeriodLength: _gracePeriodLength,
-            gracePeriodPayment: _gracePeriodPayment,
             interestRate: _interestRate, // TODO: reassign constant values below
             termStartUnixTimestamp: 0,
-            gracePeriodEndUnixTimestamp: 0,
             termEndUnixTimestamp: 0
         });
     }
@@ -93,12 +85,8 @@ contract TermsContract is ITermsContract {
             uint256 loanStatus,
             uint256 amortizationUnitType,
             uint256 termLength,
-            uint256 termPayment,
-            uint256 gracePeriodLength,
-            uint256 gracePeriodPayment,
             uint256 interestRate,
             uint256 termStartUnixTimestamp,
-            uint256 gracePeriodEndUnixTimestamp,
             uint256 termEndUnixTimestamp
         )
     {
@@ -108,12 +96,8 @@ contract TermsContract is ITermsContract {
             uint256(loanParams.loanStatus),
             uint256(loanParams.amortizationUnitType),
             loanParams.termLength,
-            loanParams.termPayment,
-            loanParams.gracePeriodLength,
-            loanParams.gracePeriodPayment,
             loanParams.interestRate,
             loanParams.termStartUnixTimestamp,
-            loanParams.gracePeriodEndUnixTimestamp,
             loanParams.termEndUnixTimestamp
         );
     }
@@ -123,18 +107,26 @@ contract TermsContract is ITermsContract {
     ///  conditions (e.g. interest rates can be renegotiated if repayments are delinquent).
     /// @param  timestamp uint. The timestamp of the block for which repayment expectation is being queried.
     /// @return uint256 The cumulative units-of-value expected to be repaid by the time the given timestamp lapses.
-    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256) {}
+    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256) {
+        return 1; // TODO(Dan): Placeholder
+    }
 
     /// Returns the cumulative units-of-value repaid by the point at which this method is called.
     /// @return uint256 The cumulative units-of-value repaid up until now.
-    function getValueRepaidToDate() external view returns (uint256) {}
+    function getValueRepaidToDate() external view returns (uint256) {
+        return 1; // TODO(Dan): Placeholder
+    }
 
     /**
      * A method that returns a Unix timestamp representing the end of the debt agreement's term.
      * contract.
      */
-    function getTermStartTimestamp() external view returns (uint256) {}
-    function getTermEndTimestamp() external view returns (uint256) {}
+    function getTermStartTimestamp() external view returns (uint256) {
+        return 1; // TODO(Dan): Placeholder
+    }
+    function getTermEndTimestamp() external view returns (uint256) {
+        return 1; // TODO(Dan): Placeholder
+    }
 
     // @notice set the present state of the Loan;
     function _setLoanStatus(LoanStatus _loanStatus) internal {

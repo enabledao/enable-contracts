@@ -1,9 +1,8 @@
 import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
 
-const DebtTokenFactory = artifacts.require('TermsContract');
+const TermsContract = artifacts.require('TermsContract');
 
-const loanParams = {
-  debtToken: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
+const termsContractParams = {
   principalTokenAddr: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
   principal: web3.utils.toWei('60000', 'ether'), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
   amortizationUnitType: 3,
@@ -11,36 +10,29 @@ const loanParams = {
   termPayment: 600,
   gracePeriodLength: 0,
   gracePeriodPayment: 0,
-  interestRate: 50,
-  crowdfundLength: 10,
-  crowdfundStart: 10
+  interestRate: 50
 };
 
 contract('Terms Contract', accounts => {
   let termsContractInstance;
+  const borrower = accounts[0];
 
   beforeEach(async () => {
-    const params = Object.values(loanParams);
-    console.log(params);
-    // TODO(Dan): Clarify whether we should deploy a TermsContract-only instance
-    const {logs} = await crowdloanFactoryInstance.createCrowdloan(...params, {
-      from: borrower
-    });
-    // termsContractInstance = await TermsContract.new(...loanParams);
+    const params = Object.values(termsContractParams);
+    termsContractInstance = await TermsContract.new(...params, {from: borrower});
   });
 
   it('should deploy successfully', async () => {
-    // assert.exists(
-    //   termsContractInstance.address,
-    //   'termsContractInstance was not successfully deployed'
-    // );
+    assert.exists(
+      termsContractInstance.address,
+      'termsContractInstance was not successfully deployed'
+    );
   });
 
   it('should record the loan parameters correctly', async () => {
-    // expectEvent.inLogs(logs, 'loanCreated', {
-    //   borrower,
-    //   amount: borrowAmount
-    // });
+    const params = await termsContractInstance.getLoanParams();
+    console.log(params);
+    console.log(termsContractParams);
   });
 
   xit('should revert if loan parameters are invalid', async () => {});

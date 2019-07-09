@@ -1,7 +1,7 @@
 pragma solidity >=0.4.22 <0.6.0;
 
 interface ICrowdloan {
-    function kickOffCrowdfund() external;
+    function startCrowdfund() external;
 
     /// @notice Fund the loan in exchange for a debt token
     /// @return debtTokenId Issued debt token ID
@@ -22,12 +22,8 @@ interface ICrowdloan {
             uint256 loanStatus,
             uint256 amortizationUnitType,
             uint256 termLength,
-            uint256 termPayment,
-            uint256 gracePeriodLength,
-            uint256 gracePeriodPayment,
             uint256 interestRate,
             uint256 termStartUnixTimestamp,
-            uint256 gracePeriodEndUnixTimestamp,
             uint256 termEndUnixTimestamp
         );
 

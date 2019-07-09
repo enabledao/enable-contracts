@@ -3,6 +3,8 @@ pragma solidity ^0.5.2;
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "../interface/IRepaymentRouter.sol";
+import "../crowdloan/Crowdloan.sol";
+import "../debt-token/DebtToken.sol";
 
 contract RepaymentRouter is IRepaymentRouter {
     using SafeMath for uint256;
@@ -18,7 +20,7 @@ contract RepaymentRouter is IRepaymentRouter {
   	 */
     event Repayment(address indexed from, uint256 fundsRepaid);
 
-    constructor(address _crowdloan, address _debtToken) public {
+    constructor(address payable _crowdloan, address _debtToken) public {
         crowdloan = Crowdloan(_crowdloan);
         debtToken = DebtToken(_debtToken);
     }
@@ -88,7 +90,7 @@ contract RepaymentRouter is IRepaymentRouter {
     /// @notice Repay a given portion of loan
     /// @param unitsOfRepayment Tokens to repay
     function repay(uint256 unitsOfRepayment) public {
-        _repay(loanParams.principalToken, msg.sender, address(this), unitsOfRepayment);
+        // _repay(loanParams.principalToken, msg.sender, address(this), unitsOfRepayment);
         // emit FundsReceived(msg.sender, unitsOfRepayment);    // TODO(Dan): Remove comments once IClaimsToken is implemented
     }
 
@@ -98,7 +100,7 @@ contract RepaymentRouter is IRepaymentRouter {
         //TODO needs re-thinking
         require(debtToken.ownerOf(debtTokenId) == msg.sender, "You are not the owner of token");
         uint256 _amount = getWithdrawalAllowance(debtTokenId);
-        _withdraw(loanParams.principalToken, msg.sender, debtTokenId);
+        // _withdraw(loanParams.principalToken, msg.sender, debtTokenId);
         emit FundsWithdrawn(msg.sender, _amount);
     }
 }

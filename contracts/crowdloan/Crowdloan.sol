@@ -10,6 +10,7 @@ import "../debt-contracts/RepaymentRouter.sol";
 import "../debt-contracts/TermsContract.sol";
 import "../debt-token/DebtToken.sol";
 
+// contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuard {
 contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuard {
     using SafeMath for uint256;
 
@@ -17,6 +18,10 @@ contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuar
         uint256 crowdfundLength;
         uint256 crowdfundStart;
         uint256 crowdfundEnd;
+    }
+
+    struct Borrower {
+        address debtor;
     }
 
     Borrower debtor;
@@ -38,6 +43,7 @@ contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuar
             debtToken.ownerOf(debtTokenId) == msg.sender,
             "Only owner of specified debt token can call"
         );
+        _;
     }
 
     constructor(
@@ -63,6 +69,10 @@ contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuar
             _gracePeriodLength,
             _gracePeriodPayment,
             _interestRate
+        )
+        RepaymentRouter(
+            address(this), //TODO: check if we can do away with passing address to RepaymentRouter contract
+            _debtToken
         )
     {
         debtor = Borrower(msg.sender); //Needs to be update, once factory is setup
