@@ -1,22 +1,21 @@
 import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
 
+const {expect} = require('chai');
+
 const TermsContract = artifacts.require('TermsContract');
 
 const params = {
   principalToken: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
-  principal: web3.utils.toWei('60000', 'ether'), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
-  amortizationUnitType: 3,
+  principal: new BN(60000), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
+  timeUnitType: 3,
   termLength: 6,
-  termPayment: 600,
-  gracePeriodLength: 0,
-  gracePeriodPayment: 0,
-  interestRate: 50
+  interestRate: 6
 };
 
-contract('Terms Contract', accounts => {
+contract('Terms Contract', ([sender, receiver]) => {
   let termsContractInstance;
   let termsContractParams;
-  const borrower = accounts[0];
+  const borrower = sender;
 
   beforeEach(async () => {
     const values = Object.values(params);
@@ -32,14 +31,13 @@ contract('Terms Contract', accounts => {
   });
 
   it('should record the loan parameters correctly', async () => {
-    console.log(termsContractParams);
-    console.log(termsContractParams);
-    console.log(typeof termsContractParams);
-    Object.keys(termsContractParams).forEach(key => {
-      console.log(key);
-      console.log(termsContractParams[key]);
-      console.log(termsContractParams[key]);
-      // expect(termsContractParams[key]).to.equal(params[key]);
+    Object.keys(params).forEach(key => {
+      const value = termsContractParams[key];
+      if (value instanceof BN) {
+        expect(value).to.be.a.bignumber.that.equals(new BN(params[key]));
+      } else {
+        expect(value).to.equal(params[key]);
+      }
     });
   });
 

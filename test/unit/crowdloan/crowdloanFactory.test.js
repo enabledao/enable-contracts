@@ -7,7 +7,7 @@ const loanParams = {
   debtToken: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
   principalTokenAddr: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
   principal: web3.utils.toWei('60000', 'ether'), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
-  amortizationUnitType: 3,
+  timeUnitType: 3,
   termLength: 6,
   termPayment: 600,
   gracePeriodLength: 0,

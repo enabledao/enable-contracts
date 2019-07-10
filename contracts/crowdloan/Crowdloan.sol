@@ -50,7 +50,7 @@ contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuar
         address _debtToken,
         address _principalTokenAddr,
         uint256 _principal,
-        uint256 _amortizationUnitType,
+        uint256 _timeUnitType,
         uint256 _termLength,
         uint256 _termPayment,
         uint256 _gracePeriodLength,
@@ -63,11 +63,8 @@ contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuar
         TermsContract(
             _principalTokenAddr,
             _principal,
-            _amortizationUnitType,
+            _timeUnitType,
             _termLength,
-            _termPayment,
-            _gracePeriodLength,
-            _gracePeriodPayment,
             _interestRate
         )
         RepaymentRouter(
