@@ -3,7 +3,7 @@ pragma solidity ^0.5.2;
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "../interface/IRepaymentRouter.sol";
-import "./debt-token/DebtToken.sol";
+import "../debt-token/DebtToken.sol";
 import "./TermsContract.sol";
 
 contract RepaymentRouter is IRepaymentRouter {
@@ -22,9 +22,26 @@ contract RepaymentRouter is IRepaymentRouter {
     event PaymentReceived(address indexed from, uint256 amount);
     event PaymentReleased(address indexed to, uint256 amount);
 
-    constructor(address payable _termsContract, address _debtToken) public {
+    constructor(address _termsContract, address _debtToken) public {
         debtToken = DebtToken(_debtToken);
         termsContract = TermsContract(_termsContract);
+    }
+
+    function _principalTokenAddress()
+        internal
+        returns (address)
+    {
+        (
+            address principalToken,
+            uint256 principal,
+            uint256 loanStatus,
+            uint256 amortizationUnitType,
+            uint256 termLength,
+            uint256 interestRate,
+            uint256 termStartUnixTimestamp,
+            uint256 termEndUnixTimestamp
+        ) = termsContract.getLoanParams();
+        return principalToken;
     }
 
     function _transferERC20(IERC20 token, address _from, address _to, uint256 _amount)
@@ -66,11 +83,11 @@ contract RepaymentRouter is IRepaymentRouter {
     /// @param debtTokenId Debt token ID
     function getWithdrawalAllowance(uint256 debtTokenId) public view returns (uint256) {
         // TODO(Dan): Implement
-        return
-            termsContract.calculateWithdrawalAllowance(
-                _totalRepaid,
-                _withdrawnByTokenId[debtTokenId]
-            );
+        // return
+        //     termsContract.calculateWithdrawalAllowance(
+        //         _totalRepaid,
+        //         _withdrawnByTokenId[debtTokenId]
+        //     );
         // return uint256(1); // TODO(Dan): Remove placeholder
     }
 
@@ -86,13 +103,13 @@ contract RepaymentRouter is IRepaymentRouter {
 
     /// @notice Total amount of the Loan repayment withdrawn by each tokenId
     function totalWithdrawn() public view returns (uint256) {
-        return _totalWithdrawn;
+        return _totalWithdrawal;
     }
 
     /// @notice Repay a given portion of loan
     /// @param unitsOfRepayment Tokens to repay
     function repay(uint256 unitsOfRepayment) public {
-        _repay(loanParams.principalToken, msg.sender, address(this), unitsOfRepayment);
+        _repay(IERC20(_principalTokenAddress()), msg.sender, address(this), unitsOfRepayment);
     }
 
     /// @notice Withdraw current allowance for a debt token
@@ -101,11 +118,13 @@ contract RepaymentRouter is IRepaymentRouter {
         //TODO needs re-thinking
         require(debtToken.ownerOf(debtTokenId) == msg.sender, "You are not the owner of token");
         uint256 _amount = getWithdrawalAllowance(debtTokenId);
-        _withdraw(loanParams.principalToken, msg.sender, debtTokenId);
+        _withdraw(IERC20(_principalTokenAddress()), msg.sender, debtTokenId);
         emit PaymentReleased(msg.sender, _amount);
     }
 
-    function() public payable {
+    function ()
+        external payable
+    {
         revert("please, call specific function");
     }
 }

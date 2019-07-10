@@ -131,7 +131,7 @@ contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuar
 
         uint256 _refund = debtToken.debtValue(debtTokenId);
         debtToken.removeDebt(msg.sender, debtTokenId);
-        _transferERC20(loanParams.principalToken, msg.sender, _refund);
+        _transferERC20(loanParams.principalToken, address(this), msg.sender, _refund);
 
         emit Refund(msg.sender, _refund);
         emit FundsWithdrawn(msg.sender, _refund);
