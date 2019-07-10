@@ -150,13 +150,12 @@ contract TermsContract is ITermsContract {
     /** @dev Begins loan and writes timestamps to the payment table
      */
     // TODO(CRITICAL): Must put permissions on this
-    function startLoan() 
-        public 
-        returns (uint256 startTimestamp)
-        {
+    function startLoan() public returns (uint256 startTimestamp) {
         startTimestamp = now;
         //TODO(Dan): Is there a way to alias the library name?
-        (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(startTimestamp);
+        (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(
+            startTimestamp
+        );
         loanParams.loanStartTimestamp = startTimestamp;
         for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
             ScheduledPayment storage current = paymentTable[i];
