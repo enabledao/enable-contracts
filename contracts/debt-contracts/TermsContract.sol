@@ -1,9 +1,12 @@
 pragma solidity ^0.5.2;
 
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "../interface/ITermsContract.sol";
 
 contract TermsContract is ITermsContract {
+    using SafeMath for uint256;
+
     enum TimeUnitType {HOURS, DAYS, WEEKS, MONTHS, YEARS}
 
     enum LoanStatus {
@@ -13,8 +16,6 @@ contract TermsContract is ITermsContract {
         FUNDING_FAILED,
         LOAN_DISBURSED,
         REPAYMENT_CYCLE,
-        LATE, // TODO(Dan): think through whether we want to differentiate late (90) and default (180)
-        DEFAULT,
         REPAYMENT_COMPLETE
     }
 
@@ -24,17 +25,24 @@ contract TermsContract is ITermsContract {
         LoanStatus loanStatus;
         TimeUnitType timeUnitType;
         uint256 loanPeriod;
-        uint256 interestRate;
+        uint256 interestRate;   // NOTE(Dan): This needs to be aligned with the timeUnitType
         // TODO(Dan): Evaluate whether we should get rid of start and end unix timestamps
         uint256 loanStartTimestamp;
         uint256 loanEndTimestamp;
     }
 
-    address public borrower;
+    struct ScheduledPayment {
+        uint256 due;
+        uint256 principal;
+        uint256 interest;
+        uint256 total;
+    }
+
+    address public borrower;  //TODO(Dan): Refactor once we combine with Crowdloan
     LoanParams public loanParams;
 
-    modifier onlyDebtor() {
-        require(msg.sender == borrower, "Only debtor can call");
+    modifier onlyBorrower() {
+        require(msg.sender == borrower, "Only borrower can call");
         _;
     }
 
@@ -55,8 +63,15 @@ contract TermsContract is ITermsContract {
         require(_principalTokenAddr != address(0), "Loaned token must be an ERC20 token"); //TODO(Dan): More rigorous way of testing ERC20?
         require(_timeUnitType < 5, "Invalid time unit type");
         require(_loanPeriod > 0, "Loan period must be higher than 0");
-        require(_interestRate > 9, "Interest rate should be in basis points and have minimum of 10 (0.1%)");
-        require(_interestRate < 10000, "Interest rate be in basis points and less than 10,000 (100%)");
+        require(
+            _interestRate > 9,
+            "Interest rate should be in basis points and have minimum of 10 (0.1%)"
+        );
+        require(
+            _interestRate < 10000,
+            "Interest rate be in basis points and less than 10,000 (100%)"
+        );
+        borrower = msg.sender;  //TODO(Dan): Refactor once we combine with Crowdloan
         loanParams = LoanParams({
             principalToken: IERC20(_principalTokenAddr),
             principal: _principal,
@@ -69,16 +84,18 @@ contract TermsContract is ITermsContract {
         });
     }
 
-    function getLoanStatus() external view returns (uint256 loanStatus) {
+    /** Public Functions
+     */
+    function getLoanStatus() public view returns (uint256 loanStatus) {
         return uint256(loanParams.loanStatus);
     }
 
-    function getDebtor() external view returns (address debtor) {
-        return debtor;
+    function getBorrower() public view returns (address) {
+        return borrower;
     }
 
     function getLoanParams()
-        external
+        public
         view
         returns (
             address principalToken,
@@ -103,13 +120,28 @@ contract TermsContract is ITermsContract {
         );
     }
 
-    /** @dev Writes due date unix timestamps to
-     *
-     */
-
     /** @dev Returns the
      */
-    function getPaymentTable() public view {}
+    function getPaymentTable() public view {
+
+    }
+
+    /** @dev Begins loan and writes timestamps to the payment table
+     */
+     // TODO(CRITICAL): Must put permissions on this
+    function startLoan() public {
+        // use onlyAtStatus modifiers
+        // get Block.now()
+        // Write timestamp for every subsequent date (i.e. 27th of each month)
+    }
+
+    /** PMT function to calculate periodic interest rate
+     */
+    function monthlyPayment() public view returns (uint256) {
+        uint256 result = (loanParams.principal).mul(loanParams.interestRate).div(10000);
+        return result;
+        //TODO(Dan): Refactor into _percentage method
+    }
 
     /// Returns the cumulative units-of-value expected to be repaid by a given block timestamp.
     ///  Note this is not a constant function -- this value can vary on basis of any number of
@@ -138,6 +170,8 @@ contract TermsContract is ITermsContract {
     }
 
     // @notice set the present state of the Loan;
+    // increase present state of the loan
+    // needs to be protected!!!
     function _setLoanStatus(LoanStatus _loanStatus) internal {
         if (loanParams.loanStatus != _loanStatus) {
             loanParams.loanStatus = _loanStatus;

@@ -10,7 +10,7 @@ const params = {
   principal: new BN(60000), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
   timeUnitType: 3,
   loanPeriod: 6,
-  interestRate: 600
+  interestRate: 50
 };
 
 const reassign = (original, param, value) => {
@@ -21,13 +21,12 @@ const reassign = (original, param, value) => {
 
 const invalidInputCheckRevert = async (original, param, value, error) => {
   const mutated = reassign(original, param, value);
-  console.log(mutated);
   await expectRevert(TermsContract.new(...Object.values(mutated)), error);
 };
 
 contract('Terms Contract', ([sender, receiver]) => {
-  let termsContractInstance;
-  let termsContractParams;
+  let instance;
+  let instanceParams;
   const borrower = sender;
 
   context('invalid loan term params', async () => {
@@ -64,22 +63,19 @@ contract('Terms Contract', ([sender, receiver]) => {
     });
   });
 
-  context('initial term loan params', async () => {
+  context('valid loan params', async () => {
     beforeEach(async () => {
-      termsContractInstance = await TermsContract.new(...Object.values(params), {from: borrower});
-      termsContractParams = await termsContractInstance.getLoanParams();
+      instance = await TermsContract.new(...Object.values(params), {from: borrower});
+      instanceParams = await instance.getLoanParams();
     });
 
     it('should deploy successfully', async () => {
-      assert.exists(
-        termsContractInstance.address,
-        'termsContractInstance was not successfully deployed'
-      );
+      assert.exists(instance.address, 'instance was not successfully deployed');
     });
 
     it('should record loan params in storage', async () => {
       Object.keys(params).forEach(key => {
-        const value = termsContractParams[key];
+        const value = instanceParams[key];
         if (value instanceof BN) {
           expect(value).to.be.a.bignumber.that.equals(new BN(params[key]));
         } else {
@@ -89,18 +85,27 @@ contract('Terms Contract', ([sender, receiver]) => {
     });
 
     it('should store loanStatus as unstarted and start/end timestamps as 0', async () => {
-      expect(termsContractParams.loanStatus).to.be.a.bignumber.that.equals(new BN(0));
-      expect(termsContractParams.loanStartTimestamp).to.be.a.bignumber.that.equals(new BN(0));
-      expect(termsContractParams.loanEndTimestamp).to.be.a.bignumber.that.equals(new BN(0));
+      expect(instanceParams.loanStatus).to.be.a.bignumber.that.equals(new BN(0));
+      expect(instanceParams.loanStartTimestamp).to.be.a.bignumber.that.equals(new BN(0));
+      expect(instanceParams.loanEndTimestamp).to.be.a.bignumber.that.equals(new BN(0));
     });
+    it('should get the correct borrower', async () => {
+      const a = await instance.getBorrower();
+      expect(a).to.equals(borrower);
+    });
+
+    it('should generate the correct monthly payment', async () => {
+      const {principal, interestRate} = params;
+      const amt = principal.mul(new BN(interestRate)).div(new BN(10000));
+      const monthlyRepayment = await instance.monthlyPayment();
+      expect(monthlyRepayment).to.be.a.bignumber.equals(amt);
+    });
+
+    xit('should generate an payments table without timestamps if loan has not been started', async () => {});
+    xit('should generate an payments table with timestamps if loan has not been started', async () => {});
+    xit('should get the expectedRepaymentTotal for a given timestamp', async () => {});
+
+    xit('should get the startTimestamp of the loan', async () => {});
+    xit('should get the endTimestamp of the loan', async () => {});
   });
-
-  it('should get the correct debtor', async () => {});
-
-  xit('should generate an payments table without timestamps if loan has not been started', async () => {});
-  xit('should generate an payments table with timestamps if loan has not been started', async () => {});
-  xit('should get the expectedRepaymentTotal for a given timestamp', async () => {});
-
-  xit('should get the startTimestamp of the loan', async () => {});
-  xit('should get the endTimestamp of the loan', async () => {});
 });
