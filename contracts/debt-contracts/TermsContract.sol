@@ -53,7 +53,10 @@ contract TermsContract is ITermsContract {
         uint256 _interestRate
     ) public {
         require(_principalTokenAddr != address(0), "Loaned token must be an ERC20 token"); //TODO(Dan): More rigorous way of testing ERC20?
-        require(_timeUnitType < 5, "Invalid amortization unit type");
+        require(_timeUnitType < 5, "Invalid time unit type");
+        require(_loanPeriod > 0, "Loan period must be higher than 0");
+        require(_interestRate > 9, "Interest rate should be in basis points and have minimum of 10 (0.1%)");
+        require(_interestRate < 10000, "Interest rate be in basis points and less than 10,000 (100%)");
         loanParams = LoanParams({
             principalToken: IERC20(_principalTokenAddr),
             principal: _principal,

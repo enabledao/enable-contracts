@@ -10,7 +10,19 @@ const params = {
   principal: new BN(60000), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
   timeUnitType: 3,
   loanPeriod: 6,
-  interestRate: 6
+  interestRate: 600
+};
+
+const reassign = (original, param, value) => {
+  const mutated = Object.assign({}, original);
+  mutated[param] = value;
+  return mutated;
+};
+
+const invalidInputCheckRevert = async (original, param, value, error) => {
+  const mutated = reassign(original, param, value);
+  console.log(mutated);
+  await expectRevert(TermsContract.new(...Object.values(mutated)), error);
 };
 
 contract('Terms Contract', ([sender, receiver]) => {
@@ -18,20 +30,53 @@ contract('Terms Contract', ([sender, receiver]) => {
   let termsContractParams;
   const borrower = sender;
 
-  beforeEach(async () => {
-    const values = Object.values(params);
-    termsContractInstance = await TermsContract.new(...values, {from: borrower});
-    termsContractParams = await termsContractInstance.getLoanParams();
-  });
-
-  it('should deploy successfully', async () => {
-    assert.exists(
-      termsContractInstance.address,
-      'termsContractInstance was not successfully deployed'
-    );
+  context('invalid loan term params', async () => {
+    it('should not create if principalToken is not an ERC20', async () => {
+      // TODO(Dan): Do an actual check for ERC20 token
+      await invalidInputCheckRevert(
+        params,
+        'principalToken',
+        constants.ZERO_ADDRESS,
+        'Loaned token must be an ERC20 token'
+      );
+    });
+    it('should revert if time unit is invalid', async () => {
+      await invalidInputCheckRevert(params, 'timeUnitType', 10, 'Invalid time unit type');
+    });
+    it('should revert if loan period is 0', async () => {
+      await invalidInputCheckRevert(params, 'loanPeriod', 0, 'Loan period must be higher than 0');
+    });
+    it('should revert if interest rate is not in basis points', async () => {
+      await invalidInputCheckRevert(
+        params,
+        'interestRate',
+        6,
+        'Interest rate should be in basis points and have minimum of 10 (0.1%)'
+      );
+    });
+    it('should revert if interest rate is too high', async () => {
+      await invalidInputCheckRevert(
+        params,
+        'interestRate',
+        1000000,
+        'Interest rate be in basis points and less than 10,000 (100%)'
+      );
+    });
   });
 
   context('initial term loan params', async () => {
+    beforeEach(async () => {
+      termsContractInstance = await TermsContract.new(...Object.values(params), {from: borrower});
+      termsContractParams = await termsContractInstance.getLoanParams();
+    });
+
+    it('should deploy successfully', async () => {
+      assert.exists(
+        termsContractInstance.address,
+        'termsContractInstance was not successfully deployed'
+      );
+    });
+
     it('should record loan params in storage', async () => {
       Object.keys(params).forEach(key => {
         const value = termsContractParams[key];
@@ -42,18 +87,15 @@ contract('Terms Contract', ([sender, receiver]) => {
         }
       });
     });
+
+    it('should store loanStatus as unstarted and start/end timestamps as 0', async () => {
+      expect(termsContractParams.loanStatus).to.be.a.bignumber.that.equals(new BN(0));
+      expect(termsContractParams.loanStartTimestamp).to.be.a.bignumber.that.equals(new BN(0));
+      expect(termsContractParams.loanEndTimestamp).to.be.a.bignumber.that.equals(new BN(0));
+    });
   });
 
-  context('should revert if loan parameters are invalid', async () => {
-    xit('should revert if principalTokenAddr is 0', async () => {});
-    xit('should revert if timeUnitType is not valid', async () => {});
-    xit('should revert if loanPeriod is 0', async () => {});
-    xit('should revert if interest rate (in basis points) is above 10000 (i.e. 100%)', async () => {});
-  });
-
-  xit('should getLoanStatus and initialize loanStatus as not started', async () => {});
-
-  xit('should get the correct debtor', async () => {});
+  it('should get the correct debtor', async () => {});
 
   xit('should generate an payments table without timestamps if loan has not been started', async () => {});
   xit('should generate an payments table with timestamps if loan has not been started', async () => {});
