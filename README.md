@@ -29,6 +29,14 @@ We believe parts of this project could morph into generic standards useful to th
 
 # Contribute
 
+## Editor setup
+
+We use ESLint and Prettier to format our code. Please make sure you have the following setting turned on in VSCode (or equivalent editor).
+
+```
+editor.formatOnSave: true
+```
+
 ## CI Pipeline
 
 [https://circleci.com/gh/enabledao/enable-contracts](https://circleci.com/gh/enabledao/enable-contracts)

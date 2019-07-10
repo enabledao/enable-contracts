@@ -16,12 +16,12 @@ contract ERC20FundedCrowdsale is Crowdsale {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    IERC20 private _fundingToken;  // ERC20 token funds will be raised in
+    IERC20 private _fundingToken; // ERC20 token funds will be raised in
 
     /**
      * @param fundingToken IERC20 Address of the token funds will be raised in (i.e. Dai Stablecoin, Crypto Franc (XCHF), etc...).
      */
-    constructor (IERC20 fundingToken) internal {
+    constructor(IERC20 fundingToken) internal {
         require(address(fundingToken) != address(0));
         _fundingToken = fundingToken;
     }

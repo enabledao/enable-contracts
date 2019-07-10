@@ -1,5 +1,7 @@
-const DebtTokenFactory = artifacts.require("DebtTokenFactory");
+const DebtTokenFactory = artifacts.require('DebtTokenFactory');
+const CrowdloanFactory = artifacts.require('CrowdloanFactory');
 
-module.exports = function(deployer) {
-  deployer.deploy(DebtTokenFactory);
+module.exports = async deployer => {
+  await deployer.deploy(DebtTokenFactory);
+  await deployer.deploy(CrowdloanFactory, DebtTokenFactory.address);
 };
