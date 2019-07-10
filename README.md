@@ -29,6 +29,26 @@ We believe parts of this project could morph into generic standards useful to th
 
 # Contribute
 
+## Test
+The build & deploy process is similar to truffle, with these changes:
+
+```
+zos publish
+``` 
+
+To initialize local environment
+
+
+```
+zos push
+``` 
+To compile & deploy logic contracts to local network
+
+```
+npm run test
+```
+To run truffle tests
+
 ## Editor setup
 
 We use ESLint and Prettier to format our code. Please make sure you have the following setting turned on in VSCode (or equivalent editor).
