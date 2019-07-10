@@ -102,7 +102,6 @@ contract('Terms Contract', ([sender, receiver]) => {
     it('should generate the correct monthly payment', async () => {
       const {principal, interestRate} = params;
       const amt = interestPayment(principal, interestRate);
-      console.log(amt);
       expect(instanceParams.interestPayment).to.be.a.bignumber.equals(amt);
     });
 
@@ -147,10 +146,6 @@ contract('Terms Contract', ([sender, receiver]) => {
       const tx = await instance.startLoan();
       const {loanStartTimestamp, loanEndTimestamp, loanStatus} = await instance.getLoanParams();
 
-      // console.log(loanStartTimestamp.toString());
-      // console.log(loanStatus);
-      // console.log(now);
-
       expect(loanStatus).to.be.a.bignumber.that.equals(
         new BN(4),
         'loan status should be updated to loan started / repayment cycle'
@@ -185,9 +180,22 @@ contract('Terms Contract', ([sender, receiver]) => {
       });
     });
 
-    xit('should get the startTimestamp of the loan', async () => {});
-    xit('should get the endTimestamp of the loan', async () => {});
+    it('should get the expectedRepaymentTotal for a given timestamp', async () => {
+      const {loanPeriod, principal, interestRate} = params;
+      const tranche = interestPayment(principal, interestRate);
+      const tx = await instance.startLoan();
 
-    xit('should get the expectedRepaymentTotal for a given timestamp', async () => {});
+      for (let i = 0; i < loanPeriod; i += 1) {
+        const estimated = (i < loanPeriod - 1) 
+          ? new BN(i+1).mul(tranche)
+          : new BN(i+1).mul(tranche).add(principal);  // TODO(Dan): Should actually be done in BN
+        
+        const cur = moment(new Date().getTime());
+        const future = cur.add(i+1, 'months').unix();
+        let amount = await instance.getExpectedRepaymentValue(future + threshold);
+        expect(amount).to.be.bignumber.that.equals(estimated);
+      }
+
+    });
   });
 });

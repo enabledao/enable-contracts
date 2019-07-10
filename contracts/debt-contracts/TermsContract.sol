@@ -23,10 +23,9 @@ contract TermsContract is ITermsContract {
         IERC20 principalToken;
         uint256 principal;
         LoanStatus loanStatus;
-        TimeUnitType timeUnitType;
+        TimeUnitType timeUnitType; // NOTE(Dan): To evaluate whether we should get rid of this param
         uint256 loanPeriod;
         uint256 interestRate; // NOTE(Dan): This needs to be aligned with the timeUnitType
-        // TODO(Dan): Evaluate whether we should get rid of start and end unix timestamps
         uint256 interestPayment;
         uint256 loanStartTimestamp;
         uint256 loanEndTimestamp;
@@ -162,11 +161,10 @@ contract TermsContract is ITermsContract {
             //TODO(Dan): Conditional addDays, Months, Years (or remove the timeAmortizationUnit altogether)
             uint256 shifted = BokkyPooBahsDateTimeLibrary.addMonths(startTimestamp, i + 1);
             current.due = shifted;
-            if (i == loanParams.loanPeriod-1) {
+            if (i == loanParams.loanPeriod - 1) {
                 loanParams.loanEndTimestamp = shifted;
             }
         }
-        
         loanParams.loanStatus = LoanStatus.REPAYMENT_CYCLE;
     }
 
@@ -182,30 +180,28 @@ contract TermsContract is ITermsContract {
         return result;
     }
 
+    
+
     /// Returns the cumulative units-of-value expected to be repaid by a given block timestamp.
     ///  Note this is not a constant function -- this value can vary on basis of any number of
     ///  conditions (e.g. interest rates can be renegotiated if repayments are delinquent).
     /// @param  timestamp uint. The timestamp of the block for which repayment expectation is being queried.
     /// @return uint256 The cumulative units-of-value expected to be repaid by the time the given timestamp lapses.
     function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256) {
-        return 1; // TODO(Dan): Placeholder
+        uint256 total = 0;
+        for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
+            ScheduledPayment memory cur = paymentTable[i];
+            if (cur.due < timestamp) {
+                total += cur.total;
+            }
+        }
+        return total; 
     }
 
     /// Returns the cumulative units-of-value repaid by the point at which this method is called.
     /// @return uint256 The cumulative units-of-value repaid up until now.
     function getValueRepaidToDate() external view returns (uint256) {
         return 1; // TODO(Dan): Should be moved to the repaymentRouter
-    }
-
-    /**
-     * A method that returns a Unix timestamp representing the end of the debt agreement's term.
-     * contract.
-     */
-    function getTermStartTimestamp() external view returns (uint256) {
-        return 1; // TODO(Dan): Placeholder
-    }
-    function getTermEndTimestamp() external view returns (uint256) {
-        return 1; // TODO(Dan): Placeholder
     }
 
     // @notice set the present state of the Loan;
