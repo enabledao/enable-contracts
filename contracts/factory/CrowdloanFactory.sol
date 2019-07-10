@@ -26,9 +26,7 @@ contract CrowdloanFactory is Initializable {
         address repaymentRouter
     );
 
-    event TestProxy(
-        address proxy
-    );
+    event TestProxy(address proxy);
 
     function initialize(address _appContractAddress) public initializer {
         app = App(_appContractAddress);
@@ -55,7 +53,11 @@ contract CrowdloanFactory is Initializable {
     }
 
     function createProxy(address _impl, address _admin) public payable returns (address) {
-        AdminUpgradeabilityProxy proxy = (new AdminUpgradeabilityProxy).value(msg.value)(_impl, _admin, "");
+        AdminUpgradeabilityProxy proxy = (new AdminUpgradeabilityProxy).value(msg.value)(
+            _impl,
+            _admin,
+            ""
+        );
         emit TestProxy(address(proxy));
         return address(proxy);
     }
@@ -94,16 +96,16 @@ contract CrowdloanFactory is Initializable {
 
         // DebtToken(debtTokenInstance).initialize("EnableDebtToken", "EDT");
 
-        // Crowdloan(address(uint160(crowdloanInstance))).initialize(
-        //     debtTokenInstance,
-        //     _crowdfundLength,
-        //     _crowdfundStart
-        // );
+        Crowdloan(address(uint160(crowdloanInstance))).initialize(
+            termsContractInstance,
+            _crowdfundLength,
+            _crowdfundStart
+        );
 
-        // RepaymentRouter(repaymentRouterInstance).initialize(
-        //     address(uint160(crowdloanInstance)),
-        //     debtTokenInstance
-        // );
+        RepaymentRouter(repaymentRouterInstance).initialize(
+            address(uint160(crowdloanInstance)),
+            debtTokenInstance
+        );
 
         emit LoanCreated(
             msg.sender,

@@ -2,10 +2,10 @@
   "zosversion": "2.2",
   "contracts": {
     "Crowdloan": "Crowdloan",
-    "CrowdloanFactory": "CrowdloanFactory",
     "DebtToken": "DebtToken",
     "RepaymentRouter": "RepaymentRouter",
-    "TermsContract": "TermsContract"
+    "TermsContract": "TermsContract",
+    "CrowdloanFactory": "CrowdloanFactory"
   },
   "dependencies": {},
   "name": "enable-credit",

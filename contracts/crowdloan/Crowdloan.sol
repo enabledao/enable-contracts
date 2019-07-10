@@ -21,11 +21,7 @@ contract Crowdloan is Initializable, ICrowdloan, TermsContract, RepaymentRouter,
         uint256 crowdfundEnd;
     }
 
-    struct Borrower {
-        address debtor;
-    }
-
-    Borrower debtor;
+    address borrower;
     CrowdfundParams crowdfundParams;
     DebtToken debtToken;
 
@@ -51,7 +47,7 @@ contract Crowdloan is Initializable, ICrowdloan, TermsContract, RepaymentRouter,
         public
         initializer
     {
-        debtor = Borrower(msg.sender); //Needs to be update, once factory is setup
+        borrower = msg.sender; //Needs to be update, once factory is setup
         debtToken = DebtToken(_debtToken);
         crowdfundParams = CrowdfundParams(_crowdfundLength, _crowdfundStart, 0);
     }
@@ -115,6 +111,10 @@ contract Crowdloan is Initializable, ICrowdloan, TermsContract, RepaymentRouter,
 
     function getDebtToken() external view returns (address) {
         return address(debtToken);
+    }
+
+    function getBorrower() external view returns (address) {
+        return borrower;
     }
 
     /**

@@ -4,7 +4,7 @@
   "description": "Borderless peer-to-peer loans with social attestation",
   "main": "truffle-config.js",
   "scripts": {
-    "test": "truffle test",
+    "test": "zos push --network development && truffle test",
     "compile": "truffle compile",
     "start": "npm run compile && truffle exec deploy.js --network development",
     "eslint": "./node_modules/.bin/eslint ./",
