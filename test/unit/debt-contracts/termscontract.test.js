@@ -1,10 +1,10 @@
 import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
-import {isContext} from 'vm';
 
 const {expect} = require('chai');
 
 const TermsContract = artifacts.require('TermsContract');
 
+const threshold = 1000; // Testing offset for timestamps in seconds
 const params = {
   principalToken: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
   principal: new BN(60000), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
@@ -22,6 +22,10 @@ const reassign = (original, param, value) => {
 const invalidInputCheckRevert = async (original, param, value, error) => {
   const mutated = reassign(original, param, value);
   await expectRevert(TermsContract.new(...Object.values(mutated)), error);
+};
+
+const interestPayment = (principal, interest) => {
+  return new BN(principal).mul(new BN(interest)).div(new BN(10000));
 };
 
 contract('Terms Contract', ([sender, receiver]) => {
@@ -96,16 +100,68 @@ contract('Terms Contract', ([sender, receiver]) => {
 
     it('should generate the correct monthly payment', async () => {
       const {principal, interestRate} = params;
-      const amt = principal.mul(new BN(interestRate)).div(new BN(10000));
-      const monthlyRepayment = await instance.monthlyPayment();
-      expect(monthlyRepayment).to.be.a.bignumber.equals(amt);
+      const amt = interestPayment(principal, interestRate);
+      console.log(amt)
+      expect(instanceParams.interestPayment).to.be.a.bignumber.equals(amt);
     });
 
-    xit('should generate an payments table without timestamps if loan has not been started', async () => {});
-    xit('should generate an payments table with timestamps if loan has not been started', async () => {});
-    xit('should get the expectedRepaymentTotal for a given timestamp', async () => {});
+    it('should generate an payments table without timestamps if loan has not been started', async () => {
+      // calculate what should be correct
+      let expected = [];
+      let queries = [];
+      const {principal, interestRate, loanPeriod} = params;
+      const amt = interestPayment(principal, interestRate);
+      for (let i = 0; i < loanPeriod; i += 1) {
+        let p = (i < loanPeriod-1) ? new BN(0) : new BN(principal);
+        let int = new BN(amt);
+        let t = p.add(int);
+        expected.push({principal: p, interest: int, total: t});
+        queries.push(instance.paymentTable(i));
+      }
+      let results = await Promise.all(queries);
+      for (let i = 0; i < loanPeriod; i += 1) {
+        const { principal, interest, total } = results[i];
+        expect(principal).to.be.a.bignumber.that.equals(expected[i].principal, 'Incorrect principal amount in payments table in month ' + i);
+        expect(interest).to.be.a.bignumber.that.equals(expected[i].interest, 'Incorrect interest amount in payments table in month ' + i);
+        expect(total).to.be.a.bignumber.that.equals(expected[i].total, 'Incorrect principal amount in payments table in month ' + i);
+      }
+    });
+
+    xit('only borrower should be able to start the loan', async () => {})
+
+    it.only('starting a loan should write due timestamps to the payments table and update loan status', async () => {
+      const {loanPeriod} = params;
+      const queries = [];
+      let now = Math.floor(new Date().getTime() / 1000);
+      
+      let tx = await instance.startLoan();
+      const { loanStartTimestamp, loanStatus } = await instance.getLoanParams();
+      
+      // console.log(loanStartTimestamp.toString());
+      // console.log(loanStatus);
+      // console.log(now);
+
+      expect(loanStatus).to.be.a.bignumber.that.equals(new BN(4), 'loan status should be updated to loan started / repayment cycle');
+      expect(loanStartTimestamp.toNumber()).to.be.within(now-threshold, now+threshold, 'loanstartTimestamp is more than 1000 seconds from now');
+
+      for (let i = 0; i < loanPeriod; i += 1) {
+        // let p = (i < loanPeriod-1) ? new BN(0) : new BN(principal);
+        // let int = new BN(amt);
+        // let t = p.add(int);
+        // expected.push({principal: p, interest: int, total: t});
+        queries.push(instance.paymentTable(i));
+      }
+      let results = await Promise.all(queries);
+      console.log(results);
+      results.map((i) => {
+        console.log(i.due.toNumber())
+      });
+    });
 
     xit('should get the startTimestamp of the loan', async () => {});
     xit('should get the endTimestamp of the loan', async () => {});
+
+    xit('should get the expectedRepaymentTotal for a given timestamp', async () => {});
+
   });
 });
