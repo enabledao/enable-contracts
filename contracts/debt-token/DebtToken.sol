@@ -22,9 +22,16 @@ contract DebtToken is DebtManager, ERC721Enumerable, ERC721Metadata, ERC721Minta
     }
 
     function addDebt(address holder, uint256 debtAmount) public onlyMinter returns (bool) {
-        uint256 _tokenId = totalSupply();
-        super.mint(holder, _tokenId);
-        _addDebtValue(_tokenId, debtAmount);
+        // Force only one tokenId per address
+        if (balanceOf(holder) > 0) {
+          uint _tokenId = tokenOfOwnerByIndex(holder, 0);
+          require(ownerOf(_tokenId) == holder, 'Not owned tokenId');
+          _increaseDebtValue(_tokenId, debtAmount);
+        } else {
+          _tokenId = totalSupply();
+          super.mint(holder, _tokenId);
+          _addDebtValue(_tokenId, debtAmount);
+        }
         return true;
     }
 

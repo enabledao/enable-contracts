@@ -21,6 +21,12 @@ contract DebtManager is IDebtManager {
         _tokenDebtValue[tokenId] = debtValue;
     }
 
+    function _increaseDebtValue(uint256 tokenId, uint256 debtValue) internal returns (bool) {
+        require(_tokenDebtValue[tokenId] > 0, "Debt value can not be increased when not set");
+        _totalDebt = _totalDebt.add(debtValue);
+        _tokenDebtValue[tokenId] = _tokenDebtValue[tokenId].add(debtValue);
+    }
+
     function _removeDebtValue(uint256 tokenId) internal returns (bool) {
         uint256 debtValue = _tokenDebtValue[tokenId];
         _tokenDebtValue[tokenId] = 0;
