@@ -27,21 +27,20 @@ contract RepaymentRouter is IRepaymentRouter {
         termsContract = TermsContract(_termsContract);
     }
 
-    function _principalTokenAddress()
-        internal
-        returns (address)
-    {
-        (
-            address principalToken,
-            uint256 principal,
-            uint256 loanStatus,
-            uint256 amortizationUnitType,
-            uint256 termLength,
-            uint256 interestRate,
-            uint256 termStartUnixTimestamp,
-            uint256 termEndUnixTimestamp
-        ) = termsContract.getLoanParams();
-        return principalToken;
+    function _loanParams() internal returns (TermsContract.LoanParams memory) {
+        (address principalToken, uint256 principal, uint256 loanStatus, uint256 amortizationUnitType, uint256 termLength, uint256 interestRate, uint256 termStartUnixTimestamp, uint256 termEndUnixTimestamp) = termsContract
+            .getLoanParams();
+        return
+            TermsContract.LoanParams(
+                IERC20(principalToken),
+                principal,
+                TermsContract.LoanStatus(loanStatus),
+                TermsContract.TimeUnitType(amortizationUnitType),
+                termLength,
+                interestRate,
+                termStartUnixTimestamp,
+                termEndUnixTimestamp
+            );
     }
 
     function _transferERC20(IERC20 token, address _from, address _to, uint256 _amount)
@@ -109,7 +108,7 @@ contract RepaymentRouter is IRepaymentRouter {
     /// @notice Repay a given portion of loan
     /// @param unitsOfRepayment Tokens to repay
     function repay(uint256 unitsOfRepayment) public {
-        _repay(IERC20(_principalTokenAddress()), msg.sender, address(this), unitsOfRepayment);
+        _repay(_loanParams().principalToken, msg.sender, address(this), unitsOfRepayment);
     }
 
     /// @notice Withdraw current allowance for a debt token
@@ -118,13 +117,11 @@ contract RepaymentRouter is IRepaymentRouter {
         //TODO needs re-thinking
         require(debtToken.ownerOf(debtTokenId) == msg.sender, "You are not the owner of token");
         uint256 _amount = getWithdrawalAllowance(debtTokenId);
-        _withdraw(IERC20(_principalTokenAddress()), msg.sender, debtTokenId);
+        _withdraw(_loanParams().principalToken, msg.sender, debtTokenId);
         emit PaymentReleased(msg.sender, _amount);
     }
 
-    function ()
-        external payable
-    {
+    function() external payable {
         revert("please, call specific function");
     }
 }
