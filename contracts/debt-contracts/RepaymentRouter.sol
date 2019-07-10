@@ -27,6 +27,16 @@ contract RepaymentRouter is IRepaymentRouter {
         termsContract = TermsContract(_termsContract);
     }
 
+    modifier tokenBalanceIncreased(IERC20 _token, address _to, uint256 _amount) {
+        //Separate modifier to ensure the amount is sent, a sort of safeTransferFrom
+        uint256 previousBalance = _token.balanceOf(_to);
+        _;
+        require(
+            _token.balanceOf(_to) >= previousBalance.add(_amount),
+            "Token value not successfully transferred"
+        );
+    }
+
     function _loanParams() internal returns (TermsContract.LoanParams memory) {
         (address principalToken, uint256 principal, uint256 loanStatus, uint256 amortizationUnitType, uint256 termLength, uint256 interestRate, uint256 termStartUnixTimestamp, uint256 termEndUnixTimestamp) = termsContract
             .getLoanParams();
@@ -43,17 +53,22 @@ contract RepaymentRouter is IRepaymentRouter {
             );
     }
 
-    function _transferERC20(IERC20 token, address _from, address _to, uint256 _amount)
+    function _transferERC20(IERC20 token, address _to, uint256 _amount)
         internal
+        tokenBalanceIncreased(token, _to, _amount)
         returns (bool)
     {
         //Separate function to ensure the amount is sent, a sort of safeTransferFrom
-        uint256 previousBalance = token.balanceOf(_to);
+        token.transfer(_to, _amount);
+        return true;
+    }
+
+    function _transferERC20(IERC20 token, address _from, address _to, uint256 _amount)
+        internal
+        tokenBalanceIncreased(token, _to, _amount)
+        returns (bool)
+    {
         token.transferFrom(_from, _to, _amount);
-        require(
-            token.balanceOf(_to) >= previousBalance.add(_amount),
-            "Token value not successfully transferred"
-        );
         return true;
     }
 
@@ -63,31 +78,30 @@ contract RepaymentRouter is IRepaymentRouter {
     /// @param _to Address to send repayment Tokens to
     /// @param _unitsOfRepayment Tokens to repay
     function _repay(IERC20 token, address _from, address _to, uint256 _unitsOfRepayment) internal {
-        _totalRepaid.add(_unitsOfRepayment);
+        _totalRepaid = _totalRepaid.add(_unitsOfRepayment);
         _transferERC20(token, _from, _to, _unitsOfRepayment);
         emit PaymentReceived(_from, _unitsOfRepayment);
     }
 
     /// @notice Withdraw current allowance for a debt token
-    function _withdraw(IERC20 token, address to, uint256 debtTokenId) internal {
+    function _withdraw(IERC20 token, address to, uint256 debtTokenId) internal returns (uint256) {
         //TODO needs re-thinking
         uint256 previousWithdrawal = _withdrawnByTokenId[debtTokenId];
         uint256 _amount = getWithdrawalAllowance(debtTokenId);
         _withdrawnByTokenId[debtTokenId] = previousWithdrawal.add(_amount);
         _totalWithdrawal = _totalWithdrawal.add(_amount);
-        _transferERC20(token, address(this), to, _amount);
+        _transferERC20(token, to, _amount);
     }
 
     /// @notice Get current withdrawal allowance for a debt token
     /// @param debtTokenId Debt token ID
     function getWithdrawalAllowance(uint256 debtTokenId) public view returns (uint256) {
-        // TODO(Dan): Implement
         // return
         //     termsContract.calculateWithdrawalAllowance(
         //         _totalRepaid,
         //         _withdrawnByTokenId[debtTokenId]
         //     );
-        // return uint256(1); // TODO(Dan): Remove placeholder
+        return uint256(1); // TODO(Dan): Remove placeholder
     }
 
     /// @notice Total amount of the Loan repaid by the borrower
@@ -116,8 +130,7 @@ contract RepaymentRouter is IRepaymentRouter {
     function withdraw(uint256 debtTokenId) public {
         //TODO needs re-thinking
         require(debtToken.ownerOf(debtTokenId) == msg.sender, "You are not the owner of token");
-        uint256 _amount = getWithdrawalAllowance(debtTokenId);
-        _withdraw(_loanParams().principalToken, msg.sender, debtTokenId);
+        uint256 _amount = _withdraw(_loanParams().principalToken, msg.sender, debtTokenId);
         emit PaymentReleased(msg.sender, _amount);
     }
 
