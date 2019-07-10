@@ -160,8 +160,13 @@ contract TermsContract is ITermsContract {
         for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
             ScheduledPayment storage current = paymentTable[i];
             //TODO(Dan): Conditional addDays, Months, Years (or remove the timeAmortizationUnit altogether)
-            current.due = BokkyPooBahsDateTimeLibrary.addMonths(startTimestamp, i + 1);
+            uint256 shifted = BokkyPooBahsDateTimeLibrary.addMonths(startTimestamp, i + 1);
+            current.due = shifted;
+            if (i == loanParams.loanPeriod-1) {
+                loanParams.loanEndTimestamp = shifted;
+            }
         }
+        
         loanParams.loanStatus = LoanStatus.REPAYMENT_CYCLE;
     }
 
@@ -189,7 +194,7 @@ contract TermsContract is ITermsContract {
     /// Returns the cumulative units-of-value repaid by the point at which this method is called.
     /// @return uint256 The cumulative units-of-value repaid up until now.
     function getValueRepaidToDate() external view returns (uint256) {
-        return 1; // TODO(Dan): Placeholder
+        return 1; // TODO(Dan): Should be moved to the repaymentRouter
     }
 
     /**

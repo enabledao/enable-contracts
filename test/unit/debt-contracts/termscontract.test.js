@@ -145,7 +145,7 @@ contract('Terms Contract', ([sender, receiver]) => {
       const now = Math.floor(new Date().getTime() / 1000);
 
       const tx = await instance.startLoan();
-      const {loanStartTimestamp, loanStatus} = await instance.getLoanParams();
+      const {loanStartTimestamp, loanEndTimestamp, loanStatus} = await instance.getLoanParams();
 
       // console.log(loanStartTimestamp.toString());
       // console.log(loanStatus);
@@ -158,7 +158,15 @@ contract('Terms Contract', ([sender, receiver]) => {
       expect(loanStartTimestamp.toNumber()).to.be.within(
         now - threshold,
         now + threshold,
-        'loanstartTimestamp is more than 1000 seconds from now'
+        'loanStartTimestamp is more than 1000 seconds from now'
+      );
+
+      const cur = moment(new Date().getTime());
+      const end = cur.add(loanPeriod, 'months').unix();
+      expect(loanEndTimestamp.toNumber()).to.be.within(
+        end - threshold,
+        end + threshold,
+        'loanEndTimestamp is more than 1000 seconds from now'
       );
 
       for (let i = 0; i < loanPeriod; i += 1) {
