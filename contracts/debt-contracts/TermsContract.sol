@@ -26,8 +26,8 @@ contract TermsContract is ITermsContract {
         uint256 loanPeriod;
         uint256 interestRate;
         // TODO(Dan): Evaluate whether we should get rid of start and end unix timestamps
-        uint256 termStartUnixTimestamp;
-        uint256 termEndUnixTimestamp;
+        uint256 loanStartTimestamp;
+        uint256 loanEndTimestamp;
     }
 
     address public borrower;
@@ -61,8 +61,8 @@ contract TermsContract is ITermsContract {
             timeUnitType: TimeUnitType(_timeUnitType),
             loanPeriod: _loanPeriod,
             interestRate: _interestRate, // TODO: reassign constant values below
-            termStartUnixTimestamp: 0,
-            termEndUnixTimestamp: 0
+            loanStartTimestamp: 0,
+            loanEndTimestamp: 0
         });
     }
 
@@ -84,8 +84,8 @@ contract TermsContract is ITermsContract {
             uint256 timeUnitType,
             uint256 loanPeriod,
             uint256 interestRate,
-            uint256 termStartUnixTimestamp,
-            uint256 termEndUnixTimestamp
+            uint256 loanStartTimestamp,
+            uint256 loanEndTimestamp
         )
     {
         return (
@@ -95,8 +95,8 @@ contract TermsContract is ITermsContract {
             uint256(loanParams.timeUnitType),
             loanParams.loanPeriod,
             loanParams.interestRate,
-            loanParams.termStartUnixTimestamp,
-            loanParams.termEndUnixTimestamp
+            loanParams.loanStartTimestamp,
+            loanParams.loanEndTimestamp
         );
     }
 

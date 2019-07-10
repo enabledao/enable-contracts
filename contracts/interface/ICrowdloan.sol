@@ -23,8 +23,8 @@ interface ICrowdloan {
             uint256 timeUnitType,
             uint256 loanPeriod,
             uint256 interestRate,
-            uint256 termStartUnixTimestamp,
-            uint256 termEndUnixTimestamp
+            uint256 loanStartTimestamp,
+            uint256 loanEndTimestamp
         );
 
     function getDebtToken() external view returns (address);

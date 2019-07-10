@@ -1,4 +1,5 @@
 import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
+import {isContext} from 'vm';
 
 const {expect} = require('chai');
 
@@ -30,18 +31,25 @@ contract('Terms Contract', ([sender, receiver]) => {
     );
   });
 
-  it('should record the loan parameters correctly', async () => {
-    Object.keys(params).forEach(key => {
-      const value = termsContractParams[key];
-      if (value instanceof BN) {
-        expect(value).to.be.a.bignumber.that.equals(new BN(params[key]));
-      } else {
-        expect(value).to.equal(params[key]);
-      }
+  context('initial term loan params', async () => {
+    it('should record loan params in storage', async () => {
+      Object.keys(params).forEach(key => {
+        const value = termsContractParams[key];
+        if (value instanceof BN) {
+          expect(value).to.be.a.bignumber.that.equals(new BN(params[key]));
+        } else {
+          expect(value).to.equal(params[key]);
+        }
+      });
     });
   });
 
-  xit('should revert if loan parameters are invalid', async () => {});
+  context('should revert if loan parameters are invalid', async () => {
+    xit('should revert if principalTokenAddr is 0', async () => {});
+    xit('should revert if timeUnitType is not valid', async () => {});
+    xit('should revert if loanPeriod is 0', async () => {});
+    xit('should revert if interest rate (in basis points) is above 10000 (i.e. 100%)', async () => {});
+  });
 
   xit('should getLoanStatus and initialize loanStatus as not started', async () => {});
 
