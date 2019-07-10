@@ -3,10 +3,10 @@ pragma solidity ^0.5.2;
 import "openzeppelin-eth/contracts/token/ERC20/IERC20.sol";
 import "zos-lib/contracts/Initializable.sol";
 import "../interface/ITermsContract.sol";
+import "../access/ControllerRole.sol";
 
-contract TermsContract is Initializable, ITermsContract {
+contract TermsContract is Initializable, ITermsContract, ControllerRole {
     enum TimeUnitType {HOURS, DAYS, WEEKS, MONTHS, YEARS}
-
     enum LoanStatus {
         NOT_STARTED,
         FUNDING_STARTED,
@@ -31,7 +31,10 @@ contract TermsContract is Initializable, ITermsContract {
         uint256 termEndUnixTimestamp;
     }
 
+    event LoanStatus(LoanStatus status);
+
     address public borrower;
+    address public lender;
     LoanParams public loanParams;
 
     modifier onlyDebtor() {
@@ -47,6 +50,8 @@ contract TermsContract is Initializable, ITermsContract {
     // modifier onlyAfterStatus(LoanStatus status) {}
 
     function initialize(
+        address _borrower,
+        address _lender,
         address _principalTokenAddr,
         uint256 _principal,
         uint256 _amortizationUnitType,
@@ -54,8 +59,14 @@ contract TermsContract is Initializable, ITermsContract {
         uint256 _termPayment,
         uint256 _gracePeriodLength,
         uint256 _gracePeriodPayment,
-        uint256 _interestRate
+        uint256 _interestRate,
+        address[] _controllers,
     ) public initializer {
+        borrower = _borrower;
+        lender = _lender;
+
+        ControllerRole.initialize(_controllers);
+
         loanParams = LoanParams({
             principalToken: IERC20(_principalTokenAddr),
             principal: _principal,
@@ -68,14 +79,20 @@ contract TermsContract is Initializable, ITermsContract {
         });
     }
 
-    function getLoanStatus() external view returns (uint256 loanStatus) {
+    function setLoanStatus(uint _status) public onlyController {
+        _setLoanStatus(_status);
+    }
+
+    function getLoanStatus() public view returns (uint256 loanStatus) {
         return uint256(loanParams.loanStatus);
     }
 
     function getLoanParams()
-        external
+        public
         view
         returns (
+            address borrower,
+            address lender,
             address principalToken,
             uint256 principal,
             uint256 loanStatus,
@@ -87,6 +104,8 @@ contract TermsContract is Initializable, ITermsContract {
         )
     {
         return (
+            borrower,
+            lender,
             address(loanParams.principalToken),
             loanParams.principal,
             uint256(loanParams.loanStatus),
@@ -128,6 +147,7 @@ contract TermsContract is Initializable, ITermsContract {
     function _setLoanStatus(LoanStatus _loanStatus) internal {
         if (loanParams.loanStatus != _loanStatus) {
             loanParams.loanStatus = _loanStatus;
+            emit LoanStatus(_loanStatus);
         }
     }
 }

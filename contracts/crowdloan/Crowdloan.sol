@@ -5,14 +5,10 @@ import "openzeppelin-eth/contracts/token/ERC721/IERC721.sol";
 import "openzeppelin-eth/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-eth/contracts/utils/ReentrancyGuard.sol";
 import "zos-lib/contracts/Initializable.sol";
-import "../interface/ICrowdloan.sol";
-import "../interface/IClaimsToken.sol";
-import "../debt-contracts/RepaymentRouter.sol";
-import "../debt-contracts/TermsContract.sol";
-import "../debt-token/DebtToken.sol";
+import "../interface/ITermsContract.sol";
+import "../interface/IRepaymentManager.sol";
 
-// contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuard {
-contract Crowdloan is Initializable, ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuard {
+contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     using SafeMath for uint256;
 
     struct CrowdfundParams {
@@ -25,8 +21,13 @@ contract Crowdloan is Initializable, ICrowdloan, TermsContract, RepaymentRouter,
     CrowdfundParams crowdfundParams;
     DebtToken debtToken;
 
-    event Fund(address indexed sender, uint256 amount);
-    event Refund(address indexed sender, uint256 amount);
+    ITermsContract termsContract;
+    IRepaymentManager repaymentManager;
+
+    event LenderFund(address indexed sender, uint256 amount);
+    event LenderRefund(address indexed sender, uint256 amount);
+    event ReleaseFunds(address indexed sender, uint256 amount);
+
     event StatusChanged(uint256 loanStatus);
 
     modifier trackCrowdfundStatus() {
@@ -35,20 +36,16 @@ contract Crowdloan is Initializable, ICrowdloan, TermsContract, RepaymentRouter,
         _updateCrowdfundStatus();
     }
 
-    modifier onlyDebtTokenOwner(uint256 debtTokenId) {
-        require(
-            debtToken.ownerOf(debtTokenId) == msg.sender,
-            "Only owner of specified debt token can call"
-        );
-        _;
-    }
+    function initialize(
+        address _termsContract,
+        address _repaymentManager,
+        uint256 _crowdfundLength,
+        uint256 _crowdfundStart
+    ) public initializer {
+        termsContract = ITermsContract(_termsContract);
+        repaymentManager = ITermsContract(_repaymentManager);
 
-    function initialize(address _debtToken, uint256 _crowdfundLength, uint256 _crowdfundStart)
-        public
-        initializer
-    {
         borrower = msg.sender; //Needs to be update, once factory is setup
-        debtToken = DebtToken(_debtToken);
         crowdfundParams = CrowdfundParams(_crowdfundLength, _crowdfundStart, 0);
     }
 
