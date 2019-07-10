@@ -51,7 +51,7 @@ contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuar
         address _principalTokenAddr,
         uint256 _principal,
         uint256 _timeUnitType,
-        uint256 _termLength,
+        uint256 _loanPeriod,
         uint256 _termPayment,
         uint256 _gracePeriodLength,
         uint256 _gracePeriodPayment,
@@ -60,13 +60,7 @@ contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuar
         uint256 _crowdfundStart
     )
         public
-        TermsContract(
-            _principalTokenAddr,
-            _principal,
-            _timeUnitType,
-            _termLength,
-            _interestRate
-        )
+        TermsContract(_principalTokenAddr, _principal, _timeUnitType, _loanPeriod, _interestRate)
         RepaymentRouter(
             address(this), //TODO: check if we can do away with passing address to RepaymentRouter contract
             _debtToken

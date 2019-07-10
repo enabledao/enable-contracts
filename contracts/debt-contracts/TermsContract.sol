@@ -23,7 +23,7 @@ contract TermsContract is ITermsContract {
         uint256 principal;
         LoanStatus loanStatus;
         TimeUnitType timeUnitType;
-        uint256 termLength;
+        uint256 loanPeriod;
         uint256 interestRate;
         // TODO(Dan): Evaluate whether we should get rid of start and end unix timestamps
         uint256 termStartUnixTimestamp;
@@ -32,7 +32,6 @@ contract TermsContract is ITermsContract {
 
     address public borrower;
     LoanParams public loanParams;
-
 
     modifier onlyDebtor() {
         require(msg.sender == borrower, "Only debtor can call");
@@ -50,17 +49,17 @@ contract TermsContract is ITermsContract {
         address _principalTokenAddr,
         uint256 _principal,
         uint256 _timeUnitType,
-        uint256 _termLength,
+        uint256 _loanPeriod,
         uint256 _interestRate
     ) public {
-        require(_principalTokenAddr != address(0), "Loaned token must be an ERC20 token");  //TODO(Dan): More rigorous way of testing ERC20?
+        require(_principalTokenAddr != address(0), "Loaned token must be an ERC20 token"); //TODO(Dan): More rigorous way of testing ERC20?
         require(_timeUnitType < 5, "Invalid amortization unit type");
         loanParams = LoanParams({
             principalToken: IERC20(_principalTokenAddr),
             principal: _principal,
             loanStatus: LoanStatus.NOT_STARTED,
             timeUnitType: TimeUnitType(_timeUnitType),
-            termLength: _termLength,
+            loanPeriod: _loanPeriod,
             interestRate: _interestRate, // TODO: reassign constant values below
             termStartUnixTimestamp: 0,
             termEndUnixTimestamp: 0
@@ -83,7 +82,7 @@ contract TermsContract is ITermsContract {
             uint256 principal,
             uint256 loanStatus,
             uint256 timeUnitType,
-            uint256 termLength,
+            uint256 loanPeriod,
             uint256 interestRate,
             uint256 termStartUnixTimestamp,
             uint256 termEndUnixTimestamp
@@ -94,7 +93,7 @@ contract TermsContract is ITermsContract {
             loanParams.principal,
             uint256(loanParams.loanStatus),
             uint256(loanParams.timeUnitType),
-            loanParams.termLength,
+            loanParams.loanPeriod,
             loanParams.interestRate,
             loanParams.termStartUnixTimestamp,
             loanParams.termEndUnixTimestamp
@@ -107,9 +106,7 @@ contract TermsContract is ITermsContract {
 
     /** @dev Returns the
      */
-    function getPaymentTable() public view {
-
-    }
+    function getPaymentTable() public view {}
 
     /// Returns the cumulative units-of-value expected to be repaid by a given block timestamp.
     ///  Note this is not a constant function -- this value can vary on basis of any number of

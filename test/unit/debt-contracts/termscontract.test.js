@@ -8,7 +8,7 @@ const params = {
   principalToken: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
   principal: new BN(60000), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
   timeUnitType: 3,
-  termLength: 6,
+  loanPeriod: 6,
   interestRate: 6
 };
 

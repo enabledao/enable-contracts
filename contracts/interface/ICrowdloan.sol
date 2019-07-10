@@ -21,7 +21,7 @@ interface ICrowdloan {
             uint256 principal,
             uint256 loanStatus,
             uint256 timeUnitType,
-            uint256 termLength,
+            uint256 loanPeriod,
             uint256 interestRate,
             uint256 termStartUnixTimestamp,
             uint256 termEndUnixTimestamp

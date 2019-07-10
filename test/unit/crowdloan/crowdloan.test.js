@@ -17,7 +17,7 @@ contract('Crowdloan', accounts => {
   //   _principalTokenAddr: NULL_ADDRESS,
   //   _principal: 60000,
   //   _timeUnitType: 3,
-  //   _termLength: 1,
+  //   _loanPeriod: 1,
   //   _termPayment: 0,
   //   _gracePeriodLength: 0,
   //   _gracePeriodPayment: 0,
