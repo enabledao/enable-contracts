@@ -28,11 +28,13 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     /**
      * @dev Constructor
      */
-    function initialize(address[] memory payees, uint256[] memory shares, address _paymentToken, address _termsContract, address _controller)
-        public
-        payable
-        initializer
-    {
+    function initialize(
+        address[] memory payees,
+        uint256[] memory shares,
+        address _paymentToken,
+        address _termsContract,
+        address _controller
+    ) public payable initializer {
         require(payees.length == shares.length);
         require(payees.length > 0);
 

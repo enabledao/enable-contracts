@@ -5,7 +5,8 @@ import "openzeppelin-eth/contracts/access/Roles.sol";
 
 /*
     Controllers can never be changed after initialization
-*/ 
+*/
+
 contract ControllerRole is Initializable {
     using Roles for Roles.Role;
 
@@ -15,7 +16,7 @@ contract ControllerRole is Initializable {
     Roles.Role private _minters;
 
     function initialize(address[] _controllers) public initializer {
-        for (uint i = 0; i < _controllers.length; i++) {
+        for (uint256 i = 0; i < _controllers.length; i++) {
             _addController(_controllers[i]);
         }
     }
