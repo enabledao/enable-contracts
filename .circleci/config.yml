@@ -26,6 +26,6 @@ jobs:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
-      - run: zos deploy --network development
-      - run: zos publish --network development
+      - run: npx zos deploy --network development
+      - run: npx zos publish --network development
       - run: npm test
