@@ -120,4 +120,50 @@ contract('RepaymentRouter', accounts => {
       await repaymentRouter.totalWithdrawn()
     ).to.be.bignumber.above(new BN(0));
   });
+
+  it('should successfully batchWithdraw Funds', async () => {
+    const amount = new BN(100);
+    const contributor = accounts[1];
+    const contributions = new Array(10).fill(amount);
+
+    await Promise.all(
+      contributions.map( async(contribution, index) => {
+        await debtToken.addDebt(contributor, contribution, {
+          from: owner
+        })
+
+        expect (
+          await debtToken.ownerOf.call(index)
+        ).to.equal(contributor);
+      })
+    );
+
+    await daiToken.mint(owner, amount, {
+      from: owner
+    });
+
+    await daiToken.approve(repaymentRouter.address, amount, {
+      from: owner
+    });
+
+    await repaymentRouter.repay(amount, {
+      from: owner
+    });
+
+    expect(
+      await daiToken.balanceOf(repaymentRouter.address)
+    ).to.be.bignumber.equal(amount);
+
+    const {logs} = await repaymentRouter.batchWithdraw(Object.keys(contributions), {
+      from: contributor
+    });
+
+    expectEvent.inLogs(logs, 'PaymentReleased', {
+      to: contributor
+    });
+
+    expect(
+      await repaymentRouter.totalWithdrawn()
+    ).to.be.bignumber.above(new BN(0));
+  });
 });

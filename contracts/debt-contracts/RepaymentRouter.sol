@@ -16,12 +16,6 @@ contract RepaymentRouter is IRepaymentRouter {
     DebtToken debtToken;
     TermsContract termsContract;
 
-    /**
-    * @dev This event emits when repayment is made to the loan
-    */
-    event PaymentReceived(address indexed from, uint256 amount);
-    event PaymentReleased(address indexed to, uint256 amount);
-
     constructor(address _termsContract, address _debtToken) public {
         debtToken = DebtToken(_debtToken);
         termsContract = TermsContract(_termsContract);
@@ -37,7 +31,7 @@ contract RepaymentRouter is IRepaymentRouter {
         );
     }
 
-    function _loanParams() internal returns (TermsContract.LoanParams memory) {
+    function _loanParams() internal view returns (TermsContract.LoanParams memory) {
         (address principalToken, uint256 principal, uint256 loanStatus, uint256 amortizationUnitType, uint256 termLength, uint256 interestRate, uint256 termStartUnixTimestamp, uint256 termEndUnixTimestamp) = termsContract
             .getLoanParams();
         return
@@ -132,6 +126,24 @@ contract RepaymentRouter is IRepaymentRouter {
         require(debtToken.ownerOf(debtTokenId) == msg.sender, "You are not the owner of token");
         uint256 _amount = _withdraw(_loanParams().principalToken, msg.sender, debtTokenId);
         emit PaymentReleased(msg.sender, _amount);
+    }
+
+    /// @notice Withdraw current allowance for a batch of owned debt tokens
+    /// @param debtTokenIds list of Debt token IDs
+    function batchWithdraw(uint256[10] memory debtTokenIds) public {
+        //TODO needs re-thinking
+        uint256 amount;
+        uint256 _amount;
+        for (uint256 a = 0; a < debtTokenIds.length; a++) {
+            if (debtToken.ownerOf(debtTokenIds[a]) == msg.sender) {
+                _amount = _withdraw(_loanParams().principalToken, msg.sender, debtTokenIds[a]);
+                amount = amount.add(_amount);
+            } else {
+                // Penalizes invalid tokenId values. Only accepted invalid tokenId == 0. (Might be unneeded).
+                require(debtTokenIds[a] == 0, "You are not the owner of token");
+            }
+        }
+        emit PaymentReleased(msg.sender, amount);
     }
 
     function() external payable {
