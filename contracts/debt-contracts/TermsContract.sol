@@ -180,8 +180,6 @@ contract TermsContract is ITermsContract {
         return result;
     }
 
-    
-
     /// Returns the cumulative units-of-value expected to be repaid by a given block timestamp.
     ///  Note this is not a constant function -- this value can vary on basis of any number of
     ///  conditions (e.g. interest rates can be renegotiated if repayments are delinquent).
@@ -195,7 +193,7 @@ contract TermsContract is ITermsContract {
                 total += cur.total;
             }
         }
-        return total; 
+        return total;
     }
 
     /// Returns the cumulative units-of-value repaid by the point at which this method is called.
