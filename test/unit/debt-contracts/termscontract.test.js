@@ -3,36 +3,63 @@ import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helper
 const {expect} = require('chai');
 const moment = require('moment');
 
+const {appCreate, getAppAddress, encodeCall} = require('../testHelpers');
+
 const TermsContract = artifacts.require('TermsContract');
-
-const threshold = 1000; // Testing offset for timestamps in seconds
-const params = {
-  principalToken: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
-  principal: new BN(60000), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
-  timeUnitType: 3,
-  loanPeriod: 6,
-  interestRate: 50
-};
-
-const reassign = (original, param, value) => {
-  const mutated = Object.assign({}, original);
-  mutated[param] = value;
-  return mutated;
-};
-
-const invalidInputCheckRevert = async (original, param, value, error) => {
-  const mutated = reassign(original, param, value);
-  await expectRevert(TermsContract.new(...Object.values(mutated)), error);
-};
-
-const interestPayment = (principal, interest) => {
-  return new BN(principal).mul(new BN(interest)).div(new BN(10000));
-};
 
 contract('Terms Contract', ([sender, receiver]) => {
   let instance;
   let instanceParams;
   const borrower = sender;
+  const threshold = 1000; // Testing offset for timestamps in seconds
+  const params = {
+    principalToken: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
+    principal: new BN(60000), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
+    timeUnitType: new BN(3),
+    loanPeriod: new BN(6),
+    interestRate: new BN(50)
+  };
+
+  const reassign = (original, param, value) => {
+    const mutated = Object.assign({}, original);
+    mutated[param] = value;
+    return mutated;
+  };
+
+  const initializeInstance = async (
+    principalTokenAddr,
+    principal,
+    timeUnitType,
+    loanPeriod,
+    interestRate
+  ) => {
+    const data = encodeCall(
+      'initializeInstance',
+      ['address', 'uint256', 'uint256', 'uint256', 'uint256'],
+      [
+        principalTokenAddr,
+        principal.toNumber(),
+        timeUnitType.toNumber(),
+        loanPeriod.toNumber(),
+        interestRate.toNumber()
+      ]
+    );
+    // console.log(data);
+    const proxyAddress = await appCreate('enable-credit', 'TermsContract', sender, data);
+    // console.log(proxyAddrsess);
+    return TermsContract.at(proxyAddress);
+  };
+
+  const invalidInputCheckRevert = async (original, param, value, error) => {
+    const mutated = reassign(original, param, value);
+    // console.log(mutated);
+    // await expectRevert(TermsContract.new(...Object.values(mutated)), error);
+    await expectRevert(initializeInstance(...Object.values(mutated)), error);
+  };
+
+  const interestPayment = (principal, interest) => {
+    return new BN(principal).mul(new BN(interest)).div(new BN(10000));
+  };
 
   context('invalid loan term params', async () => {
     it('should not create if principalToken is not an ERC20', async () => {
@@ -41,20 +68,25 @@ contract('Terms Contract', ([sender, receiver]) => {
         params,
         'principalToken',
         constants.ZERO_ADDRESS,
-        'Loaned token must be an ERC20 token'
+        'Loaned tsoken must be an ERC20 token'
       );
     });
     it('should revert if time unit is invalid', async () => {
-      await invalidInputCheckRevert(params, 'timeUnitType', 10, 'Invalid time unit type');
+      await invalidInputCheckRevert(params, 'timeUnitType', new BN(10), 'Invalid time unit type');
     });
     it('should revert if loan period is 0', async () => {
-      await invalidInputCheckRevert(params, 'loanPeriod', 0, 'Loan period must be higher than 0');
+      await invalidInputCheckRevert(
+        params,
+        'loanPeriod',
+        new BN(0),
+        'Loan period must be higher than 0'
+      );
     });
     it('should revert if interest rate is not in basis points', async () => {
       await invalidInputCheckRevert(
         params,
         'interestRate',
-        6,
+        new BN(6),
         'Interest rate should be in basis points and have minimum of 10 (0.1%)'
       );
     });
@@ -62,7 +94,7 @@ contract('Terms Contract', ([sender, receiver]) => {
       await invalidInputCheckRevert(
         params,
         'interestRate',
-        1000000,
+        new BN(1000000),
         'Interest rate be in basis points and less than 10,000 (100%)'
       );
     });
@@ -70,7 +102,9 @@ contract('Terms Contract', ([sender, receiver]) => {
 
   context('valid loan params', async () => {
     beforeEach(async () => {
-      instance = await TermsContract.new(...Object.values(params), {from: borrower});
+      // instance = await TermsContract.new(...Object.values(params), {from: borrower});
+      instance = await initializeInstance(...Object.values(params));
+
       instanceParams = await instance.getLoanParams();
     });
 
@@ -194,7 +228,7 @@ contract('Terms Contract', ([sender, receiver]) => {
 
         const cur = moment(new Date().getTime());
         const future = cur.add(i + 1, 'months').unix();
-        let amount = await instance.getExpectedRepaymentValue(future + threshold);
+        const amount = await instance.getExpectedRepaymentValue(future + threshold);
         expect(amount).to.be.bignumber.that.equals(estimated);
       }
     });

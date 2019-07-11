@@ -10,7 +10,7 @@ const Crowdloan = artifacts.require('Crowdloan');
 const DebtToken = artifacts.require('DebtToken');
 const RepaymentRouter = artifacts.require('RepaymentRouter');
 
-contract('DividendToken', accounts => {
+contract('CrowdloanFactory', accounts => {
   const loanParams = {
     principalTokenAddr: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
     principal: web3.utils.toWei('60000', 'ether'), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
@@ -28,7 +28,6 @@ contract('DividendToken', accounts => {
   let result;
   let crowdloanFactory;
   const appAddress = getAppAddress();
-  const borrowAmount = web3.utils.toWei('60000', 'ether');
   const borrower = accounts[0];
 
   beforeEach(async () => {
