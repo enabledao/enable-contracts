@@ -28,69 +28,38 @@ The Crowdloan functionality has been decomposed into the following categories:
 
 We believe parts of this project could morph into generic standards useful to theEthereum community. We'll be expanding, modularizing, and genercizing as appropriate when the initial implementation is finished.
 
-# Contribute
+# Developer Instructions
+
+## CI Pipeline
+
+[https://circleci.com/gh/enabledao/enable-contracts](https://circleci.com/gh/enabledao/enable-contracts)
+
+## `zos` workflow for local development
 
 We use [ZeppelinOS](https://docs.zeppelinos.org/docs/start.html) to develop, deploy and operate the Enable loan kit packages. The [ZeppelinOS Documentation](https://docs.zeppelinos.org/docs/start.html) is a good start.
-
-## Running enable-contracts locally (`development` environment)
 
 ### Setup
 
 1. Run `npm install` to install all zeppelinOS related dependencies
-2. Run `ganache-cli` or `ganache-cli --deterministic` to run a local blockchain
+2. Run `ganache-cli` (or `ganache-cli --deterministic`) to run a local blockchain
 3. Create your own `.env` file based on `.env.sample`. These are the `process.env` variables that will be used for deployment / application.
 
-### Deploying contracts using zos
+### Deploy to ganache `development` network
 
-1. Run `zos create` which runs the deployment CLI. Read the [Quickstart](https://docs.zeppelinos.org/docs/first.html) for context
-2. When presented with the CLI, choose the `development` network
-3. Deploy the master `crowdloanFactory` contract. This should also deploy the remaining contracts
+For background: read [Publishing an EVM package](https://docs.zeppelinos.org/docs/publishing.html).
 
-```
-> zos create
-/// Sample output
-Nothing to compile, all contracts are up to date.
-? Pick a contract to instantiate CrowdloanFactory
-? Pick a network development
-✓ Contract Crowdloan deployed
-✓ Contract DebtToken deployed
-✓ Contract RepaymentRouter deployed
-✓ Contract TermsContract deployed
-✓ Contract CrowdloanFactory deployed
-✓ Contract DebtManager deployed
-All contracts have been deployed
-? Do you want to call a function on the instance after creating it? No
-Possible initialization method (initialize) found in contract. Make sure you initialize your instance.
-✓ Setting everything up to create contract instances
-✓ Instance created at 0xe982E462b094850F12AF94d21D470e21bE9D0E9C
-0xe982E462b094850F12AF94d21D470e21bE9D0E9C
-```
+1. `zos publish --network development`. This publishes the project's app, package and provider. This updates the [zos config](https://docs.zeppelinos.org/docs/configuration.html) file with "app.address" field that is needed for tests to run.
+2. `zos push --network development`. This deploys the contracts in the project. This has the same effect as running `zos create` on every contract. See [Quickstart](https://docs.zeppelinos.org/docs/first.html) for context.
 
-```
-zos create
-```
+### Running tests
 
-## Test
+1. `npm run test`. Also runs `zos push` (Dan: does it upgrade contracts as well?)
 
-The build & deploy process is similar to truffle, with these changes:
+### Upgrading contracts
 
-```
-zos publish
-```
+For background: read [Upgrading contracts](https://docs.zeppelinos.org/docs/first.html#upgrading-your-contract)
 
-To initialize local environment
-
-```
-zos push
-```
-
-To compile & deploy logic contracts to local network
-
-```
-npm run test
-```
-
-To run truffle tests
+1. `zos upgrade <contract name>` or `zos upgrade --all` based on contract changed. This should upgrade the contracts.
 
 ## Editor setup
 
@@ -99,10 +68,6 @@ We use ESLint and Prettier to format our code. Please make sure you have the fol
 ```
 editor.formatOnSave: true
 ```
-
-## CI Pipeline
-
-[https://circleci.com/gh/enabledao/enable-contracts](https://circleci.com/gh/enabledao/enable-contracts)
 
 ## Test solidity coverage
 
