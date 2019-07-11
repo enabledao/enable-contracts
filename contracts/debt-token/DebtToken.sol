@@ -1,8 +1,9 @@
 pragma solidity ^0.5.2;
 
-import "openzeppelin-solidity/contracts/token/ERC721/ERC721Mintable.sol";
-import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
-import "openzeppelin-solidity/contracts/token/ERC721/ERC721Metadata.sol";
+import "openzeppelin-eth/contracts/token/ERC721/ERC721Mintable.sol";
+import "openzeppelin-eth/contracts/token/ERC721/ERC721Enumerable.sol";
+import "openzeppelin-eth/contracts/token/ERC721/ERC721Metadata.sol";
+import "zos-lib/contracts/Initializable.sol";
 import "./DebtManager.sol";
 
 /*
@@ -10,9 +11,11 @@ import "./DebtManager.sol";
     It represents a given percentage of ownership.
     The minter contract has minting rights
 */
-contract DebtToken is DebtManager, ERC721Enumerable, ERC721Metadata, ERC721Mintable {
-    constructor(string memory name, string memory symbol) public ERC721Metadata(name, symbol) {
-        // solhint-disable-previous-line no-empty-blocks
+contract DebtToken is Initializable, DebtManager, ERC721Enumerable, ERC721Mintable, ERC721Metadata {
+    function initialize(string memory name, string memory symbol) public initializer {
+        ERC721Enumerable.initialize();
+        ERC721Mintable.initialize(msg.sender);
+        ERC721Metadata.initialize(name, symbol);
     }
 
     function mint(address, uint256) public onlyMinter returns (bool) {

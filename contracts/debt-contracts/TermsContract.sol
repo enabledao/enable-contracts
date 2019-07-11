@@ -1,13 +1,13 @@
 pragma solidity ^0.5.2;
 
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+import "openzeppelin-eth/contracts/math/SafeMath.sol";
+import "openzeppelin-eth/contracts/token/ERC20/IERC20.sol";
+import "zos-lib/contracts/Initializable.sol";
 import "../interface/ITermsContract.sol";
 import "../utils/BokkyPooBahsDateTimeLibrary.sol";
 
-contract TermsContract is ITermsContract {
+contract TermsContract is Initializable, ITermsContract {
     using SafeMath for uint256;
-
     enum TimeUnitType {HOURS, DAYS, WEEKS, MONTHS, YEARS}
 
     enum LoanStatus {
@@ -54,13 +54,13 @@ contract TermsContract is ITermsContract {
 
     // modifier onlyAfterStatus(LoanStatus status) {}
 
-    constructor(
+    function initialize(
         address _principalTokenAddr,
         uint256 _principal,
         uint256 _timeUnitType,
         uint256 _loanPeriod,
         uint256 _interestRate
-    ) public {
+    ) public initializer {
         require(_principalTokenAddr != address(0), "Loaned token must be an ERC20 token"); //TODO(Dan): More rigorous way of testing ERC20?
         require(_timeUnitType < 5, "Invalid time unit type");
         require(_loanPeriod > 0, "Loan period must be higher than 0");
@@ -93,9 +93,9 @@ contract TermsContract is ITermsContract {
         return uint256(loanParams.loanStatus);
     }
 
-    function getBorrower() public view returns (address) {
-        return borrower;
-    }
+    // function getBorrower() public view returns (address) {
+    //     return borrower;
+    // }
 
     function getLoanParams()
         public
