@@ -1,9 +1,10 @@
 pragma solidity >=0.4.22 <0.6.0;
 
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/token/ERC721/IERC721.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
-import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
+import "openzeppelin-eth/contracts/math/SafeMath.sol";
+import "openzeppelin-eth/contracts/token/ERC721/IERC721.sol";
+import "openzeppelin-eth/contracts/token/ERC20/SafeERC20.sol";
+import "openzeppelin-eth/contracts/utils/ReentrancyGuard.sol";
+import "zos-lib/contracts/Initializable.sol";
 import "../interface/ICrowdloan.sol";
 import "../interface/IClaimsToken.sol";
 import "../debt-contracts/RepaymentRouter.sol";
@@ -11,7 +12,7 @@ import "../debt-contracts/TermsContract.sol";
 import "../debt-token/DebtToken.sol";
 
 // contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuard {
-contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuard {
+contract Crowdloan is Initializable, ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuard {
     using SafeMath for uint256;
 
     struct CrowdfundParams {
@@ -20,11 +21,7 @@ contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuar
         uint256 crowdfundEnd;
     }
 
-    struct Borrower {
-        address debtor;
-    }
-
-    Borrower debtor;
+    address borrower;
     CrowdfundParams crowdfundParams;
     DebtToken debtToken;
 
@@ -46,36 +43,11 @@ contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuar
         _;
     }
 
-    constructor(
-        address _debtToken,
-        address _principalTokenAddr,
-        uint256 _principal,
-        uint256 _amortizationUnitType,
-        uint256 _termLength,
-        uint256 _termPayment,
-        uint256 _gracePeriodLength,
-        uint256 _gracePeriodPayment,
-        uint256 _interestRate,
-        uint256 _crowdfundLength,
-        uint256 _crowdfundStart
-    )
+    function initialize(address _debtToken, uint256 _crowdfundLength, uint256 _crowdfundStart)
         public
-        TermsContract(
-            _principalTokenAddr,
-            _principal,
-            _amortizationUnitType,
-            _termLength,
-            _termPayment,
-            _gracePeriodLength,
-            _gracePeriodPayment,
-            _interestRate
-        )
-        RepaymentRouter(
-            address(this), //TODO: check if we can do away with passing address to RepaymentRouter contract
-            _debtToken
-        )
+        initializer
     {
-        debtor = Borrower(msg.sender); //Needs to be update, once factory is setup
+        borrower = msg.sender; //Needs to be update, once factory is setup
         debtToken = DebtToken(_debtToken);
         crowdfundParams = CrowdfundParams(_crowdfundLength, _crowdfundStart, 0);
     }
@@ -139,6 +111,10 @@ contract Crowdloan is ICrowdloan, TermsContract, RepaymentRouter, ReentrancyGuar
 
     function getDebtToken() external view returns (address) {
         return address(debtToken);
+    }
+
+    function getBorrower() external view returns (address) {
+        return borrower;
     }
 
     /**

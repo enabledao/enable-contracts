@@ -1,12 +1,13 @@
 pragma solidity ^0.5.2;
 
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+import "openzeppelin-eth/contracts/math/SafeMath.sol";
+import "openzeppelin-eth/contracts/token/ERC20/IERC20.sol";
+import "zos-lib/contracts/Initializable.sol";
 import "../interface/IRepaymentRouter.sol";
 import "../crowdloan/Crowdloan.sol";
 import "../debt-token/DebtToken.sol";
 
-contract RepaymentRouter is IRepaymentRouter {
+contract RepaymentRouter is Initializable, IRepaymentRouter {
     using SafeMath for uint256;
 
     uint256 private _totalRepaid;
@@ -20,7 +21,7 @@ contract RepaymentRouter is IRepaymentRouter {
   	 */
     event Repayment(address indexed from, uint256 fundsRepaid);
 
-    constructor(address payable _crowdloan, address _debtToken) public {
+    function initialize(address payable _crowdloan, address _debtToken) public initializer {
         crowdloan = Crowdloan(_crowdloan);
         debtToken = DebtToken(_debtToken);
     }
