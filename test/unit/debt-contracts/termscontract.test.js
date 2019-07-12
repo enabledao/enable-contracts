@@ -34,7 +34,7 @@ contract('Terms Contract', ([sender, receiver]) => {
     interestRate
   ) => {
     const data = encodeCall(
-      'initializeInstance',
+      'initialize',
       ['address', 'uint256', 'uint256', 'uint256', 'uint256'],
       [
         principalTokenAddr,
