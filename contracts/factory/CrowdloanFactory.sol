@@ -3,6 +3,7 @@ pragma solidity ^0.5.2;
 import "zos-lib/contracts/Initializable.sol";
 import "zos-lib/contracts/application/App.sol";
 import "zos-lib/contracts/upgradeability/AdminUpgradeabilityProxy.sol";
+import "openzeppelin-eth/contracts/token/ERC20/StandaloneERC20.sol";
 import "../crowdloan/Crowdloan.sol";
 import "../debt-contracts/RepaymentManager.sol";
 import "../debt-contracts/TermsContract.sol";
@@ -45,8 +46,6 @@ contract CrowdloanFactory is Initializable {
     }
 
     function deploy(
-        address _borrower,
-        address _lender,
         address _principalTokenAddr,
         uint256 _principal,
         uint256 _timeUnitType,
@@ -68,8 +67,8 @@ contract CrowdloanFactory is Initializable {
         _controllers[1] = repaymentManagerInstance;
 
         TermsContract(termsContractInstance).initialize(
-            _borrower,
-            _lender,
+            msg.sender,
+            msg.sender,
             _principalTokenAddr,
             _principal,
             _timeUnitType,
