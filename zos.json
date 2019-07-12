@@ -3,7 +3,8 @@
   "contracts": {
     "Crowdloan": "Crowdloan",
     "TermsContract": "TermsContract",
-    "CrowdloanFactory": "CrowdloanFactory"
+    "CrowdloanFactory": "CrowdloanFactory",
+    "RepaymentManager": "RepaymentManager"
   },
   "dependencies": {},
   "name": "enable-credit",

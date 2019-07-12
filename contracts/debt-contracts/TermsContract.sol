@@ -18,14 +18,8 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
 
     event LoanStatusSet(TermsContractLib.LoanStatus status);
 
-    address public borrower; //TODO(Dan): Refactor once we combine with Crowdloan
     TermsContractLib.LoanParams public loanParams;
     TermsContractLib.ScheduledPayment[] public paymentTable;
-
-    modifier onlyBorrower() {
-        require(msg.sender == borrower, "Only borrower can call");
-        _;
-    }
 
     // TODO(Dan): To implement
     // modifier onlyAtStatus(LoanStatus status) {}
@@ -55,7 +49,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             _interestRate < 10000,
             "Interest rate be in basis points and less than 10,000 (100%)"
         );
-        borrower = msg.sender; //TODO(Dan): Refactor once we combine with Crowdloan
         ControllerRole.initialize(_controllers);
         loanParams = TermsContractLib.LoanParams({
             principalToken: _principalTokenAddr,
@@ -77,13 +70,9 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
 
     /** Public Functions
      */
-    function getLoanStatus() public view returns (uint256 loanStatus) {
-        return uint256(loanParams.loanStatus);
+    function getLoanStatus() public view returns (TermsContractLib.LoanStatus loanStatus) {
+        return loanParams.loanStatus;
     }
-
-    // function getBorrower() public view returns (address) {
-    //     return borrower;
-    // }
 
     function getPrincipal() public view returns (uint256) {
         return loanParams.principal;
@@ -111,8 +100,8 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         )
     {
         return (
-            borrower,
-            lender,
+            address(0), //TODO: Should we have borrower and lender in this contract at all?
+            address(0),
             address(loanParams.principalToken),
             loanParams.principal,
             uint256(loanParams.loanStatus),

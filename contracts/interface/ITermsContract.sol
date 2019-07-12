@@ -34,7 +34,7 @@ contract ITermsContract {
         );
 
     function setLoanStatus(TermsContractLib.LoanStatus _status) public;
-    function getLoanStatus() public view returns (uint256 loanStatus);
+    function getLoanStatus() public view returns (TermsContractLib.LoanStatus loanStatus);
 
     function getPrincipal() public view returns (uint256);
     function getPrincipalToken() public view returns (address);

@@ -33,7 +33,7 @@ contract IRepaymentManager {
     /**
      * @return the total amount paid to contract.
      */
-    function totalRepaid() public view returns (uint256);
+    function totalPaid() public view returns (uint256);
 
     /**
      * @return the shares of an account.
@@ -60,19 +60,14 @@ contract IRepaymentManager {
      * @param account Whose payments will be released.
      */
     function release(address payable account) public;
-
-    /**
-     * @dev Finalize share amounts. This allows payments to start.
-     */
-    function finalizeShares() public;
-
+    
     /**
      * @dev Increase shares of a shareholder.
      */
-    function increaseShare(address account, uint256 amount) public;
+    function increaseShares(address account, uint256 amount) public;
 
     /**
      * @dev Decrease shares of a shareholder.
      */
-    function decreaseShare(address account, uint256 amount) public;
+    function decreaseShares(address account, uint256 amount) public;
 }

@@ -6,9 +6,11 @@ import "zos-lib/contracts/Initializable.sol";
 import "../interface/IRepaymentManager.sol";
 import "../interface/ITermsContract.sol";
 import "../access/ControllerRole.sol";
+import "./TermsContractLib.sol";
 
 contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     using SafeMath for uint256;
+    using TermsContractLib for TermsContractLib.LoanStatus;
 
     uint256 private _totalShares;
     uint256 private _totalReleased;
@@ -21,7 +23,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     ITermsContract termsContract;
 
     modifier onlyActiveLoan() {
-        require(termsContract.getLoanStatus() == 4 || termsContract.getLoanStatus() == 5);
+        require(termsContract.getLoanStatus() == TermsContractLib.LoanStatus.FUNDING_COMPLETE || termsContract.getLoanStatus() == TermsContractLib.LoanStatus.REPAYMENT_CYCLE);
         _;
     }
 
@@ -33,16 +35,33 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
         payable
         initializer
     {
-        address[] memory _controllers = new address[](1);
-        _controllers[0] = _controller;
+        // address[] memory _controllers = new address[](1);
+        // _controllers[0] = _controller;
 
-        ControllerRole.initialize(_controllers);
+        // ControllerRole.initialize(_controllers);
 
         paymentToken = IERC20(_paymentToken);
     }
 
     function() external payable {
         revert();
+    }
+
+    /**
+     * @notice Send funds
+     * @param amount amount of tokens to send.
+     */
+    function pay(uint256 amount) public {
+        require(amount > 0, "No amount set to pay");
+
+        uint256 balance = paymentToken.balanceOf(address(this));
+        paymentToken.transferFrom(msg.sender, address(this), amount);
+        require(
+            paymentToken.balanceOf(address(this)) >= balance.add(amount),
+            "Were the tokens successfully sent?"
+        );
+
+        emit PaymentReceived(msg.sender, amount);
     }
 
     /**
@@ -74,21 +93,6 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     }
 
     /**
-     * @return the address of a payee.
-     */
-    function payee(uint256 index) public view returns (address) {
-        return _payees[index];
-    }
-
-    /**
-     * @return the total amount paid to contract.
-     */
-    function totalPaid() public view returns (uint256) {
-        uint256 balance = paymentToken.balanceOf(address(this));
-        return balance.add(_totalReleased);
-    }
-
-    /**
      * @return the release amount that an account could currently claim.
      */
     function releaseAllowance(address account) public view returns (uint256) {
@@ -97,20 +101,10 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     }
 
     /**
-     * @notice Send funds
-     * @param amount amount of tokens to send.
+     * @return the address of a payee.
      */
-    function pay(uint256 amount) public {
-        require(amount > 0, "No amount set to pay");
-
-        uint256 balance = paymentToken.balanceOf(address(this));
-        paymentToken.transferFrom(msg.sender, address(this), amount);
-        require(
-            paymentToken.balanceOf(address(this)) >= balance.add(amount),
-            "Were the tokens successfully sent?"
-        );
-
-        emit PaymentReceived(msg.sender, amount);
+    function payee(uint256 index) public view returns (address) {
+        return _payees[index];
     }
 
     /**
@@ -130,18 +124,32 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
         emit PaymentReleased(account, payment);
     }
 
-    function increaseShare(address account, uint256 shares_) public onlyController {
-        _increaseShare(account, shares_);
+    /**
+     * @dev Increase shares of a shareholder.
+     */
+    function increaseShares(address account, uint256 shares_) public onlyController {
+        _increaseShares(account, shares_);
     }
 
-    function decreaseShare(address account, uint256 shares_) public onlyController {
-        _decreaseShare(account, shares_);
+    /**
+     * @dev Decrease shares of a shareholder.
+     */
+    function decreaseShares(address account, uint256 shares_) public onlyController {
+        _decreaseShares(account, shares_);
+    }
+
+    /**
+     * @return the total amount paid to contract.
+     */
+    function totalPaid() public view returns (uint256) {
+        uint256 balance = paymentToken.balanceOf(address(this));
+        return balance.add(_totalReleased);
     }
 
     /**
      * @dev Increase shares of an existing payee.
      */
-    function _increaseShare(address account, uint256 shares_) private {
+    function _increaseShares(address account, uint256 shares_) private {
         require(account != address(0));
         require(shares_ > 0);
         require(_shares[account] >= 0);
@@ -154,7 +162,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     /**
      * @dev Decrease shares of an existing payee.
      */
-    function _decreaseShare(address account, uint256 shares_) private {
+    function _decreaseShares(address account, uint256 shares_) private {
         require(account != address(0));
         require(shares_ > 0);
         require(_shares[account] >= 0);

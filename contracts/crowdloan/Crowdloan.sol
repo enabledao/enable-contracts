@@ -63,11 +63,11 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     function _updateCrowdfundStatus() internal {
         uint256 principal = termsContract.getPrincipal();
         uint256 totalShares = repaymentManager.totalShares();
-        uint256 totalRepaid = repaymentManager.totalRepaid();
+        uint256 totalPaid = repaymentManager.totalPaid();
 
         if (totalShares > 0 && totalShares < principal) {
             termsContract.setLoanStatus(TermsContractLib.LoanStatus.FUNDING_STARTED);
-        } else if (totalShares >= principal && totalRepaid == 0) {
+        } else if (totalShares >= principal && totalPaid == 0) {
             termsContract.setLoanStatus(TermsContractLib.LoanStatus.FUNDING_COMPLETE);
         }
     }
@@ -86,21 +86,20 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     function fund(uint256 amount) public trackCrowdfundStatus returns (uint256) {
         require(_isBelowMaxSupply(amount), "Amount exceeds capital");
         //Mint new debt token and transfer to sender
-        repaymentManager.increaseShare(msg.sender, amount);
+        repaymentManager.increaseShares(msg.sender, amount);
         // emit FundsReceived(msg.sender, amount);  // TODO(Dan): Remove comments once IClaimsToken is implemented
     }
 
     /// @notice Get a refund for a debt token owned by the sender
     function refund(uint256 amount) public {
         require(
-            uint256(termsContract.getLoanStatus()) <
-                uint256(TermsContractLib.LoanStatus.FUNDING_COMPLETE),
+            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.FUNDING_COMPLETE, 
             "Funding already complete. Refund Impossible"
         );
 
         require(repaymentManager.shares(msg.sender) >= amount);
 
-        repaymentManager.decreaseShare(msg.sender, amount);
+        repaymentManager.decreaseShares(msg.sender, amount);
 
         IERC20 paymentToken = IERC20(termsContract.getPrincipalToken());
         paymentToken.transfer(msg.sender, amount);
