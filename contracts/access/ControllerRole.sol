@@ -15,7 +15,7 @@ contract ControllerRole is Initializable {
 
     Roles.Role private _minters;
 
-    function initialize(address[] _controllers) public initializer {
+    function initialize(address[] memory _controllers) public initializer {
         for (uint256 i = 0; i < _controllers.length; i++) {
             _addController(_controllers[i]);
         }

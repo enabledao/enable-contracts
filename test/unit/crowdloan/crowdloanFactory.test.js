@@ -20,7 +20,7 @@ contract('DividendToken', accounts => {
     gracePeriodPayment: 0,
     interestRate: 50,
     crowdfundLength: 10,
-    crowdfundStart: 10
+    crowdfundStart: 10,
   };
 
   let tx;

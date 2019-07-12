@@ -19,7 +19,6 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
 
     address borrower;
     CrowdfundParams crowdfundParams;
-    DebtToken debtToken;
 
     ITermsContract termsContract;
     IRepaymentManager repaymentManager;
@@ -36,6 +35,10 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         _updateCrowdfundStatus();
     }
 
+    modifier onlyBorrower() {
+        require();
+    }
+
     function initialize(
         address _termsContract,
         address _repaymentManager,
@@ -43,31 +46,23 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         uint256 _crowdfundStart
     ) public initializer {
         termsContract = ITermsContract(_termsContract);
-        repaymentManager = ITermsContract(_repaymentManager);
+        repaymentManager = IRepaymentManager(_repaymentManager);
 
         borrower = msg.sender; //Needs to be update, once factory is setup
         crowdfundParams = CrowdfundParams(_crowdfundLength, _crowdfundStart, 0);
     }
 
-    function _getDebtTokenValueForAmount(uint256 amount)
-        internal
-        view
-        returns (uint256 debtTokenValue)
-    {
-        return amount;
-    }
-
     // @notice additional payment does not exceed the pricipal Amount
     function _isBelowMaxSupply(uint256 amount) internal view returns (bool) {
-        return debtToken.totalDebt().add(amount) <= loanParams.principal;
+        return repaymentManager.totalShares().add(amount) <= termsContract.getLoanParams().principal;
     }
 
     // @notice reconcile the loans funding status
     function _updateCrowdfundStatus() internal {
-        if (debtToken.totalDebt() > 0 && debtToken.totalDebt() < loanParams.principal) {
-            _setLoanStatus(LoanStatus.FUNDING_STARTED);
-        } else if (debtToken.totalDebt() >= loanParams.principal && totalRepaid() == 0) {
-            _setLoanStatus(LoanStatus.FUNDING_COMPLETE);
+        if (repaymentManager.totalShares() > 0 && repaymentManager.totalShares() < termsContract.getLoanParams().principal) {
+            termsContract.setLoanStatus(LoanStatus.FUNDING_STARTED);
+        } else if (repaymentManager.totalShares() >= loanParams.principal && repaymentManager.totalRepaid() == 0) {
+            termsContract.setLoanStatus(LoanStatus.FUNDING_COMPLETE);
         }
     }
 
@@ -81,25 +76,29 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     }
 
     /// @notice Fund the loan in exchange for a debt token
-    /// @return debtTokenId Issued debt token ID
+    /// @return repaymentManagerId Issued debt token ID
     function fund(uint256 amount) public trackCrowdfundStatus returns (uint256) {
         uint256 effectiveAmount = _getDebtTokenValueForAmount(amount);
         require(_isBelowMaxSupply(effectiveAmount), "Amount exceeds capital");
         //Mint new debt token and transfer to sender
-        debtToken.addDebt(msg.sender, amount);
+        repaymentManager.addDebt(msg.sender, amount);
         // emit FundsReceived(msg.sender, amount);  // TODO(Dan): Remove comments once IClaimsToken is implemented
     }
 
+    function withdraw(uint amount) public onlyBorrower {
+        return 
+    }
+
     /// @notice Get a refund for a debt token owned by the sender
-    /// @param debtTokenId Debt token ID
-    function refund(uint256 debtTokenId) public onlyDebtTokenOwner(debtTokenId) {
+    /// @param repaymentManagerId Debt token ID
+    function refund(uint256 repaymentManagerId) public onlyDebtTokenOwner(repaymentManagerId) {
         require(
             uint256(loanParams.loanStatus) < uint256(LoanStatus.FUNDING_COMPLETE),
             "Funding already complete. Refund Impossible"
         );
 
-        uint256 _refund = debtToken.debtValue(debtTokenId);
-        debtToken.removeDebt(msg.sender, debtTokenId);
+        uint256 _refund = repaymentManager.debtValue(repaymentManagerId);
+        repaymentManager.removeDebt(msg.sender, repaymentManagerId);
         _transferERC20(loanParams.principalToken, msg.sender, _refund);
 
         emit Refund(msg.sender, _refund);
@@ -107,7 +106,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     }
 
     function getDebtToken() external view returns (address) {
-        return address(debtToken);
+        return address(repaymentManager);
     }
 
     function getBorrower() external view returns (address) {

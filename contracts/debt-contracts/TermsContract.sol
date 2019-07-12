@@ -31,7 +31,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         uint256 termEndUnixTimestamp;
     }
 
-    event LoanStatus(LoanStatus status);
+    event LoanStatusSet(LoanStatus status);
 
     address public borrower;
     address public lender;
@@ -60,7 +60,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         uint256 _gracePeriodLength,
         uint256 _gracePeriodPayment,
         uint256 _interestRate,
-        address[] _controllers,
+        address[] _controllers
     ) public initializer {
         borrower = _borrower;
         lender = _lender;
@@ -79,7 +79,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         });
     }
 
-    function setLoanStatus(uint _status) public onlyController {
+    function setLoanStatus(uint256 _status) public onlyController {
         _setLoanStatus(_status);
     }
 
@@ -147,7 +147,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     function _setLoanStatus(LoanStatus _loanStatus) internal {
         if (loanParams.loanStatus != _loanStatus) {
             loanParams.loanStatus = _loanStatus;
-            emit LoanStatus(_loanStatus);
+            emit LoanStatusSet(_loanStatus);
         }
     }
 }
