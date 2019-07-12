@@ -12,6 +12,7 @@ contract('Terms Contract', accounts => {
   let instanceParams;
   const threshold = 1000; // Testing offset for timestamps in seconds
   const params = {
+    borrower: accounts[0],
     principalToken: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
     principal: new BN(60000), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
     timeUnitType: new BN(3),
@@ -20,12 +21,11 @@ contract('Terms Contract', accounts => {
   };
 
   const reassign = (original, param, value) => {
-    const mutated = Object.assign({}, original);
-    mutated[param] = value;
-    return mutated;
+    return Object.assign({}, original, { [param]: value });
   };
 
   const initializeInstance = async (
+    borrower,
     principalTokenAddr,
     principal,
     timeUnitType,
@@ -34,13 +34,15 @@ contract('Terms Contract', accounts => {
   ) => {
     const data = encodeCall(
       'initialize',
-      ['address', 'uint256', 'uint256', 'uint256', 'uint256'],
+      ['address', 'address', 'uint256', 'uint256', 'uint256', 'uint256', 'address[]'],
       [
+        borrower,
         principalTokenAddr,
         principal.toNumber(),
         timeUnitType.toNumber(),
         loanPeriod.toNumber(),
-        interestRate.toNumber()
+        interestRate.toNumber(),
+        [accounts[0]]
       ]
     );
     const proxyAddress = await appCreate('enable-credit', 'TermsContract', accounts[1], data);
