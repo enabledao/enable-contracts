@@ -12,10 +12,4 @@ interface ITermsContract {
     /// @return uint256 The cumulative units-of-value repaid up until now.
     function getValueRepaidToDate() external view returns (uint256);
 
-    /**
-     * A method that returns a Unix timestamp representing the end of the debt agreement's term.
-     * contract.
-     */
-    function getTermStartTimestamp() external view returns (uint256);
-    function getTermEndTimestamp() external view returns (uint256);
 }
