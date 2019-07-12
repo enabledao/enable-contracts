@@ -4,7 +4,7 @@ import "../debt-contracts/TermsContractLib.sol";
 
 contract ITermsContract {
     using TermsContractLib for TermsContractLib.LoanStatus;
-    
+
     /// Returns the cumulative units-of-value expected to be repaid by a given block timestamp.
     ///  Note this is not a constant function -- this value can vary on basis of any number of
     ///  conditions (e.g. interest rates can be renegotiated if repayments are delinquent).

@@ -28,11 +28,11 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     /**
      * @dev Constructor
      */
-    function initialize(
-        address _paymentToken,
-        address _termsContract,
-        address _controller
-    ) public payable initializer {
+    function initialize(address _paymentToken, address _termsContract, address _controller)
+        public
+        payable
+        initializer
+    {
         address[] memory _controllers = new address[](1);
         _controllers[0] = _controller;
 
@@ -93,9 +93,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      */
     function releaseAllowance(address account) public view returns (uint256) {
         uint256 totalReceived = totalPaid();
-        return totalReceived.mul(_shares[account]).div(_totalShares).sub(
-            _released[account]
-        );
+        return totalReceived.mul(_shares[account]).div(_totalShares).sub(_released[account]);
     }
 
     /**
@@ -103,11 +101,14 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @param amount amount of tokens to send.
      */
     function pay(uint256 amount) public {
-        require(amount > 0, 'No amount set to pay');
+        require(amount > 0, "No amount set to pay");
 
         uint256 balance = paymentToken.balanceOf(address(this));
         paymentToken.transferFrom(msg.sender, address(this), amount);
-        require(paymentToken.balanceOf(address(this)) >= balance.add(amount), 'Were the tokens successfully sent?');
+        require(
+            paymentToken.balanceOf(address(this)) >= balance.add(amount),
+            "Were the tokens successfully sent?"
+        );
 
         emit PaymentReceived(msg.sender, amount);
     }

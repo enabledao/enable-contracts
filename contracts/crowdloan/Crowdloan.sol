@@ -55,15 +55,15 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
 
     // @notice additional payment does not exceed the pricipal Amount
     function _isBelowMaxSupply(uint256 amount) internal view returns (bool) {
-        uint principal = termsContract.getPrincipal();
+        uint256 principal = termsContract.getPrincipal();
         return repaymentManager.totalShares().add(amount) <= principal;
     }
 
     // @notice reconcile the loans funding status
     function _updateCrowdfundStatus() internal {
-        uint principal = termsContract.getPrincipal();
-        uint totalShares = repaymentManager.totalShares();
-        uint totalRepaid = repaymentManager.totalRepaid();
+        uint256 principal = termsContract.getPrincipal();
+        uint256 totalShares = repaymentManager.totalShares();
+        uint256 totalRepaid = repaymentManager.totalRepaid();
 
         if (totalShares > 0 && totalShares < principal) {
             termsContract.setLoanStatus(TermsContractLib.LoanStatus.FUNDING_STARTED);
@@ -93,7 +93,8 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     /// @notice Get a refund for a debt token owned by the sender
     function refund(uint256 amount) public {
         require(
-            uint256(termsContract.getLoanStatus()) < uint256(TermsContractLib.LoanStatus.FUNDING_COMPLETE),
+            uint256(termsContract.getLoanStatus()) <
+                uint256(TermsContractLib.LoanStatus.FUNDING_COMPLETE),
             "Funding already complete. Refund Impossible"
         );
 

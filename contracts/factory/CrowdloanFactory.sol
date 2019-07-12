@@ -88,7 +88,7 @@ contract CrowdloanFactory is Initializable {
         RepaymentManager(address(uint160(repaymentManagerInstance))).initialize(
             _principalTokenAddr,
             termsContractInstance,
-            crowdloanInstance  
+            crowdloanInstance
         );
 
         emit LoanCreated(
