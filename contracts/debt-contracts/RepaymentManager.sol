@@ -21,7 +21,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     ITermsContract termsContract;
 
     modifier onlyActiveLoan() {
-        require(termsContract.getLoanStatus == 4 || termsContract.getLoanStatus == 5);
+        require(termsContract.getLoanStatus() == 4 || termsContract.getLoanStatus() == 5);
         _;
     }
 
@@ -87,18 +87,45 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     }
 
     /**
+     * @return the total amount paid to contract.
+     */
+    function totalPaid() public view returns (uint256) {
+        uint256 balance = paymentToken.balanceOf(this);
+        return balance.add(_totalReleased);
+    }
+
+    /**
+     * @return the release amount that an account could currently claim.
+     */
+    function releaseAllowance(address account) public view returns (uint256) {
+        uint256 totalReceived = totalPaid();
+        return totalReceived.mul(_shares[account]).div(_totalShares).sub(
+            _released[account]
+        );
+    }
+
+    /**
+     * @notice Send funds
+     * @param amount amount of tokens to send.
+     */
+    function pay(uint256 amount) public {
+        require(amount > 0, 'No amount set to pay');
+
+        uint256 balance = paymentToken.balanceOf(this);
+        paymentToken.transferFrom(account, address(this), amount);
+        require(paymentToken.balanceOf(this) >= balance.add(amount), 'Were the tokens successfully sent?');
+
+        emit PaymentReceived(msg.sender, amount);
+    }
+
+    /**
      * @dev Release one of the payee's proportional payment.
      * @param account Whose payments will be released.
      */
     function release(address payable account) public {
         require(_shares[account] > 0);
-        uint256 balance = paymentToken.balanceOf(this);
 
-        uint256 totalReceived = balance.add(_totalReleased);
-        uint256 payment = totalReceived.mul(_shares[account]).div(_totalShares).sub(
-            _released[account]
-        );
-
+        uint256 payment = releaseAllowance(address account)
         require(payment != 0);
 
         _released[account] = _released[account].add(payment);

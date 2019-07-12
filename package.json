@@ -12,7 +12,10 @@
     "solhint": "./node_modules/.bin/solhint contracts/**/*.sol",
     "prettier:solidity": "./node_modules/.bin/prettier --write contracts/**/*.sol",
     "solium": "./node_modules/.bin/solium -d contracts/",
-    "solium:fix": "./node_modules/.bin/solium -d contracts/ --fix"
+    "solium:fix": "./node_modules/.bin/solium -d contracts/ --fix",
+    "zos:create": "zos create",
+    "zos:publish": "zos publish",
+    "zos:push": "zos push"
   },
   "husky": {
     "hooks": {
