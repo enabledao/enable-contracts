@@ -11,21 +11,5 @@ interface ICrowdloan {
     /// @param debtTokenId Debt token ID
     function refund(uint256 debtTokenId) external;
 
-    function getLoanStatus() external view returns (uint256);
-
-    function getLoanParams()
-        external
-        view
-        returns (
-            address principalToken,
-            uint256 principal,
-            uint256 loanStatus,
-            uint256 amortizationUnitType,
-            uint256 termLength,
-            uint256 interestRate,
-            uint256 termStartUnixTimestamp,
-            uint256 termEndUnixTimestamp
-        );
-
     function getDebtToken() external view returns (address);
 }

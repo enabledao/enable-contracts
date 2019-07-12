@@ -65,8 +65,8 @@ contract CrowdloanFactory is Initializable {
     function deploy(
         address _principalTokenAddr,
         uint256 _principal,
-        uint256 _amortizationUnitType,
-        uint256 _termLength,
+        uint256 _timeUnitType,
+        uint256 _loanPeriod,
         uint256 _termPayment,
         uint256 _gracePeriodLength,
         uint256 _gracePeriodPayment,
@@ -86,11 +86,8 @@ contract CrowdloanFactory is Initializable {
         TermsContract(termsContractInstance).initialize(
             _principalTokenAddr,
             _principal,
-            _amortizationUnitType,
-            _termLength,
-            _termPayment,
-            _gracePeriodLength,
-            _gracePeriodPayment,
+            _timeUnitType,
+            _loanPeriod,
             _interestRate
         );
 
