@@ -7,10 +7,9 @@ const {appCreate, getAppAddress, encodeCall} = require('../testHelpers');
 
 const TermsContract = artifacts.require('TermsContract');
 
-contract('Terms Contract', ([sender, receiver]) => {
+contract('Terms Contract', accounts => {
   let instance;
   let instanceParams;
-  const borrower = sender;
   const threshold = 1000; // Testing offset for timestamps in seconds
   const params = {
     principalToken: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
@@ -44,9 +43,7 @@ contract('Terms Contract', ([sender, receiver]) => {
         interestRate.toNumber()
       ]
     );
-    // console.log(data);
-    const proxyAddress = await appCreate('enable-credit', 'TermsContract', sender, data);
-    // console.log(proxyAddrsess);
+    const proxyAddress = await appCreate('enable-credit', 'TermsContract', accounts[1], data);
     return TermsContract.at(proxyAddress);
   };
 
@@ -54,7 +51,7 @@ contract('Terms Contract', ([sender, receiver]) => {
     const mutated = reassign(original, param, value);
     // console.log(mutated);
     // await expectRevert(TermsContract.new(...Object.values(mutated)), error);
-    await expectRevert(initializeInstance(...Object.values(mutated)), error);
+    await expectRevert.unspecified(initializeInstance(...Object.values(mutated)), error);
   };
 
   const interestPayment = (principal, interest) => {
@@ -67,8 +64,8 @@ contract('Terms Contract', ([sender, receiver]) => {
       await invalidInputCheckRevert(
         params,
         'principalToken',
-        constants.ZERO_ADDRESS,
-        'Loaned tsoken must be an ERC20 token'
+        constants.ZERO_ADDRESS
+        // 'Loaned tsoken must be an ERC20 token'
       );
     });
     it('should revert if time unit is invalid', async () => {
@@ -78,33 +75,31 @@ contract('Terms Contract', ([sender, receiver]) => {
       await invalidInputCheckRevert(
         params,
         'loanPeriod',
-        new BN(0),
-        'Loan period must be higher than 0'
+        new BN(0)
+        // 'Loan period must be higher than 0'
       );
     });
     it('should revert if interest rate is not in basis points', async () => {
       await invalidInputCheckRevert(
         params,
         'interestRate',
-        new BN(6),
-        'Interest rate should be in basis points and have minimum of 10 (0.1%)'
+        new BN(6)
+        // 'Interest rate should be in basis points and have minimum of 10 (0.1%)'
       );
     });
     it('should revert if interest rate is too high', async () => {
       await invalidInputCheckRevert(
         params,
         'interestRate',
-        new BN(1000000),
-        'Interest rate be in basis points and less than 10,000 (100%)'
+        new BN(1000000)
+        // 'Interest rate be in basis points and less than 10,000 (100%)'
       );
     });
   });
 
   context('valid loan params', async () => {
     beforeEach(async () => {
-      // instance = await TermsContract.new(...Object.values(params), {from: borrower});
       instance = await initializeInstance(...Object.values(params));
-
       instanceParams = await instance.getLoanParams();
     });
 
@@ -147,26 +142,25 @@ contract('Terms Contract', ([sender, receiver]) => {
       const {principal, interestRate, loanPeriod} = params;
       const amt = interestPayment(principal, interestRate);
       for (let i = 0; i < loanPeriod; i += 1) {
-        const p = i < loanPeriod - 1 ? new BN(0) : new BN(principal);
+        const p = i < loanPeriod.toNumber() - 1 ? new BN(0) : new BN(principal);
         const int = new BN(amt);
         const t = p.add(int);
         expected.push({principal: p, interest: int, total: t});
         queries.push(instance.paymentTable(i));
       }
       const results = await Promise.all(queries);
-      for (let i = 0; i < loanPeriod; i += 1) {
-        const {principal, interest, total} = results[i];
-        expect(principal).to.be.a.bignumber.that.equals(
-          expected[i].principal,
-          `Incorrect principal amount in payments table in month ${i}`
+      for (let cur = 0; cur < loanPeriod; cur += 1) {
+        expect(results[cur].principal).to.be.a.bignumber.that.equals(
+          expected[cur].principal,
+          `Incorrect principal amount in payments table in month ${cur}`
         );
-        expect(interest).to.be.a.bignumber.that.equals(
-          expected[i].interest,
-          `Incorrect interest amount in payments table in month ${i}`
+        expect(results[cur].interest).to.be.a.bignumber.that.equals(
+          expected[cur].interest,
+          `Incorrect interest amount in payments table in month ${cur}`
         );
-        expect(total).to.be.a.bignumber.that.equals(
-          expected[i].total,
-          `Incorrect principal amount in payments table in month ${i}`
+        expect(results[cur].total).to.be.a.bignumber.that.equals(
+          expected[cur].total,
+          `Incorrect principal amount in payments table in month ${cur}`
         );
       }
     });
@@ -180,7 +174,6 @@ contract('Terms Contract', ([sender, receiver]) => {
 
       const tx = await instance.startLoan();
       const {loanStartTimestamp, loanEndTimestamp, loanStatus} = await instance.getLoanParams();
-
       expect(loanStatus).to.be.a.bignumber.that.equals(
         new BN(4),
         'loan status should be updated to loan started / repayment cycle'
@@ -192,14 +185,14 @@ contract('Terms Contract', ([sender, receiver]) => {
       );
 
       const cur = moment(new Date().getTime());
-      const end = cur.add(loanPeriod, 'months').unix();
+      const end = cur.add(loanPeriod.toNumber(), 'months').unix();
       expect(loanEndTimestamp.toNumber()).to.be.within(
         end - threshold,
         end + threshold,
-        'loanEndTimestamp is more than 1000 seconds from now'
+        'loanEndTimestamp is more than 1000 seconds from correct end date'
       );
 
-      for (let i = 0; i < loanPeriod; i += 1) {
+      for (let i = 0; i < loanPeriod.toNumber(); i += 1) {
         queries.push(instance.paymentTable(i));
       }
       const results = await Promise.all(queries);
@@ -220,9 +213,9 @@ contract('Terms Contract', ([sender, receiver]) => {
       const tranche = interestPayment(principal, interestRate);
       const tx = await instance.startLoan();
 
-      for (let i = 0; i < loanPeriod; i += 1) {
+      for (let i = 0; i < loanPeriod.toNumber(); i += 1) {
         const estimated =
-          i < loanPeriod - 1
+          i < loanPeriod.toNumber() - 1
             ? new BN(i + 1).mul(tranche)
             : new BN(i + 1).mul(tranche).add(principal); // TODO(Dan): Should actually be done in BN
 
