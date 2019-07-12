@@ -1,5 +1,5 @@
-// Shares are increased for new user correctly
-// Shares can't be decreased for new user
+// Shares are increased for new user (i.e. user with no shares) correctly
+// Shares can't be decreased for new user (that has no shares)
 // Shares are increased for existing user correctly
 // Shares are decreased for existing user correctly
 

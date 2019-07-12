@@ -165,7 +165,11 @@ contract('Terms Contract', accounts => {
       }
     });
 
-    xit('only borrower should be able to start the loan', async () => {});
+    it('controller should be able to call appropriate set methods', async () => {});
+    it('non-controller should not be able to call appropriate set methods', async () => {});
+
+    it('borrower should be able to start the loan', async () => {});
+    it('non-borrower should not be able to start the loan', async () => {});
 
     it('starting a loan should write due timestamps to the payments table and update loan status', async () => {
       const {loanPeriod} = params;
