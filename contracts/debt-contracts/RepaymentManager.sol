@@ -29,22 +29,16 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @dev Constructor
      */
     function initialize(
-        address[] memory payees,
-        uint256[] memory shares,
         address _paymentToken,
         address _termsContract,
         address _controller
     ) public payable initializer {
-        require(payees.length == shares.length);
-        require(payees.length > 0);
+        address[] memory _controllers = new address[](1);
+        _controllers[0] = _controller;
 
-        ControllerRole.initialize(_controller);
+        ControllerRole.initialize(_controllers);
 
         paymentToken = IERC20(_paymentToken);
-
-        for (uint256 i = 0; i < payees.length; i++) {
-            _addPayee(payees[i], shares[i]);
-        }
     }
 
     function() external payable {
@@ -90,7 +84,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @return the total amount paid to contract.
      */
     function totalPaid() public view returns (uint256) {
-        uint256 balance = paymentToken.balanceOf(this);
+        uint256 balance = paymentToken.balanceOf(address(this));
         return balance.add(_totalReleased);
     }
 
@@ -111,9 +105,9 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     function pay(uint256 amount) public {
         require(amount > 0, 'No amount set to pay');
 
-        uint256 balance = paymentToken.balanceOf(this);
-        paymentToken.transferFrom(account, address(this), amount);
-        require(paymentToken.balanceOf(this) >= balance.add(amount), 'Were the tokens successfully sent?');
+        uint256 balance = paymentToken.balanceOf(address(this));
+        paymentToken.transferFrom(msg.sender, address(this), amount);
+        require(paymentToken.balanceOf(address(this)) >= balance.add(amount), 'Were the tokens successfully sent?');
 
         emit PaymentReceived(msg.sender, amount);
     }
@@ -125,7 +119,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     function release(address payable account) public {
         require(_shares[account] > 0);
 
-        uint256 payment = releaseAllowance(address account)
+        uint256 payment = releaseAllowance(account);
         require(payment != 0);
 
         _released[account] = _released[account].add(payment);

@@ -2,8 +2,6 @@
   "zosversion": "2.2",
   "contracts": {
     "Crowdloan": "Crowdloan",
-    "DebtToken": "DebtToken",
-    "RepaymentRouter": "RepaymentRouter",
     "TermsContract": "TermsContract",
     "CrowdloanFactory": "CrowdloanFactory"
   },

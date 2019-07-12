@@ -6,43 +6,21 @@ import "zos-lib/contracts/Initializable.sol";
 import "../interface/ITermsContract.sol";
 import "../access/ControllerRole.sol";
 import "../utils/BokkyPooBahsDateTimeLibrary.sol";
+import "./TermsContractLib.sol";
 
 contract TermsContract is Initializable, ITermsContract, ControllerRole {
     using SafeMath for uint256;
-    enum TimeUnitType {HOURS, DAYS, WEEKS, MONTHS, YEARS}
-    enum LoanStatus {
-        NOT_STARTED,
-        FUNDING_STARTED,
-        FUNDING_COMPLETE,
-        FUNDING_FAILED,
-        REPAYMENT_CYCLE,
-        REPAYMENT_COMPLETE
-    }
 
-    struct LoanParams {
-        IERC20 principalToken;
-        uint256 principal;
-        LoanStatus loanStatus;
-        TimeUnitType timeUnitType; // NOTE(Dan): To evaluate whether we should get rid of this param
-        uint256 loanPeriod;
-        uint256 interestRate; // NOTE(Dan): This needs to be aligned with the timeUnitType
-        uint256 interestPayment;
-        uint256 loanStartTimestamp;
-        uint256 loanEndTimestamp;
-    }
+    using TermsContractLib for TermsContractLib.LoanParams;
+    using TermsContractLib for TermsContractLib.ScheduledPayment;
+    using TermsContractLib for TermsContractLib.TimeUnitType;
+    using TermsContractLib for TermsContractLib.LoanStatus;
 
-    using SafeMath for uint256;
-
-    struct ScheduledPayment {
-        uint256 due;
-        uint256 principal;
-        uint256 interest;
-        uint256 total;
-    }
+    event LoanStatusSet(TermsContractLib.LoanStatus status);
 
     address public borrower; //TODO(Dan): Refactor once we combine with Crowdloan
-    LoanParams public loanParams;
-    ScheduledPayment[] public paymentTable;
+    TermsContractLib.LoanParams public loanParams;
+    TermsContractLib.ScheduledPayment[] public paymentTable;
 
     modifier onlyBorrower() {
         require(msg.sender == borrower, "Only borrower can call");
@@ -63,8 +41,8 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         uint256 _principal,
         uint256 _timeUnitType,
         uint256 _loanPeriod,
-        uint256 _interestRate
-        address[] _controllers,
+        uint256 _interestRate,
+        address[] memory _controllers
     ) public initializer {
         require(_principalTokenAddr != address(0), "Loaned token must be an ERC20 token"); //TODO(Dan): More rigorous way of testing ERC20?
         require(_timeUnitType < 5, "Invalid time unit type");
@@ -79,11 +57,11 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         );
         borrower = msg.sender; //TODO(Dan): Refactor once we combine with Crowdloan
         ControllerRole.initialize(_controllers);
-        loanParams = LoanParams({
-            principalToken: IERC20(_principalTokenAddr),
+        loanParams = TermsContractLib.LoanParams({
+            principalToken: _principalTokenAddr,
             principal: _principal,
-            loanStatus: LoanStatus.NOT_STARTED,
-            timeUnitType: TimeUnitType(_timeUnitType),
+            loanStatus: TermsContractLib.LoanStatus.NOT_STARTED,
+            timeUnitType: TermsContractLib.TimeUnitType(_timeUnitType),
             loanPeriod: _loanPeriod,
             interestRate: _interestRate, // TODO: reassign constant values below
             interestPayment: calcInterestPayment(_principal, _interestRate),
@@ -93,7 +71,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         initializePaymentTable();
     }
 
-    function setLoanStatus(uint _status) public onlyController {
+    function setLoanStatus(TermsContractLib.LoanStatus _status) public onlyController {
         _setLoanStatus(_status);
     }
 
@@ -106,6 +84,14 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     // function getBorrower() public view returns (address) {
     //     return borrower;
     // }
+
+    function getPrincipal() public view returns (uint256) {
+        return loanParams.principal;
+    }
+
+    function getPrincipalToken() public view returns (address) {
+        return loanParams.principalToken;
+    }
 
     function getLoanParams()
         public
@@ -143,7 +129,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
      */
     function initializePaymentTable() private {
         for (uint256 i = 0; i < loanParams.loanPeriod.sub(1); i++) {
-            ScheduledPayment memory current = ScheduledPayment({
+            TermsContractLib.ScheduledPayment memory current = TermsContractLib.ScheduledPayment({
                 due: 0,
                 principal: 0,
                 interest: loanParams.interestPayment,
@@ -151,7 +137,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             });
             paymentTable.push(current);
         }
-        ScheduledPayment memory last = ScheduledPayment({
+        TermsContractLib.ScheduledPayment memory last = TermsContractLib.ScheduledPayment({
             due: 0,
             principal: loanParams.principal,
             interest: loanParams.interestPayment,
@@ -171,7 +157,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         );
         loanParams.loanStartTimestamp = startTimestamp;
         for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
-            ScheduledPayment storage current = paymentTable[i];
+            TermsContractLib.ScheduledPayment storage current = paymentTable[i];
             //TODO(Dan): Conditional addDays, Months, Years (or remove the timeAmortizationUnit altogether)
             uint256 shifted = BokkyPooBahsDateTimeLibrary.addMonths(startTimestamp, i + 1);
             current.due = shifted;
@@ -179,7 +165,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
                 loanParams.loanEndTimestamp = shifted;
             }
         }
-        loanParams.loanStatus = LoanStatus.REPAYMENT_CYCLE;
+        loanParams.loanStatus = TermsContractLib.LoanStatus.REPAYMENT_CYCLE;
     }
 
     /** PMT function to calculate periodic interest rate
@@ -202,7 +188,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256) {
         uint256 total = 0;
         for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
-            ScheduledPayment memory cur = paymentTable[i];
+            TermsContractLib.ScheduledPayment memory cur = paymentTable[i];
             if (cur.due < timestamp) {
                 total += cur.total;
             }
@@ -212,17 +198,17 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
 
     /// Returns the cumulative units-of-value repaid by the point at which this method is called.
     /// @return uint256 The cumulative units-of-value repaid up until now.
-    function getValueRepaidToDate() external view returns (uint256) {
+    function getValueRepaidToDate() public view returns (uint256) {
         return 1; // TODO(Dan): Should be moved to the repaymentRouter
     }
 
     // @notice set the present state of the Loan;
     // increase present state of the loan
     // needs to be protected!!!
-    function _setLoanStatus(LoanStatus _loanStatus) internal {
+    function _setLoanStatus(TermsContractLib.LoanStatus _loanStatus) internal {
         if (loanParams.loanStatus != _loanStatus) {
             loanParams.loanStatus = _loanStatus;
-            emit LoanStatus(_loanStatus);
+            emit LoanStatusSet(_loanStatus);
         }
     }
 }
