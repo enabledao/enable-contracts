@@ -23,7 +23,10 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     ITermsContract termsContract;
 
     modifier onlyActiveLoan() {
-        require(termsContract.getLoanStatus() == TermsContractLib.LoanStatus.FUNDING_COMPLETE || termsContract.getLoanStatus() == TermsContractLib.LoanStatus.REPAYMENT_CYCLE);
+        require(
+            termsContract.getLoanStatus() == TermsContractLib.LoanStatus.FUNDING_COMPLETE ||
+                termsContract.getLoanStatus() == TermsContractLib.LoanStatus.REPAYMENT_CYCLE
+        );
         _;
     }
 

@@ -60,7 +60,7 @@ contract IRepaymentManager {
      * @param account Whose payments will be released.
      */
     function release(address payable account) public;
-    
+
     /**
      * @dev Increase shares of a shareholder.
      */

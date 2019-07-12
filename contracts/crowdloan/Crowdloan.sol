@@ -93,7 +93,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     /// @notice Get a refund for a debt token owned by the sender
     function refund(uint256 amount) public {
         require(
-            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.FUNDING_COMPLETE, 
+            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.FUNDING_COMPLETE,
             "Funding already complete. Refund Impossible"
         );
 
