@@ -3,7 +3,7 @@ import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helper
 const {expect} = require('chai');
 const moment = require('moment');
 
-const {appCreate, getAppAddress, encodeCall} = require('../testHelpers');
+const {appCreate, getAppAddress, encodeCall} = require('../../testHelpers');
 
 const TermsContract = artifacts.require('TermsContract');
 
