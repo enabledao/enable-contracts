@@ -5,6 +5,8 @@ import "../debt-contracts/TermsContractLib.sol";
 contract ITermsContract {
     using TermsContractLib for TermsContractLib.LoanStatus;
 
+    event LoanStatusSet(TermsContractLib.LoanStatus status);
+
     function borrower() public view returns (address);
     /// Returns the cumulative units-of-value expected to be repaid by a given block timestamp.
     ///  Note this is not a constant function -- this value can vary on basis of any number of

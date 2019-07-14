@@ -15,6 +15,5 @@ interface ICrowdloan {
     /// @param debtTokenId Debt token ID
     function refund(uint256 debtTokenId) external;
 
-    function getDebtToken() external view returns (address);
     function getBorrower() external view returns (address);
 }

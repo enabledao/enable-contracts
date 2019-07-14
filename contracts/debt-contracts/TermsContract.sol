@@ -16,8 +16,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     using TermsContractLib for TermsContractLib.TimeUnitType;
     using TermsContractLib for TermsContractLib.LoanStatus;
 
-    event LoanStatusSet(TermsContractLib.LoanStatus status);
-
     TermsContractLib.LoanParams public loanParams;
     TermsContractLib.ScheduledPayment[] public paymentTable;
 

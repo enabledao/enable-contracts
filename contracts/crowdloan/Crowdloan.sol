@@ -68,6 +68,10 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
             crowdfundParams.crowdfundStart == 0 || crowdfundParams.crowdfundStart > now,
             "KickOff already passed"
         );
+        require(
+            msg.sender == getBorrower(),
+            "Only borrower can start crowdfund"
+        );
         crowdfundParams.crowdfundStart = now;
         termsContract.setLoanStatus(TermsContractLib.LoanStatus.FUNDING_STARTED);
     }
@@ -98,11 +102,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         emit Refund(msg.sender, amount);
     }
 
-    function getDebtToken() external view returns (address) {
-        return address(repaymentManager);
-    }
-
-    function getBorrower() external view returns (address) {
+    function getBorrower() public view returns (address) {
         return termsContract.borrower();
     }
 

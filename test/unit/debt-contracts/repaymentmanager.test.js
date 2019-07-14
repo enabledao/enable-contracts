@@ -25,7 +25,6 @@ const PaymentToken = artifacts.require('StandaloneERC20');
 
 contract('RepaymentManager', accounts => {
 
-  let result;
   let paymentToken;
   let termsContract;
   let repaymentManager;
@@ -77,12 +76,12 @@ contract('RepaymentManager', accounts => {
   });
 
   it('RepaymentManager should have PaymentToken address initialized', async () => {
-    result = await repaymentManager.paymentToken.call();
+    const result = await repaymentManager.paymentToken.call();
     expect(result).to.be.equal(paymentToken.address);
   });
 
   it('RepaymentManager should have TermsContract address initialized', async () => {
-    result = await repaymentManager.termsContract.call();
+    const result = await repaymentManager.termsContract.call();
     expect(result).to.be.equal(termsContract.address);
   });
 

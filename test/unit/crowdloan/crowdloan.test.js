@@ -39,19 +39,7 @@ contract('Crowdloan', accounts => {
     );
 
     termsContract = await TermsContract.new();
-    await termsContract.initialize(
-      borrower,
-      paymentToken.address,
-      ...Object.values(loanParams),
-      controllers
-    );
-
     repaymentManager = await RepaymentManager.new();
-    await repaymentManager.initialize(
-      paymentToken.address,
-      termsContract.address,
-      controllers
-    );
 
     crowdloan = await Crowdloan.new();
     await crowdloan.initialize(
@@ -59,9 +47,26 @@ contract('Crowdloan', accounts => {
       repaymentManager.address,
       ...Object.values(crowdfundParams)
     );
+    controllers.push(crowdloan.address)
+
+    await termsContract.initialize(
+      borrower,
+      paymentToken.address,
+      ...Object.values(loanParams),
+      controllers
+    );
+
+    await repaymentManager.initialize(
+      paymentToken.address,
+      termsContract.address,
+      controllers
+    );
   });
 
   it('Crowdloan should deploy successfully', async () => {
+    expect(
+      await crowdloan.getBorrower.call()
+    ).to.equal(borrower);
     assert.exists(crowdloan.address, 'Crowdloan was not successfully deployed');
   });
 
@@ -77,18 +82,22 @@ contract('Crowdloan', accounts => {
     assert.exists(paymentToken.address, 'PaymentToken was not successfully deployed');
   });
 
-  xit('should emit a LoanCreated event on successful deploy', async () => {
-    tx = await crowdloan.deploy(
-      crowdloan.address,
-      loanParams.principal,
-      loanParams.timeUnitType,
-      loanParams.loanPeriod,
-      loanParams.interestRate,
-      loanParams.crowdfundLength,
-      loanParams.crowdfundStart,
+  it('should successfully startCrowdfund', async () => {
+
+    await expectRevert.unspecified(
+      crowdloan.startCrowdfund(
+        {from: accounts[4]}
+      ),
+      // 'Only borrower can start crowdfund'
+    );
+
+    const tx = await crowdloan.startCrowdfund(
       {from: borrower}
     );
-    expectEvent.inLogs(tx.logs, 'LoanCreated');
+
+    expectEvent.inTransaction(tx.tx, 'LoanStatusSet',{
+      status: new BN(1) //FUNDING_STARTED
+    });
   });
 
   xit('should deploy all contracts on successful deploy', async () => {
