@@ -21,7 +21,6 @@ contract ITermsContract {
         view
         returns (
             address borrower,
-            address lender,
             address principalToken,
             uint256 principal,
             uint256 loanStatus,

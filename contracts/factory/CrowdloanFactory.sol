@@ -68,7 +68,6 @@ contract CrowdloanFactory is Initializable {
 
         TermsContract(termsContractInstance).initialize(
             msg.sender,
-            msg.sender,
             _principalTokenAddr,
             _principal,
             _timeUnitType,
