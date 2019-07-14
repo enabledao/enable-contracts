@@ -90,7 +90,7 @@ contract('RepaymentManager', accounts => {
     expect(result).to.be.equal(termsContract.address);
   });
 
-  it('should successfully a add a new Payee', async () => {
+  it('should successfully add a new Payee', async () => {
 
     const payee = lenders[0];
     const tx = await repaymentManager.increaseShares(
@@ -98,11 +98,134 @@ contract('RepaymentManager', accounts => {
       payee.shares,
       {from: controllers[0]}
     );
-    expectEvent.inLogs(tx.logs, 'PayeeAdded');
+    expectEvent.inLogs(tx.logs, 'PayeeAdded', {
+      account: payee.address
+    });
 
     const shares = await repaymentManager.shares.call(payee.address);
     expect(shares).to.be.bignumber.equal(payee.shares);
+  });
 
+  it('should successfully increase Payee\'s shares', async () => {
+
+    const payee = lenders[1];
+    await repaymentManager.increaseShares(
+      payee.address,
+      payee.shares,
+      {from: controllers[0]}
+    );
+
+    const tx = await repaymentManager.increaseShares(
+      payee.address,
+      payee.shares,
+      {from: controllers[0]}
+    );
+
+    expectEvent.inLogs(tx.logs, 'ShareIncreased', {
+      account: payee.address,
+      sharesAdded: payee.shares
+    });
+
+    const shares = await repaymentManager.shares.call(payee.address);
+    const expectedShares = payee.shares.mul(new BN(2));//total shares added = 2*payee.shares
+    expect(shares).to.be.bignumber.equal(expectedShares);
+  });
+
+  it('should successfully decrease Payee\'s shares', async () => {
+
+    const payee = lenders[1];
+    const lessShares = new BN(50);
+
+    await expectRevert.unspecified(
+      repaymentManager.decreaseShares(
+        payee.address,
+        lessShares,
+        {from: controllers[0]}
+      ),
+      // 'Account has zero shares'
+    );
+
+    await repaymentManager.increaseShares(
+      payee.address,
+      payee.shares,
+      {from: controllers[0]}
+    );
+
+    const tx = await repaymentManager.decreaseShares(
+      payee.address,
+      lessShares,
+      {from: controllers[0]}
+    );
+
+    expectEvent.inLogs(tx.logs, 'ShareDecreased', {
+      account: payee.address,
+      sharesRemoved: lessShares
+    });
+
+    const shares = await repaymentManager.shares.call(payee.address);
+    expect(shares).to.be.bignumber.equal(payee.shares.sub(lessShares)); //total shares added = 2*payee.shares
+  });
+
+  it('should successfully pay into the contract', async () => {
+
+    const paymentAmount = new BN(150);
+    const payers = [
+      {
+        address: accounts[0],
+        value: new BN(150)
+      },
+      {
+        address: accounts[0],
+        value: new BN(150)
+      },
+    ];
+
+    await paymentToken.mint(payers[0].address, payers[0].value)
+
+    // await Promise.all(
+    //   payers.map( payer =>
+    //     paymentToken.mint(payer.address, payer.value)
+    //   )
+    // );
+
+    // await expectRevert.unspecified(
+    //   repaymentManager.pay (
+    //     new BN(0),
+    //     {
+    //       from: payers[0].address
+    //     }
+    //   ),
+    //   // 'No amount set to pay'
+    // );
+
+    // await expectRevert(
+    //   repaymentManager.decreaseShares(
+    //     payee.address,
+    //     lessShares,
+    //     {from: controllers[0]}
+    //   ),
+    //   'Account has zero shares'
+    // )
+    //
+    // await repaymentManager.increaseShares(
+    //   payee.address,
+    //   payee.shares,
+    //   {from: controllers[0]}
+    // );
+    //
+    // const tx = await repaymentManager.decreaseShares(
+    //   payee.address,
+    //   lessShares,
+    //   {from: controllers[0]}
+    // );
+    //
+    // expectEvent.inLogs(tx.logs, 'ShareDecreased', {
+    //   account: payee.address,
+    //   sharesRemoved: lessShares
+    // });
+    //
+    // const shares = await repaymentManager.shares.call(payee.address);
+    // expect(shares).to.be.bignumber.equal(payee.shares.sub(lessShares)); //total shares added = 2*payee.shares
   });
 
   xit('should emit a PaymentReceived event on successful payment', async () => {
