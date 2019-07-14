@@ -25,14 +25,12 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     address borrower;
     CrowdfundParams crowdfundParams;
 
-    ITermsContract termsContract;
-    IRepaymentManager repaymentManager;
+    ITermsContract public termsContract;
+    IRepaymentManager public repaymentManager;
 
     event Fund(address indexed sender, uint256 amount);
     event Refund(address indexed sender, uint256 amount);
     event ReleaseFunds(address indexed sender, uint256 amount);
-
-    event StatusChanged(uint256 loanStatus);
 
     modifier trackCrowdfundStatus() {
         _updateCrowdfundStatus();
