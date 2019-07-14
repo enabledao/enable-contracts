@@ -112,7 +112,9 @@ contract('Terms Contract', accounts => {
     it('should record loan params in storage', async () => {
       Object.keys(params).forEach(key => {
         const value = instanceParams[key];
-        if (value instanceof BN) {
+        if (key === 'borrower') {
+          expect(instanceParams[0]).to.equal(params[key])
+        } else if (value instanceof BN) {
           expect(value).to.be.a.bignumber.that.equals(new BN(params[key]));
         } else {
           expect(value).to.equal(params[key]);
