@@ -47,19 +47,18 @@ contract('Crowdloan', accounts => {
       repaymentManager.address,
       ...Object.values(crowdfundParams)
     );
-    controllers.push(crowdloan.address)
 
     await termsContract.initialize(
       borrower,
       paymentToken.address,
       ...Object.values(loanParams),
-      controllers
+      controllers.concat([crowdloan.address])
     );
 
     await repaymentManager.initialize(
       paymentToken.address,
       termsContract.address,
-      controllers
+      controllers.concat([crowdloan.address])
     );
   });
 
@@ -95,33 +94,66 @@ contract('Crowdloan', accounts => {
       {from: borrower}
     );
 
-    expectEvent.inTransaction(tx.tx, 'LoanStatusSet',{
-      status: new BN(1) //FUNDING_STARTED
-    });
+    // await expectEvent.inTransaction(tx.receipt.transactionHash, 'LoanStatusSet',{
+    //   status: new BN(1) //FUNDING_STARTED
+    // });
+
+    await expectRevert.unspecified(
+      crowdloan.startCrowdfund(
+        {from: borrower}
+      ),
+      // 'KickOff already passed'
+    );
   });
 
-  xit('should deploy all contracts on successful deploy', async () => {
-    tx = await crowdloan.deploy(
-      crowdloan.address,
-      loanParams.principal,
-      loanParams.timeUnitType,
-      loanParams.loanPeriod,
-      loanParams.interestRate,
-      loanParams.crowdfundLength,
-      loanParams.crowdfundStart,
+  it('should successfully fund', async () => {
+
+    const contributor = {
+      address: accounts[1],
+      value: new BN(150)
+    }
+    await paymentToken.mint(contributor.address, contributor.value)
+
+    await expectRevert.unspecified(
+      crowdloan.fund(
+        contributor.value,
+        {from: contributor.address}
+      ),
+      // 'Crowdfund not yet started'
+    );
+
+    await crowdloan.startCrowdfund(
       {from: borrower}
     );
 
-    const loanCreatedEvent = expectEvent.inLogs(tx.logs, 'LoanCreated');
+    await expectRevert.unspecified(
+      crowdloan.fund(
+        new BN(0),
+        {from: contributor.address}
+      ),
+      // 'Can not increase by zero shares'
+    );
 
-    const termsContract = await TermsContract.at(loanCreatedEvent.args.termsContract);
-    const crowdloan = await Crowdloan.at(loanCreatedEvent.args.crowdloan);
-    const repaymentManager = await RepaymentManager.at(loanCreatedEvent.args.repaymentManager);
+    await expectRevert.unspecified(
+      crowdloan.fund(
+        contributor.value,
+        {from: accounts[2]}
+      ),
+      // 'Were the tokens successfully sent?'
+    );
 
-    // Call methods on all contracts to verify deployment
-    expect(await termsContract.getPrincipal()).to.be.bignumber.equal(new BN(loanParams.principal));
-    expect(await crowdloan.getDebtToken()).to.be.equal(repaymentManager.address);
-    expect(await repaymentManager.totalShares()).to.be.bignumber.equal(new BN(0));
+    const tx = await crowdloan.fund(
+      contributor.value,
+      { from: contributor.address }
+    );
+
+    expectEvent.inLogs(tx.logs, 'Fund', {
+      sender: contributor.address,
+      amount: contributor.value
+    });
+
+    const balance = await paymentToken.balanceOf.call(crowdloan.address);
+    expect(balance).to.be.bignumber.equal(contributor.value);
   });
 
   xit('should revert if invalid arguments', async () => {});

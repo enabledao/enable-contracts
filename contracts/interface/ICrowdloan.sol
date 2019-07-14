@@ -16,4 +16,8 @@ interface ICrowdloan {
     function refund(uint256 debtTokenId) external;
 
     function getBorrower() external view returns (address);
+
+    function getCrowdfundParams() external view returns (uint256, uint256);
+
+    function getCrowdfundEnd() external view returns (uint256);
 }
