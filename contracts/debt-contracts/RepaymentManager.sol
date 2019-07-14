@@ -33,7 +33,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     /**
      * @dev Constructor
      */
-    function initialize(address _paymentToken, address _termsContract, address _controller)
+    function initialize(address _paymentToken, address _termsContract, address[] memory _controllers)
         public
         payable
         initializer
@@ -41,9 +41,10 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
         // address[] memory _controllers = new address[](1);
         // _controllers[0] = _controller;
 
-        // ControllerRole.initialize(_controllers);
+        ControllerRole.initialize(_controllers);
 
         paymentToken = IERC20(_paymentToken);
+        termsContract = ITermsContract(_termsContract);
     }
 
     function() external payable {
