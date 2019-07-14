@@ -19,8 +19,8 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     mapping(address => uint256) private _released;
     address[] private _payees;
 
-    IERC20 paymentToken;
-    ITermsContract termsContract;
+    IERC20 public paymentToken;
+    ITermsContract public termsContract;
 
     modifier onlyActiveLoan() {
         require(
@@ -33,11 +33,11 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     /**
      * @dev Constructor
      */
-    function initialize(address _paymentToken, address _termsContract, address[] memory _controllers)
-        public
-        payable
-        initializer
-    {
+    function initialize(
+        address _paymentToken,
+        address _termsContract,
+        address[] memory _controllers
+    ) public payable initializer {
         // address[] memory _controllers = new address[](1);
         // _controllers[0] = _controller;
 
@@ -132,7 +132,11 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @dev Increase shares of a shareholder.
      */
     function increaseShares(address account, uint256 shares_) public onlyController {
-        _increaseShares(account, shares_);
+        if (_shares[account] == 0) {
+            _addPayee(account, shares_);
+        } else {
+            _increaseShares(account, shares_);
+        }
     }
 
     /**
@@ -158,8 +162,9 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
         require(shares_ > 0);
         require(_shares[account] >= 0);
 
-        _shares[account] = shares_;
         _totalShares = _totalShares.add(shares_);
+        uint256 newShares_ = _shares[account].add(shares_);
+        _shares[account] = newShares_;
         emit ShareIncreased(account, shares_);
     }
 
@@ -171,8 +176,9 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
         require(shares_ > 0);
         require(_shares[account] >= 0);
 
-        _shares[account] = shares_;
         _totalShares = _totalShares.sub(shares_);
+        uint256 newShares_ = _shares[account].sub(shares_);
+        _shares[account] = newShares_;
         emit ShareDecreased(account, shares_);
     }
 

@@ -33,7 +33,21 @@ contract('RepaymentManager', accounts => {
   let repaymentManager;
   // const appAddress = getAppAddress();
   const borrower = accounts[0];
-  const controllers = [accounts[1]];
+  const controllers = [accounts[0]];
+  const lenders = [
+    {
+      address: accounts[1],
+      shares: new BN(100)
+    },
+    {
+      address: accounts[2],
+      shares: new BN(200)
+    },
+    {
+      address: accounts[3],
+      shares: new BN(50)
+    }
+  ];
 
   beforeEach(async () => {
     // Create a factory via App
@@ -62,16 +76,36 @@ contract('RepaymentManager', accounts => {
     );
   });
 
-  it('Factory should deploy successfully', async () => {
+  it('RepaymentManager should deploy successfully', async () => {
     assert.exists(repaymentManager.address, 'repaymentManager was not successfully deployed');
   });
 
-  xit('Factory should have App address initialized', async () => {
-    result = await repaymentManager.app();
-    expect(result).to.be.equal(appAddress);
+  it('RepaymentManager should have PaymentToken address initialized', async () => {
+    result = await repaymentManager.paymentToken.call();
+    expect(result).to.be.equal(paymentToken.address);
   });
 
-  xit('should emit a LoanCreated event on successful deploy', async () => {
+  it('RepaymentManager should have TermsContract address initialized', async () => {
+    result = await repaymentManager.termsContract.call();
+    expect(result).to.be.equal(termsContract.address);
+  });
+
+  it('should successfully a add a new Payee', async () => {
+
+    const payee = lenders[0];
+    const tx = await repaymentManager.increaseShares(
+      payee.address,
+      payee.shares,
+      {from: controllers[0]}
+    );
+    expectEvent.inLogs(tx.logs, 'PayeeAdded');
+
+    const shares = await repaymentManager.shares.call(payee.address);
+    expect(shares).to.be.bignumber.equal(payee.shares);
+
+  });
+
+  xit('should emit a PaymentReceived event on successful payment', async () => {
     tx = await repaymentManager.deploy(
       repaymentManager.address,
       loanParams.principal,
