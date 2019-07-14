@@ -66,6 +66,9 @@ contract CrowdloanFactory is Initializable {
         _controllers[0] = crowdloanInstance;
         _controllers[1] = repaymentManagerInstance;
 
+        address[] memory _loanInstanceAsController = new address[](1);
+        _loanInstanceAsController[0] = crowdloanInstance;
+
         TermsContract(termsContractInstance).initialize(
             msg.sender,
             _principalTokenAddr,
@@ -86,7 +89,7 @@ contract CrowdloanFactory is Initializable {
         RepaymentManager(address(uint160(repaymentManagerInstance))).initialize(
             _principalTokenAddr,
             termsContractInstance,
-            crowdloanInstance
+            _loanInstanceAsController
         );
 
         emit LoanCreated(
