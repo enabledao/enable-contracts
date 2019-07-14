@@ -22,7 +22,6 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         uint256 crowdfundEnd;
     }
 
-    address borrower;
     CrowdfundParams crowdfundParams;
 
     ITermsContract public termsContract;
@@ -42,8 +41,6 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     ) public initializer {
         termsContract = ITermsContract(_termsContract);
         repaymentManager = IRepaymentManager(_repaymentManager);
-
-        borrower = msg.sender; //Needs to be update, once factory is setup
         crowdfundParams = CrowdfundParams(_crowdfundLength, _crowdfundStart, 0);
     }
 
@@ -106,7 +103,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     }
 
     function getBorrower() external view returns (address) {
-        return borrower;
+        return termsContract.borrower();
     }
 
     /**

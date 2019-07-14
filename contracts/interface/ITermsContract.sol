@@ -5,6 +5,7 @@ import "../debt-contracts/TermsContractLib.sol";
 contract ITermsContract {
     using TermsContractLib for TermsContractLib.LoanStatus;
 
+    function borrower() public view returns (address);
     /// Returns the cumulative units-of-value expected to be repaid by a given block timestamp.
     ///  Note this is not a constant function -- this value can vary on basis of any number of
     ///  conditions (e.g. interest rates can be renegotiated if repayments are delinquent).
@@ -20,7 +21,7 @@ contract ITermsContract {
         public
         view
         returns (
-            address borrower,
+            address,
             address principalToken,
             uint256 principal,
             uint256 loanStatus,

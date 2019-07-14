@@ -25,6 +25,7 @@ const PaymentToken = artifacts.require('StandaloneERC20');
 
 contract('RepaymentManager', accounts => {
 
+  let result;
   let paymentToken;
   let termsContract;
   let repaymentManager;

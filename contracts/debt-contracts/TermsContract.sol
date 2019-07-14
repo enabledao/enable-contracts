@@ -21,7 +21,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     TermsContractLib.LoanParams public loanParams;
     TermsContractLib.ScheduledPayment[] public paymentTable;
 
-    address public borrower;
+    address public _borrower;
     // TODO(Dan): To implement
     // modifier onlyAtStatus(LoanStatus status) {}
 
@@ -30,7 +30,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     // modifier onlyAfterStatus(LoanStatus status) {}
 
     function initialize(
-        address _borrower,
+        address borrower_,
         address _principalTokenAddr,
         uint256 _principal,
         uint256 _timeUnitType,
@@ -49,7 +49,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             _interestRate < 10000,
             "Interest rate be in basis points and less than 10,000 (100%)"
         );
-        borrower = _borrower;
+        _borrower = borrower_;
         ControllerRole.initialize(_controllers);
         loanParams = TermsContractLib.LoanParams({
             principalToken: _principalTokenAddr,
@@ -71,6 +71,9 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
 
     /** Public Functions
      */
+    function borrower() public view returns (address) {
+        return _borrower;
+    }
     function getLoanStatus() public view returns (TermsContractLib.LoanStatus loanStatus) {
         return loanParams.loanStatus;
     }
@@ -100,7 +103,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         )
     {
         return (
-            borrower,
+            _borrower,
             address(loanParams.principalToken),
             loanParams.principal,
             uint256(loanParams.loanStatus),

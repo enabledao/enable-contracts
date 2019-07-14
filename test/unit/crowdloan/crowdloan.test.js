@@ -53,6 +53,7 @@ contract('Crowdloan', accounts => {
       controllers
     );
 
+    crowdloan = await Crowdloan.new();
     await crowdloan.initialize(
       termsContract.address,
       repaymentManager.address,
