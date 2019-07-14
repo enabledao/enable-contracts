@@ -68,6 +68,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
       } else {
         token.transferFrom(_from, _to, _amount);
       }
+
       require(
           token.balanceOf(_to) >= balance.add(_amount),
           "Were the tokens successfully sent?"
@@ -94,6 +95,11 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
           termsContract.getLoanStatus() > TermsContractLib.LoanStatus.NOT_STARTED || crowdfundParams.crowdfundStart >= now,
           "Crowdfund not yet started"
         );
+        require(
+          termsContract.getLoanStatus() < TermsContractLib.LoanStatus.FUNDING_FAILED,
+          "Crowdfund completed or failed"
+        );
+        // require( getCrowdfundEnd() < now, "Crowdfund period over");
         require(_isBelowMaxSupply(amount), "Amount exceeds capital");
         _validatedERC20Transfer(IERC20(termsContract.getPrincipalToken()), msg.sender, address(this), amount);
         //Mint new debt token and transfer to sender
@@ -108,12 +114,13 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
             "Funding already complete. Refund Impossible"
         );
 
-        require(repaymentManager.shares(msg.sender) >= amount);
+        require(
+            repaymentManager.shares(msg.sender) >= amount,
+            "Amount exceeds owned shares"
+        );
 
         repaymentManager.decreaseShares(msg.sender, amount);
-
-        IERC20 paymentToken = IERC20(termsContract.getPrincipalToken());
-        paymentToken.transfer(msg.sender, amount);
+        _validatedERC20Transfer(IERC20(termsContract.getPrincipalToken()), address(this), msg.sender, amount);
 
         emit Refund(msg.sender, amount);
     }

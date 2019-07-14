@@ -122,8 +122,27 @@ contract('Crowdloan', accounts => {
       // 'Crowdfund not yet started'
     );
 
+    // const time = Math.floor(new Date().getTime / 1000);
     await crowdloan.startCrowdfund(
       {from: borrower}
+    );
+
+    // expect (
+    //   await crowdloan.getCrowdfundParams.call()['1'] //crowdfundStart
+    // ).to.be.bignumber.gt(new BN(time));
+
+    await expectRevert.unspecified(
+      crowdloan.fund(
+        contributor.value,
+        {from: contributor.address}
+      ),
+      // 'Crowdloan not approved to Transfer from'
+    );
+
+    await paymentToken.approve(
+      crowdloan.address,
+      contributor.value,
+      { from: contributor.address }
     );
 
     await expectRevert.unspecified(
@@ -154,7 +173,146 @@ contract('Crowdloan', accounts => {
 
     const balance = await paymentToken.balanceOf.call(crowdloan.address);
     expect(balance).to.be.bignumber.equal(contributor.value);
+
+    await paymentToken.mint(contributor.address, new BN(loanParams.principal));
+
+    await paymentToken.approve(
+      crowdloan.address,
+      new BN(loanParams.principal),
+      { from: contributor.address }
+    );
+
+    await expectRevert.unspecified(
+      crowdloan.fund(
+        new BN(loanParams.principal),
+        {from: contributor.address}
+      ),
+      // 'Amount exceeds capital'
+    );
+
+    termsContract.setLoanStatus(new BN(2)); //FUNDING_FAILED
+    await expectRevert.unspecified(
+      crowdloan.fund(
+        contributor.value,
+        {from: contributor.address}
+      ),
+      // 'Crowdfund completed or failed'
+    );
+    termsContract.setLoanStatus(new BN(1)); //FUNDING_STARTED
+
+    await crowdloan.fund(
+      new BN(loanParams.principal).sub(contributor.value),
+      { from: contributor.address }
+    );
+
+    expect(
+      await termsContract.getLoanStatus()
+    ).to.be.bignumber.equal(new BN(3)); //FUNDING_COMPLETE)
+
+    await expectRevert.unspecified(
+      crowdloan.fund(
+        contributor.value,
+        {from: contributor.address}
+      ),
+      // 'Crowdfund completed or failed'
+    );
   });
 
-  xit('should revert if invalid arguments', async () => {});
+  it('should successfully refund', async () => {
+    const bit = new BN(150);
+
+    const contributor = {
+      address: accounts[2],
+      value: new BN(loanParams.principal)
+    }
+    await paymentToken.mint(contributor.address, contributor.value)
+
+    await expectRevert.unspecified(
+      crowdloan.refund(
+        contributor.value,
+        {from: contributor.address}
+      ),
+      // 'Amount exceeds owned shares'
+    );
+
+    await crowdloan.startCrowdfund(
+      {from: borrower}
+    );
+
+    await paymentToken.approve(
+      crowdloan.address,
+      contributor.value,
+      { from: contributor.address }
+    );
+
+    await crowdloan.fund(
+      bit,
+      { from: contributor.address }
+    );
+
+    await expectRevert.unspecified(
+      crowdloan.refund(
+        new BN(0),
+        {from: contributor.address}
+      ),
+      // 'Can not decrease by zero shares'
+    );
+
+    await expectRevert.unspecified(
+      crowdloan.refund(
+        bit.add(new BN(10)),
+        {from: contributor.address}
+      ),
+      // 'Amount exceeds owned shares'
+    );
+
+    const tx = await crowdloan.refund(
+      bit,
+      {from: contributor.address}
+    );
+
+    expectEvent.inLogs(tx.logs, 'Refund', {
+      sender: contributor.address,
+      amount: bit
+    });
+
+    const balance = await paymentToken.balanceOf.call(contributor.address);
+    expect(balance).to.be.bignumber.equal(contributor.value);
+
+    await crowdloan.fund(
+      bit,
+      { from: contributor.address }
+    );
+    termsContract.setLoanStatus(new BN(2)); // FUNDING_FAILED
+
+    await crowdloan.refund(
+      bit,
+      {from: contributor.address}
+    );
+
+    termsContract.setLoanStatus(new BN(1)); // FUNDING_STARTED
+
+    await paymentToken.approve(
+      crowdloan.address,
+      contributor.value,
+      { from: contributor.address }
+    );
+
+    crowdloan.fund(
+      contributor.value,
+      {from: contributor.address}
+    );
+
+    expect(
+      await termsContract.getLoanStatus()
+    ).to.be.bignumber.equal(new BN(3)); //FUNDING_COMPLETE)
+
+    await expectRevert.unspecified(
+      crowdloan.refund(
+        contributor.value,
+        {from: contributor.address}
+      ),
+      // 'Crowdfund completed or failed'
+    );
+  });
 });
