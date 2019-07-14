@@ -1,6 +1,10 @@
 pragma solidity >=0.4.22 <0.6.0;
 
 interface ICrowdloan {
+    event Fund(address indexed sender, uint256 amount);
+    event Refund(address indexed sender, uint256 amount);
+    event ReleaseFunds(address indexed sender, uint256 amount);
+
     function startCrowdfund() external;
 
     /// @notice Fund the loan in exchange for a debt token
