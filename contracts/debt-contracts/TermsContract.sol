@@ -87,7 +87,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         public
         view
         returns (
-            address borrower,
+            address,
             address principalToken,
             uint256 principal,
             uint256 loanStatus,
