@@ -114,6 +114,16 @@ contract('RepaymentManager', accounts => {
       account: payee.address
     });
 
+    await termsContract.setLoanStatus(2); //FUNDING_FAILED
+    await expectRevert.unspecified(
+      repaymentManager.increaseShares(
+        payee.address,
+        payee.shares,
+        {from: controllers[0]}
+      ),
+      // 'Action only allowed before loan funding is completed'
+    );
+
     const shares = await repaymentManager.shares.call(payee.address);
     expect(shares).to.be.bignumber.equal(payee.shares);
   });
@@ -137,6 +147,16 @@ contract('RepaymentManager', accounts => {
       account: payee.address,
       sharesAdded: payee.shares
     });
+
+    await termsContract.setLoanStatus(2); //FUNDING_FAILED
+    await expectRevert.unspecified(
+      repaymentManager.increaseShares(
+        payee.address,
+        payee.shares,
+        {from: controllers[0]}
+      ),
+      // 'Action only allowed before loan funding is completed'
+    );
 
     const shares = await repaymentManager.shares.call(payee.address);
     const expectedShares = payee.shares.mul(new BN(2));//total shares added = 2*payee.shares
@@ -174,6 +194,16 @@ contract('RepaymentManager', accounts => {
       sharesRemoved: lessShares
     });
 
+    await termsContract.setLoanStatus(2); //FUNDING_FAILED
+    await expectRevert.unspecified(
+      repaymentManager.decreaseShares(
+        payee.address,
+        lessShares,
+        {from: controllers[0]}
+      ),
+      // 'Action only allowed before loan funding is completed'
+    );
+
     const shares = await repaymentManager.shares.call(payee.address);
     expect(shares).to.be.bignumber.equal(payee.shares.sub(lessShares)); //total shares added = 2*payee.shares
   });
@@ -187,7 +217,7 @@ contract('RepaymentManager', accounts => {
         value: new BN(150)
       },
       {
-        address: accounts[0],
+        address: accounts[1],
         value: new BN(150)
       },
     ];
@@ -207,6 +237,25 @@ contract('RepaymentManager', accounts => {
       ),
       // 'No amount set to pay'
     );
+
+    await paymentToken.mint(accounts[3], new BN(100));
+    await paymentToken.approve(
+      repaymentManager.address,
+      new BN(100),
+      { from: accounts[3] }
+    );
+    await expectRevert.unspecified(
+      repaymentManager.pay(
+        new BN(100),
+        {
+          from: accounts[3]
+        }
+      ),
+      // 'Action only allowed while loan is Active'
+    );
+
+
+    await termsContract.setLoanStatus(3); //FUNDING_COMPLETE
 
     for (let p =0; p<payers.length; p++ ) {
         let payer = payers[p];
@@ -233,43 +282,90 @@ contract('RepaymentManager', accounts => {
       expect(repaymentManagerBalance).to.be.bignumber.equal(expectedBalance);
   });
 
-  xit('should emit a PaymentReceived event on successful payment', async () => {
-    tx = await repaymentManager.deploy(
-      repaymentManager.address,
-      loanParams.principal,
-      loanParams.timeUnitType,
-      loanParams.loanPeriod,
-      loanParams.interestRate,
-      loanParams.crowdfundLength,
-      loanParams.crowdfundStart,
-      {from: borrower}
+  it('should successfully release to lender', async () => {
+
+    const paymentAmount = new BN(350);
+    const totalShares = () => lenders.reduce((a,b) => a.add(b.shares), new BN(0));
+    const expectedRepayment = ( (shares, payment) => (shares.mul(payment)).divRound(totalShares()));
+
+    await paymentToken.mint(borrower, paymentAmount);
+
+    await Promise.all(lenders.map( lender =>
+      repaymentManager.increaseShares(
+        lender.address,
+        lender.shares,
+        { from: controllers[0] }
+      )
+    ));
+
+    await expectRevert.unspecified(
+      repaymentManager.release(
+        lenders[0].address,
+        {
+          from: lenders[0].address
+        }
+      ),
+      // 'Action only allowed while loan is Active'
     );
-    expectEvent.inLogs(tx.logs, 'LoanCreated');
-  });
 
-  xit('should deploy all contracts on successful deploy', async () => {
-    tx = await repaymentManager.deploy(
+    await paymentToken.approve(
       repaymentManager.address,
-      loanParams.principal,
-      loanParams.timeUnitType,
-      loanParams.loanPeriod,
-      loanParams.interestRate,
-      loanParams.crowdfundLength,
-      loanParams.crowdfundStart,
-      {from: borrower}
+      paymentAmount,
+      { from: borrower }
     );
 
-    const loanCreatedEvent = expectEvent.inLogs(tx.logs, 'LoanCreated');
+    await termsContract.setLoanStatus(3); //FUNDING_COMPLETE
 
-    const termsContract = await TermsContract.at(loanCreatedEvent.args.termsContract);
-    const crowdloan = await Crowdloan.at(loanCreatedEvent.args.crowdloan);
-    const repaymentManager = await RepaymentManager.at(loanCreatedEvent.args.repaymentManager);
+    await repaymentManager.pay(
+      paymentAmount,
+      { from: borrower }
+    );
 
-    // Call methods on all contracts to verify deployment
-    expect(await termsContract.getPrincipal()).to.be.bignumber.equal(new BN(loanParams.principal));
-    expect(await crowdloan.getDebtToken()).to.be.equal(repaymentManager.address);
-    expect(await repaymentManager.totalShares()).to.be.bignumber.equal(new BN(0));
+    await expectRevert.unspecified(
+      repaymentManager.release(
+        accounts[4],
+        {
+          from: lenders[0].address
+        }
+      ),
+      // 'Account has zero shares'
+    );
+
+    await Promise.all(
+      lenders.map( async (lender, idx) => {
+        const expectedRelease = expectedRepayment(lender.shares, paymentAmount);
+
+        expect(
+          await repaymentManager.releaseAllowance.call(lender.address)
+        ).to.be.bignumber.equal(
+          expectedRelease
+        );
+
+        const tx = await repaymentManager.release(
+          lender.address,
+          { from: idx % 2 === 0 ? lender.address : accounts[idx+4] } //Alternate between lender address and alternate address as tx sender
+        );
+
+        expectEvent.inLogs(tx.logs, 'PaymentReleased', {
+          to: lender.address
+        });
+
+        expect(
+          await repaymentManager.released.call(lender.address)
+        ).to.be.bignumber.equal(
+          expectedRelease
+        );
+
+        expect(
+          await paymentToken.balanceOf.call(lender.address)
+        ).to.be.bignumber.equal(
+          expectedRelease
+        )
+      }
+    ));
+
+      const totalReleased = await repaymentManager.totalReleased.call();
+      const expectedReleased = lenders.reduce((a,b) => a.add(expectedRepayment(b.shares, paymentAmount)), new BN(0));
+      expect(totalReleased).to.be.bignumber.equal(expectedReleased);
   });
-
-  xit('should revert if invalid arguments', async () => {});
 });

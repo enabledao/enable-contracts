@@ -26,7 +26,15 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
         require(
             termsContract.getLoanStatus() == TermsContractLib.LoanStatus.FUNDING_COMPLETE ||
                 termsContract.getLoanStatus() == TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
-                'Action only allowed while loan is Active'
+            "Action only allowed while loan is Active"
+        );
+        _;
+    }
+
+    modifier beforeLoanActive() {
+        require(
+            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.FUNDING_FAILED,
+            "Action only allowed before loan funding is completed"
         );
         _;
     }
@@ -50,6 +58,14 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
 
     function() external payable {
         revert("Ether not accepted");
+    }
+
+    /**
+     * @return the total amount paid to contract.
+     */
+    function totalPaid() public view returns (uint256) {
+        uint256 balance = paymentToken.balanceOf(address(this));
+        return balance.add(_totalReleased);
     }
 
     /**
@@ -99,7 +115,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @notice Send funds
      * @param amount amount of tokens to send.
      */
-    function pay(uint256 amount) public {
+    function pay(uint256 amount) public onlyActiveLoan {
         require(amount > 0, "No amount set to pay");
 
         uint256 balance = paymentToken.balanceOf(address(this));
@@ -116,11 +132,11 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @dev Release one of the payee's proportional payment.
      * @param account Whose payments will be released.
      */
-    function release(address payable account) public {
-        require(_shares[account] > 0, 'Account has zero shares');
+    function release(address payable account) public onlyActiveLoan {
+        require(_shares[account] > 0, "Account has zero shares");
 
         uint256 payment = releaseAllowance(account);
-        require(payment != 0, 'Account has zero release allowance');
+        require(payment != 0, "Account has zero release allowance");
 
         _released[account] = _released[account].add(payment);
         _totalReleased = _totalReleased.add(payment);
@@ -132,7 +148,11 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     /**
      * @dev Increase shares of a shareholder.
      */
-    function increaseShares(address account, uint256 shares_) public onlyController {
+    function increaseShares(address account, uint256 shares_)
+        public
+        onlyController
+        beforeLoanActive
+    {
         if (_shares[account] == 0) {
             _addPayee(account, shares_);
         } else {
@@ -143,25 +163,20 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     /**
      * @dev Decrease shares of a shareholder.
      */
-    function decreaseShares(address account, uint256 shares_) public onlyController {
+    function decreaseShares(address account, uint256 shares_)
+        public
+        onlyController
+        beforeLoanActive
+    {
         _decreaseShares(account, shares_);
     }
-
-    /**
-     * @return the total amount paid to contract.
-     */
-    function totalPaid() public view returns (uint256) {
-        uint256 balance = paymentToken.balanceOf(address(this));
-        return balance.add(_totalReleased);
-    }
-
     /**
      * @dev Increase shares of an existing payee.
      */
     function _increaseShares(address account, uint256 shares_) private {
-        require(account != address(0), 'Account must not be zero address');
-        require(shares_ > 0, 'Can not increase by zero shares');
-        require(_shares[account] >= 0, 'Account has zero shares');
+        require(account != address(0), "Account must not be zero address");
+        require(shares_ > 0, "Can not increase by zero shares");
+        require(_shares[account] >= 0, "Account has zero shares");
 
         _totalShares = _totalShares.add(shares_);
         uint256 newShares_ = _shares[account].add(shares_);
@@ -173,8 +188,8 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @dev Decrease shares of an existing payee.
      */
     function _decreaseShares(address account, uint256 shares_) private {
-        require(account != address(0), 'Account must not be zero address');
-        require(shares_ > 0, 'Can not decrease by zero shares');
+        require(account != address(0), "Account must not be zero address");
+        require(shares_ > 0, "Can not decrease by zero shares");
         // require(_shares[account] >= 0, 'Account has zero shares');
 
         _totalShares = _totalShares.sub(shares_);
@@ -189,9 +204,9 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @param shares_ The number of shares owned by the payee.
      */
     function _addPayee(address account, uint256 shares_) private {
-        require(account != address(0), 'Account must not be zero address');
-        require(shares_ > 0, 'Can not add Payee with zero shares');
-        require(_shares[account] == 0, 'Account already has shares, use increaseShares');
+        require(account != address(0), "Account must not be zero address");
+        require(shares_ > 0, "Can not add Payee with zero shares");
+        require(_shares[account] == 0, "Account already has shares, use increaseShares");
 
         _payees.push(account);
         _shares[account] = shares_;

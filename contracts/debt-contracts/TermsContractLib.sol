@@ -7,8 +7,8 @@ library TermsContractLib {
     enum LoanStatus {
         NOT_STARTED,
         FUNDING_STARTED,
-        FUNDING_COMPLETE,
         FUNDING_FAILED,
+        FUNDING_COMPLETE,
         REPAYMENT_CYCLE,
         REPAYMENT_COMPLETE
     }

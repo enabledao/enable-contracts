@@ -22,7 +22,7 @@ contract ControllerRole is Initializable {
     }
 
     modifier onlyController() {
-        require(isController(msg.sender), 'Permission denied');
+        require(isController(msg.sender), "Permission denied");
         _;
     }
 
