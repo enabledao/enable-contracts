@@ -57,7 +57,9 @@ contract('RepaymentManager', accounts => {
     await paymentToken.initialize(
       paymentTokenParams.name,
       paymentTokenParams.symbol,
-      paymentTokenParams.decimals
+      paymentTokenParams.decimals,
+      [ accounts[0] ], //minters
+      [] //pausers
     );
 
     termsContract = await TermsContract.new();
@@ -93,6 +95,16 @@ contract('RepaymentManager', accounts => {
   it('should successfully add a new Payee', async () => {
 
     const payee = lenders[0];
+
+    await expectRevert.unspecified(
+      repaymentManager.increaseShares(
+        payee.address,
+        payee.shares,
+        {from: accounts[4]}
+      ),
+      // 'Permission denied'
+    );
+
     const tx = await repaymentManager.increaseShares(
       payee.address,
       payee.shares,
@@ -180,52 +192,45 @@ contract('RepaymentManager', accounts => {
       },
     ];
 
-    await paymentToken.mint(payers[0].address, payers[0].value)
+    await Promise.all(
+      payers.map( payer =>
+        paymentToken.mint(payer.address, payer.value)
+      )
+    );
 
-    // await Promise.all(
-    //   payers.map( payer =>
-    //     paymentToken.mint(payer.address, payer.value)
-    //   )
-    // );
+    await expectRevert.unspecified(
+      repaymentManager.pay(
+        new BN(0),
+        {
+          from: payers[0].address
+        }
+      ),
+      // 'No amount set to pay'
+    );
 
-    // await expectRevert.unspecified(
-    //   repaymentManager.pay (
-    //     new BN(0),
-    //     {
-    //       from: payers[0].address
-    //     }
-    //   ),
-    //   // 'No amount set to pay'
-    // );
+    for (let p =0; p<payers.length; p++ ) {
+        let payer = payers[p];
 
-    // await expectRevert(
-    //   repaymentManager.decreaseShares(
-    //     payee.address,
-    //     lessShares,
-    //     {from: controllers[0]}
-    //   ),
-    //   'Account has zero shares'
-    // )
-    //
-    // await repaymentManager.increaseShares(
-    //   payee.address,
-    //   payee.shares,
-    //   {from: controllers[0]}
-    // );
-    //
-    // const tx = await repaymentManager.decreaseShares(
-    //   payee.address,
-    //   lessShares,
-    //   {from: controllers[0]}
-    // );
-    //
-    // expectEvent.inLogs(tx.logs, 'ShareDecreased', {
-    //   account: payee.address,
-    //   sharesRemoved: lessShares
-    // });
-    //
-    // const shares = await repaymentManager.shares.call(payee.address);
-    // expect(shares).to.be.bignumber.equal(payee.shares.sub(lessShares)); //total shares added = 2*payee.shares
+        await paymentToken.approve(
+          repaymentManager.address,
+          payer.value,
+          { from: payer.address }
+        );
+
+        const tx = await repaymentManager.pay(
+          payer.value,
+          { from: payer.address }
+        );
+
+        expectEvent.inLogs(tx.logs, 'PaymentReceived', {
+          from: payer.address,
+          amount: payer.value
+        });
+      }
+
+      const repaymentManagerBalance = await paymentToken.balanceOf.call(repaymentManager.address);
+      const expectedBalance = payers.reduce((a,b) => a.add(b.value), new BN(0));
+      expect(repaymentManagerBalance).to.be.bignumber.equal(expectedBalance);
   });
 
   xit('should emit a PaymentReceived event on successful payment', async () => {

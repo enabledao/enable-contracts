@@ -53,23 +53,6 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     }
 
     /**
-     * @notice Send funds
-     * @param amount amount of tokens to send.
-     */
-    function pay(uint256 amount) public {
-        require(amount > 0, "No amount set to pay");
-
-        uint256 balance = paymentToken.balanceOf(address(this));
-        paymentToken.transferFrom(msg.sender, address(this), amount);
-        require(
-            paymentToken.balanceOf(address(this)) >= balance.add(amount),
-            "Were the tokens successfully sent?"
-        );
-
-        emit PaymentReceived(msg.sender, amount);
-    }
-
-    /**
      * @return the total shares of the contract.
      */
     function totalShares() public view returns (uint256) {
@@ -110,6 +93,23 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      */
     function payee(uint256 index) public view returns (address) {
         return _payees[index];
+    }
+
+    /**
+     * @notice Send funds
+     * @param amount amount of tokens to send.
+     */
+    function pay(uint256 amount) public {
+        require(amount > 0, "No amount set to pay");
+
+        uint256 balance = paymentToken.balanceOf(address(this));
+        paymentToken.transferFrom(msg.sender, address(this), amount);
+        require(
+            paymentToken.balanceOf(address(this)) >= balance.add(amount),
+            "Were the tokens successfully sent?"
+        );
+
+        emit PaymentReceived(msg.sender, amount);
     }
 
     /**
