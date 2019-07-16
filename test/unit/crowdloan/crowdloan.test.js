@@ -230,7 +230,7 @@ contract('Crowdloan', accounts => {
       address: accounts[2],
       value: new BN(loanParams.principal)
     }
-    await paymentToken.mint(contributor.address, contributor.value)
+    await paymentToken.mint(contributor.address, contributor.value);
 
     await expectRevert.unspecified(
       crowdloan.refund(
@@ -319,5 +319,100 @@ contract('Crowdloan', accounts => {
       ),
       'Funding already complete. Refund Impossible'
     );
+  });
+
+  it('should successfully withdraw', async () => {
+
+    const bit = new BN(150);
+    const contributor = {
+      address: accounts[1],
+      value: new BN(loanParams.principal)
+    }
+    await paymentToken.mint(contributor.address, contributor.value);
+
+    await expectRevert.unspecified(
+      crowdloan.withdraw(
+        contributor.value,
+        {from: borrower}
+      ),
+      'Crowdfund not yet completed'
+    );
+
+    await crowdloan.startCrowdfund(
+      {from: borrower}
+    );
+
+    await paymentToken.approve(
+      crowdloan.address,
+      contributor.value,
+      { from: contributor.address }
+    );
+
+    await crowdloan.fund(
+      bit,
+      { from: contributor.address }
+    );
+
+    await expectRevert.unspecified(
+      crowdloan.withdraw(
+        contributor.value,
+        {from: borrower}
+      ),
+      'Crowdfund not yet completed'
+    );
+
+    await crowdloan.fund(
+      contributor.value.sub(bit),
+      { from: contributor.address }
+    );
+
+    await expectRevert.unspecified(
+      crowdloan.withdraw(
+        bit,
+        {from: accounts[2]}
+      ),
+      'Withdrawal only allowed for Borrower'
+    );
+
+    const tx = await crowdloan.withdraw(
+      bit,
+      {from: borrower}
+    );
+
+    expectEvent.inLogs(tx.logs, 'ReleaseFunds', {
+      borrower,
+      amount: bit
+    });
+
+    const balance = await paymentToken.balanceOf.call(borrower);
+    expect(balance).to.be.bignumber.equal(bit);
+
+    expect(
+      await termsContract.getLoanStatus()
+    ).to.be.bignumber.equal(new BN(4)); //REPAYMENT_CYCLE
+
+    await expectRevert.unspecified(
+      crowdloan.withdraw(
+        contributor.value,
+        {from: borrower}
+      ),
+      'Amount exceeds available balance'
+    );
+
+    await expectRevert.unspecified(
+      crowdloan.withdraw(
+        contributor.value,
+        {from: borrower}
+      ),
+      'Amount exceeds available balance'
+    );
+
+    await crowdloan.methods['withdraw()'](
+      {from: borrower}
+    );
+
+    expect(
+      await paymentToken.balanceOf.call(borrower)
+    ).to.be.bignumber.equal(contributor.value);
   });
 });
