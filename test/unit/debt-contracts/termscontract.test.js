@@ -3,7 +3,7 @@ import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helper
 const {expect} = require('chai');
 const moment = require('moment');
 
-const {appCreate, getAppAddress, encodeCall} = require('../testHelpers');
+const {appCreate, getAppAddress, encodeCall} = require('../../testHelpers');
 
 const TermsContract = artifacts.require('TermsContract');
 
@@ -12,6 +12,7 @@ contract('Terms Contract', accounts => {
   let instanceParams;
   const threshold = 1000; // Testing offset for timestamps in seconds
   const params = {
+    borrower: accounts[0],
     principalToken: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
     principal: new BN(60000), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
     timeUnitType: new BN(3),
@@ -20,12 +21,11 @@ contract('Terms Contract', accounts => {
   };
 
   const reassign = (original, param, value) => {
-    const mutated = Object.assign({}, original);
-    mutated[param] = value;
-    return mutated;
+    return Object.assign({}, original, { [param]: value });
   };
 
   const initializeInstance = async (
+    borrower,
     principalTokenAddr,
     principal,
     timeUnitType,
@@ -34,13 +34,15 @@ contract('Terms Contract', accounts => {
   ) => {
     const data = encodeCall(
       'initialize',
-      ['address', 'uint256', 'uint256', 'uint256', 'uint256'],
+      ['address', 'address', 'uint256', 'uint256', 'uint256', 'uint256', 'address[]'],
       [
+        borrower,
         principalTokenAddr,
         principal.toNumber(),
         timeUnitType.toNumber(),
         loanPeriod.toNumber(),
-        interestRate.toNumber()
+        interestRate.toNumber(),
+        [accounts[0]]
       ]
     );
     const proxyAddress = await appCreate('enable-credit', 'TermsContract', accounts[1], data);
@@ -110,7 +112,9 @@ contract('Terms Contract', accounts => {
     it('should record loan params in storage', async () => {
       Object.keys(params).forEach(key => {
         const value = instanceParams[key];
-        if (value instanceof BN) {
+        if (key === 'borrower') {
+          expect(instanceParams[0]).to.equal(params[key])
+        } else if (value instanceof BN) {
           expect(value).to.be.a.bignumber.that.equals(new BN(params[key]));
         } else {
           expect(value).to.equal(params[key]);
@@ -165,7 +169,11 @@ contract('Terms Contract', accounts => {
       }
     });
 
-    xit('only borrower should be able to start the loan', async () => {});
+    it('controller should be able to call appropriate set methods', async () => {});
+    it('non-controller should not be able to call appropriate set methods', async () => {});
+
+    it('borrower should be able to start the loan', async () => {});
+    it('non-borrower should not be able to start the loan', async () => {});
 
     it('starting a loan should write due timestamps to the payments table and update loan status', async () => {
       const {loanPeriod} = params;

@@ -2,31 +2,34 @@ import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helper
 
 const {expect} = require('chai');
 
-const {appCreate, getAppAddress, encodeCall} = require('../testHelpers');
+const {appCreate, getAppAddress, encodeCall} = require('../../testHelpers');
 
 const CrowdloanFactory = artifacts.require('CrowdloanFactory');
 const TermsContract = artifacts.require('TermsContract');
 const Crowdloan = artifacts.require('Crowdloan');
-const DebtToken = artifacts.require('DebtToken');
-const RepaymentRouter = artifacts.require('RepaymentRouter');
+const RepaymentManager = artifacts.require('RepaymentManager');
+const PaymentToken = artifacts.require('StandaloneERC20');
 
 contract('CrowdloanFactory', accounts => {
   const loanParams = {
-    principalTokenAddr: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
     principal: web3.utils.toWei('60000', 'ether'), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
-    amortizationUnitType: 3,
-    termLength: 6,
-    termPayment: 600,
-    gracePeriodLength: 0,
-    gracePeriodPayment: 0,
+    timeUnitType: 3,
+    loanPeriod: 6,
     interestRate: 50,
     crowdfundLength: 10,
     crowdfundStart: 10
   };
 
+  const paymentTokenParams = {
+    name: 'PaymentToken',
+    symbol: 'PAY',
+    decimals: new BN(18)
+  };
+
   let tx;
   let result;
   let crowdloanFactory;
+  let paymentToken;
   const appAddress = getAppAddress();
   const borrower = accounts[0];
 
@@ -35,6 +38,13 @@ contract('CrowdloanFactory', accounts => {
     const data = encodeCall('initialize', ['address'], [appAddress]);
     const proxyAddress = await appCreate('enable-credit', 'CrowdloanFactory', accounts[1], data);
     crowdloanFactory = await CrowdloanFactory.at(proxyAddress);
+
+    paymentToken = await PaymentToken.new();
+    paymentToken.initialize(
+      paymentTokenParams.name,
+      paymentTokenParams.symbol,
+      paymentTokenParams.decimals
+    );
   });
 
   it('Factory should deploy successfully', async () => {
@@ -48,13 +58,10 @@ contract('CrowdloanFactory', accounts => {
 
   it('should emit a LoanCreated event on successful deploy', async () => {
     tx = await crowdloanFactory.deploy(
-      loanParams.principalTokenAddr,
+      crowdloanFactory.address,
       loanParams.principal,
-      loanParams.amortizationUnitType,
-      loanParams.termLength,
-      loanParams.termPayment,
-      loanParams.gracePeriodLength,
-      loanParams.gracePeriodPayment,
+      loanParams.timeUnitType,
+      loanParams.loanPeriod,
       loanParams.interestRate,
       loanParams.crowdfundLength,
       loanParams.crowdfundStart,
@@ -65,13 +72,10 @@ contract('CrowdloanFactory', accounts => {
 
   it('should deploy all contracts on successful deploy', async () => {
     tx = await crowdloanFactory.deploy(
-      loanParams.principalTokenAddr,
+      crowdloanFactory.address,
       loanParams.principal,
-      loanParams.amortizationUnitType,
-      loanParams.termLength,
-      loanParams.termPayment,
-      loanParams.gracePeriodLength,
-      loanParams.gracePeriodPayment,
+      loanParams.timeUnitType,
+      loanParams.loanPeriod,
       loanParams.interestRate,
       loanParams.crowdfundLength,
       loanParams.crowdfundStart,
@@ -82,13 +86,12 @@ contract('CrowdloanFactory', accounts => {
 
     const termsContract = await TermsContract.at(loanCreatedEvent.args.termsContract);
     const crowdloan = await Crowdloan.at(loanCreatedEvent.args.crowdloan);
-    const debtToken = await DebtToken.at(loanCreatedEvent.args.debtToken);
-    const repaymentRouter = await RepaymentRouter.at(loanCreatedEvent.args.repaymentRouter);
+    const repaymentManager = await RepaymentManager.at(loanCreatedEvent.args.repaymentManager);
 
     // Call methods on all contracts to verify deployment
-    // expect(await termsContract.getValueRepaidToDate()).to.be.bignumber.equal(new BN(1));
-    // expect(await crowdloan.getBorrower()).to.be.equal(accounts[0]);
-    expect(await repaymentRouter.totalRepaid()).to.be.bignumber.equal(new BN(0));
+    expect(await termsContract.getPrincipal()).to.be.bignumber.equal(new BN(loanParams.principal));
+    expect(await crowdloan.getDebtToken()).to.be.equal(repaymentManager.address);
+    expect(await repaymentManager.totalShares()).to.be.bignumber.equal(new BN(0));
   });
 
   it('should revert if invalid arguments', async () => {});
