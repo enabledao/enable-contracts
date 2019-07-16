@@ -3,7 +3,7 @@ pragma solidity >=0.4.22 <0.6.0;
 interface ICrowdloan {
     event Fund(address indexed sender, uint256 amount);
     event Refund(address indexed sender, uint256 amount);
-    event ReleaseFunds(address indexed sender, uint256 amount);
+    event ReleaseFunds(address indexed borrower, uint256 amount);
 
     function startCrowdfund() external;
 
@@ -14,6 +14,8 @@ interface ICrowdloan {
     /// @notice Get a refund for a debt token owned by the sender
     /// @param debtTokenId Debt token ID
     function refund(uint256 debtTokenId) external;
+
+    function withdraw() external;
 
     function getBorrower() external view returns (address);
 

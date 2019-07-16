@@ -75,6 +75,10 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
       );
     }
 
+    function _getPrincipalToken() internal view returns (IERC20 token) {
+      return IERC20(termsContract.getPrincipalToken());
+    }
+
     function startCrowdfund() public {
         require(
             crowdfundParams.crowdfundStart == 0 || crowdfundParams.crowdfundStart > now,
@@ -101,7 +105,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         );
         // require( getCrowdfundEnd() < now, "Crowdfund period over");
         require(_isBelowMaxSupply(amount), "Amount exceeds capital");
-        _validatedERC20Transfer(IERC20(termsContract.getPrincipalToken()), msg.sender, address(this), amount);
+        _validatedERC20Transfer(_getPrincipalToken(), msg.sender, address(this), amount);
         //Mint new debt token and transfer to sender
         repaymentManager.increaseShares(msg.sender, amount);
         emit Fund(msg.sender, amount);  // TODO(Dan): Remove comments once IClaimsToken is implemented
@@ -120,9 +124,38 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         );
 
         repaymentManager.decreaseShares(msg.sender, amount);
-        _validatedERC20Transfer(IERC20(termsContract.getPrincipalToken()), address(this), msg.sender, amount);
+        _validatedERC20Transfer(_getPrincipalToken(), address(this), msg.sender, amount);
 
         emit Refund(msg.sender, amount);
+    }
+
+    // @notice Withdraw loan
+    function withdraw(uint256 amount) public {
+        require(
+          termsContract.getLoanStatus() > TermsContractLib.LoanStatus.FUNDING_FAILED,
+          "Crowdfund not completed"
+        );
+        require(
+          msg.sender == termsContract.borrower(),
+          "Withdrawal only allowed for Borrower"
+        );
+        require(
+          _getPrincipalToken().balanceOf(address(this)) >= amount,
+          "Amount exceeds available balance"
+        );
+
+        if (termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE) {
+          termsContract.startLoan();
+        }
+
+        _validatedERC20Transfer(_getPrincipalToken(), address(this), msg.sender, amount);
+
+        emit ReleaseFunds(msg.sender, amount);
+    }
+
+    // @notice Withdraw loan
+    function withdraw() public {
+      withdraw(_getPrincipalToken().balanceOf(address(this)));
     }
 
     function getCrowdfundParams()

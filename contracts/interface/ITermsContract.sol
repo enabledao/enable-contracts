@@ -7,20 +7,20 @@ contract ITermsContract {
 
     event LoanStatusSet(TermsContractLib.LoanStatus status);
 
-    function borrower() public view returns (address);
+    function borrower() external view returns (address);
     /// Returns the cumulative units-of-value expected to be repaid by a given block timestamp.
     ///  Note this is not a constant function -- this value can vary on basis of any number of
     ///  conditions (e.g. interest rates can be renegotiated if repayments are delinquent).
     /// @param  timestamp uint. The timestamp of the block for which repayment expectation is being queried.
     /// @return uint256 The cumulative units-of-value expected to be repaid by the time the given timestamp lapses.
-    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256);
+    function getExpectedRepaymentValue(uint256 timestamp) external view returns (uint256);
 
     /// Returns the cumulative units-of-value repaid by the point at which this method is called.
     /// @return uint256 The cumulative units-of-value repaid up until now.
-    function getValueRepaidToDate() public view returns (uint256);
+    function getValueRepaidToDate() external view returns (uint256);
 
     function getLoanParams()
-        public
+        external
         view
         returns (
             address,
@@ -35,10 +35,11 @@ contract ITermsContract {
             uint256 loanEndTimestamp
         );
 
-    function setLoanStatus(TermsContractLib.LoanStatus _status) public;
-    function getLoanStatus() public view returns (TermsContractLib.LoanStatus loanStatus);
-
-    function getPrincipal() public view returns (uint256);
-    function getPrincipalToken() public view returns (address);
+    function setLoanStatus(TermsContractLib.LoanStatus _status) external;
+    function startLoan() external returns (uint256 startTimestamp);
+    
+    function getLoanStatus() external view returns (TermsContractLib.LoanStatus loanStatus);
+    function getPrincipal() external view returns (uint256);
+    function getPrincipalToken() external view returns (address);
 
 }

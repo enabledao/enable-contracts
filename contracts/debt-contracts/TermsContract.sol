@@ -19,7 +19,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     TermsContractLib.LoanParams public loanParams;
     TermsContractLib.ScheduledPayment[] public paymentTable;
 
-    address public _borrower;
+    address private _borrower;
     // TODO(Dan): To implement
     // modifier onlyAtStatus(LoanStatus status) {}
 
@@ -138,7 +138,8 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     /** @dev Begins loan and writes timestamps to the payment table
      */
     // TODO(CRITICAL): Must put permissions on this
-    function startLoan() public returns (uint256 startTimestamp) {
+    function startLoan() public onlyController
+    returns (uint256 startTimestamp) {
         startTimestamp = now;
         //TODO(Dan): Is there a way to alias the library name?
         (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(
