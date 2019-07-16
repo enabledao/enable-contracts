@@ -54,7 +54,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         uint256 totalShares = repaymentManager.totalShares();
         uint256 totalPaid = repaymentManager.totalPaid();
 
-        if (totalShares > 0 && totalShares < principal) {
+        if (totalShares > 0 && totalShares < principal && termsContract.getLoanStatus() < TermsContractLib.LoanStatus.FUNDING_FAILED) {
             termsContract.setLoanStatus(TermsContractLib.LoanStatus.FUNDING_STARTED);
         } else if (totalShares >= principal && totalPaid == 0) {
             termsContract.setLoanStatus(TermsContractLib.LoanStatus.FUNDING_COMPLETE);

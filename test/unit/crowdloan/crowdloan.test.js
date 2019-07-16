@@ -87,7 +87,7 @@ contract('Crowdloan', accounts => {
       crowdloan.startCrowdfund(
         {from: accounts[4]}
       ),
-      // 'Only borrower can start crowdfund'
+      'Only borrower can start crowdfund'
     );
 
     const tx = await crowdloan.startCrowdfund(
@@ -98,11 +98,15 @@ contract('Crowdloan', accounts => {
     //   status: new BN(1) //FUNDING_STARTED
     // });
 
+    expect(
+      await termsContract.getLoanStatus()
+    ).to.be.bignumber.equal(new BN(1)); //FUNDING_STARTED
+
     await expectRevert.unspecified(
       crowdloan.startCrowdfund(
         {from: borrower}
       ),
-      // 'KickOff already passed'
+      'KickOff already passed'
     );
   });
 
@@ -119,24 +123,24 @@ contract('Crowdloan', accounts => {
         contributor.value,
         {from: contributor.address}
       ),
-      // 'Crowdfund not yet started'
+      'Crowdfund not yet started'
     );
 
-    // const time = Math.floor(new Date().getTime / 1000);
+    const time = Math.floor(new Date().getTime / 1000);
     await crowdloan.startCrowdfund(
       {from: borrower}
     );
 
-    // expect (
-    //   await crowdloan.getCrowdfundParams.call()['1'] //crowdfundStart
-    // ).to.be.bignumber.gt(new BN(time));
+    expect (
+      (await crowdloan.getCrowdfundParams.call())[1] //crowdfundStart
+    ).to.be.bignumber.gt(new BN(time));
 
     await expectRevert.unspecified(
       crowdloan.fund(
         contributor.value,
         {from: contributor.address}
       ),
-      // 'Crowdloan not approved to Transfer from'
+      'Crowdloan not approved to Transfer from'
     );
 
     await paymentToken.approve(
@@ -150,7 +154,7 @@ contract('Crowdloan', accounts => {
         new BN(0),
         {from: contributor.address}
       ),
-      // 'Can not increase by zero shares'
+      'Can not increase by zero shares'
     );
 
     await expectRevert.unspecified(
@@ -158,7 +162,7 @@ contract('Crowdloan', accounts => {
         contributor.value,
         {from: accounts[2]}
       ),
-      // 'Were the tokens successfully sent?'
+      'Were the tokens successfully sent?'
     );
 
     const tx = await crowdloan.fund(
@@ -187,18 +191,19 @@ contract('Crowdloan', accounts => {
         new BN(loanParams.principal),
         {from: contributor.address}
       ),
-      // 'Amount exceeds capital'
+      'Amount exceeds capital'
     );
 
-    termsContract.setLoanStatus(new BN(2)); //FUNDING_FAILED
+    await termsContract.setLoanStatus(new BN(2)); //FUNDING_FAILED
     await expectRevert.unspecified(
       crowdloan.fund(
         contributor.value,
         {from: contributor.address}
-      ),
-      // 'Crowdfund completed or failed'
+      )
+      , 'Crowdfund completed or failed'
     );
-    termsContract.setLoanStatus(new BN(1)); //FUNDING_STARTED
+
+    await termsContract.setLoanStatus(new BN(1)); //FUNDING_STARTED
 
     await crowdloan.fund(
       new BN(loanParams.principal).sub(contributor.value),
@@ -214,7 +219,7 @@ contract('Crowdloan', accounts => {
         contributor.value,
         {from: contributor.address}
       ),
-      // 'Crowdfund completed or failed'
+      'Crowdfund completed or failed'
     );
   });
 
@@ -255,7 +260,7 @@ contract('Crowdloan', accounts => {
         new BN(0),
         {from: contributor.address}
       ),
-      // 'Can not decrease by zero shares'
+      'Can not decrease by zero shares'
     );
 
     await expectRevert.unspecified(
@@ -263,7 +268,7 @@ contract('Crowdloan', accounts => {
         bit.add(new BN(10)),
         {from: contributor.address}
       ),
-      // 'Amount exceeds owned shares'
+      'Amount exceeds owned shares'
     );
 
     const tx = await crowdloan.refund(
@@ -312,7 +317,7 @@ contract('Crowdloan', accounts => {
         contributor.value,
         {from: contributor.address}
       ),
-      // 'Crowdfund completed or failed'
+      'Funding already complete. Refund Impossible'
     );
   });
 });
