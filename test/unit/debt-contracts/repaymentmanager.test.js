@@ -95,7 +95,7 @@ contract('RepaymentManager', accounts => {
         payee.shares,
         {from: accounts[4]}
       ),
-      // 'Permission denied'
+      'Permission denied'
     );
 
     const tx = await repaymentManager.increaseShares(
@@ -148,7 +148,7 @@ contract('RepaymentManager', accounts => {
         payee.shares,
         {from: controllers[0]}
       ),
-      // 'Action only allowed before loan funding is completed'
+      'Action only allowed before loan funding is completed'
     );
 
     const shares = await repaymentManager.shares.call(payee.address);
@@ -167,7 +167,7 @@ contract('RepaymentManager', accounts => {
         lessShares,
         {from: controllers[0]}
       ),
-      // 'Account has zero shares'
+      'Account has zero shares'
     );
 
     await repaymentManager.increaseShares(
@@ -187,14 +187,14 @@ contract('RepaymentManager', accounts => {
       sharesRemoved: lessShares
     });
 
-    await termsContract.setLoanStatus(2); //FUNDING_FAILED
+    await termsContract.setLoanStatus(3); //FUNDING_COMPLETE
     await expectRevert.unspecified(
       repaymentManager.decreaseShares(
         payee.address,
         lessShares,
         {from: controllers[0]}
       ),
-      // 'Action only allowed before loan funding is completed'
+      'Action only allowed before loan funding is completed'
     );
 
     const shares = await repaymentManager.shares.call(payee.address);
@@ -228,7 +228,7 @@ contract('RepaymentManager', accounts => {
           from: payers[0].address
         }
       ),
-      // 'No amount set to pay'
+      'No amount set to pay'
     );
 
     await paymentToken.mint(accounts[3], new BN(100));
@@ -244,7 +244,7 @@ contract('RepaymentManager', accounts => {
           from: accounts[3]
         }
       ),
-      // 'Action only allowed while loan is Active'
+      'Action only allowed while loan is Active'
     );
 
 
@@ -298,7 +298,7 @@ contract('RepaymentManager', accounts => {
           from: lenders[0].address
         }
       ),
-      // 'Action only allowed while loan is Active'
+      'Action only allowed while loan is Active'
     );
 
     await paymentToken.approve(
@@ -321,7 +321,7 @@ contract('RepaymentManager', accounts => {
           from: lenders[0].address
         }
       ),
-      // 'Account has zero shares'
+      'Account has zero shares'
     );
 
     await Promise.all(
