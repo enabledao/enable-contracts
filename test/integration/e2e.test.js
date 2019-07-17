@@ -44,19 +44,23 @@ contract('Enable Suite', accounts => {
 
   let crowdloanFactory;
   let paymentToken;
+  let crowdloan;
+  let termsContract;
+  let repaymentManager;
+
+  const borrower = accounts[2];
   const appAddress = getAppAddress();
-  const borrower = accounts[1];
   const lenders = [
     {
-      address: accounts[2],
+      address: accounts[3],
       shares: new BN(100)
     },
     {
-      address: accounts[3],
+      address: accounts[4],
       shares: new BN(200)
     },
     {
-      address: accounts[4],
+      address: accounts[5],
       shares: new BN(50)
     }
   ];
@@ -85,6 +89,7 @@ contract('Enable Suite', accounts => {
   });
 
   it('Borrower should successfully deploy crowdloan', async () => {
+
       const tx = await crowdloanFactory.deploy (
         paymentToken.address,
         ...Object.values(loanParams),
@@ -94,13 +99,35 @@ contract('Enable Suite', accounts => {
 
       const loanCreated = expectEvent.inLogs( tx.logs, 'LoanCreated', {
           borrower,
-          _principal: new BN(loanParams.pricipal)
+          amount: new BN(loanParams.pricipal)
       });
 
-      expectEvent.inLogs( tx.logs, 'LoanCreated', {
-          borrower,
-          _principal: new BN(loanParams.pricipal)
-      });
+      console.log(loanCreated)
+
+      crowdloan = loanCreated.args.crowdloan;;
+      termsContract = loanCreated.args.termsContract;
+      repaymentManager = loanCreated.args.repaymentManager;
+
+      // verify crowdloan contracts
+      expect (
+        await crowdloan.termsContract.call()
+      ).to.be.equal(termsContract);
+
+      expect (
+        await crowdloan.repaymentManager.call()
+      ).to.be.equal(repaymentManager);
+
+      expect (
+        await termsContract.borrower.call()
+      ).to.be.equal(borrower);
+
+      expect (
+        await repaymentManager.termsContract.call()
+      ).to.be.equal(termsContract);
+      // expectEvent.inLogs( tx.logs, 'LoanCreated', {
+      //     borrower,
+      //     _principal: new BN(loanParams.pricipal)
+      // });
   })
 
 });
