@@ -1,8 +1,8 @@
 import {BN} from 'openzeppelin-test-helpers';
 
 const crowdfundParams ={
-  crowdfundLength: 10,
-  crowdfundStart: 10
+  crowdfundLength: 600,
+  crowdfundStart: 0
 };
 
 const loanParams = {

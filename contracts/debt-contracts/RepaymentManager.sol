@@ -31,9 +31,9 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
         _;
     }
 
-    modifier beforeLoanActive() {
+    modifier beforeLoanFunded() {
         require(
-            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.FUNDING_FAILED,
+            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.FUNDING_COMPLETE,
             "Action only allowed before loan funding is completed"
         );
         _;
@@ -151,8 +151,12 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     function increaseShares(address account, uint256 shares_)
         public
         onlyController
-        beforeLoanActive
+        beforeLoanFunded
     {
+        require(
+            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.FUNDING_FAILED,
+            "Action only allowed before loan funding failed"
+        );
         if (_shares[account] == 0) {
             _addPayee(account, shares_);
         } else {
@@ -166,7 +170,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     function decreaseShares(address account, uint256 shares_)
         public
         onlyController
-        beforeLoanActive
+        beforeLoanFunded
     {
         _decreaseShares(account, shares_);
     }

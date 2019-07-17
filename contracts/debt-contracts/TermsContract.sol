@@ -16,12 +16,10 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     using TermsContractLib for TermsContractLib.TimeUnitType;
     using TermsContractLib for TermsContractLib.LoanStatus;
 
-    event LoanStatusSet(TermsContractLib.LoanStatus status);
-
     TermsContractLib.LoanParams public loanParams;
     TermsContractLib.ScheduledPayment[] public paymentTable;
 
-    address public borrower;
+    address private _borrower;
     // TODO(Dan): To implement
     // modifier onlyAtStatus(LoanStatus status) {}
 
@@ -30,7 +28,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     // modifier onlyAfterStatus(LoanStatus status) {}
 
     function initialize(
-        address _borrower,
+        address borrower_,
         address _principalTokenAddr,
         uint256 _principal,
         uint256 _timeUnitType,
@@ -49,7 +47,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             _interestRate < 10000,
             "Interest rate be in basis points and less than 10,000 (100%)"
         );
-        borrower = _borrower;
+        _borrower = borrower_;
         ControllerRole.initialize(_controllers);
         loanParams = TermsContractLib.LoanParams({
             principalToken: _principalTokenAddr,
@@ -71,6 +69,9 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
 
     /** Public Functions
      */
+    function borrower() public view returns (address) {
+        return _borrower;
+    }
     function getLoanStatus() public view returns (TermsContractLib.LoanStatus loanStatus) {
         return loanParams.loanStatus;
     }
@@ -100,7 +101,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         )
     {
         return (
-            borrower,
+            _borrower,
             address(loanParams.principalToken),
             loanParams.principal,
             uint256(loanParams.loanStatus),
@@ -137,7 +138,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     /** @dev Begins loan and writes timestamps to the payment table
      */
     // TODO(CRITICAL): Must put permissions on this
-    function startLoan() public returns (uint256 startTimestamp) {
+    function startLoan() public onlyController returns (uint256 startTimestamp) {
         startTimestamp = now;
         //TODO(Dan): Is there a way to alias the library name?
         (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(

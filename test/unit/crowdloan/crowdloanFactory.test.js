@@ -90,7 +90,6 @@ contract('CrowdloanFactory', accounts => {
 
     // Call methods on all contracts to verify deployment
     expect(await termsContract.getPrincipal()).to.be.bignumber.equal(new BN(loanParams.principal));
-    expect(await crowdloan.getDebtToken()).to.be.equal(repaymentManager.address);
     expect(await repaymentManager.totalShares()).to.be.bignumber.equal(new BN(0));
   });
 

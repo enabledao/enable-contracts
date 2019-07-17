@@ -17,7 +17,6 @@ import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helper
 
 const {expect} = require('chai');
 
-const {appCreate, getAppAddress, encodeCall} = require('../../testHelpers');
 const {loanParams, paymentTokenParams} = require('../../testConstants');
 
 const RepaymentManager = artifacts.require('RepaymentManager');
@@ -26,12 +25,9 @@ const PaymentToken = artifacts.require('StandaloneERC20');
 
 contract('RepaymentManager', accounts => {
 
-  let tx;
-  let result;
   let paymentToken;
   let termsContract;
   let repaymentManager;
-  // const appAddress = getAppAddress();
   const borrower = accounts[0];
   const controllers = [accounts[0]];
   const lenders = [
@@ -50,9 +46,6 @@ contract('RepaymentManager', accounts => {
   ];
 
   beforeEach(async () => {
-    // Create a factory via App
-    // const data = encodeCall('initialize', ['address'], [appAddress]);
-    // const proxyAddress = await appCreate('enable-credit', 'RepaymentManager', accounts[1], '');
     paymentToken = await PaymentToken.new();
     await paymentToken.initialize(
       paymentTokenParams.name,
@@ -83,12 +76,12 @@ contract('RepaymentManager', accounts => {
   });
 
   it('RepaymentManager should have PaymentToken address initialized', async () => {
-    result = await repaymentManager.paymentToken.call();
+    const result = await repaymentManager.paymentToken.call();
     expect(result).to.be.equal(paymentToken.address);
   });
 
   it('RepaymentManager should have TermsContract address initialized', async () => {
-    result = await repaymentManager.termsContract.call();
+    const result = await repaymentManager.termsContract.call();
     expect(result).to.be.equal(termsContract.address);
   });
 
@@ -102,7 +95,7 @@ contract('RepaymentManager', accounts => {
         payee.shares,
         {from: accounts[4]}
       ),
-      // 'Permission denied'
+      'Permission denied'
     );
 
     const tx = await repaymentManager.increaseShares(
@@ -155,7 +148,7 @@ contract('RepaymentManager', accounts => {
         payee.shares,
         {from: controllers[0]}
       ),
-      // 'Action only allowed before loan funding is completed'
+      'Action only allowed before loan funding is completed'
     );
 
     const shares = await repaymentManager.shares.call(payee.address);
@@ -174,7 +167,7 @@ contract('RepaymentManager', accounts => {
         lessShares,
         {from: controllers[0]}
       ),
-      // 'Account has zero shares'
+      'Account has zero shares'
     );
 
     await repaymentManager.increaseShares(
@@ -194,14 +187,14 @@ contract('RepaymentManager', accounts => {
       sharesRemoved: lessShares
     });
 
-    await termsContract.setLoanStatus(2); //FUNDING_FAILED
+    await termsContract.setLoanStatus(3); //FUNDING_COMPLETE
     await expectRevert.unspecified(
       repaymentManager.decreaseShares(
         payee.address,
         lessShares,
         {from: controllers[0]}
       ),
-      // 'Action only allowed before loan funding is completed'
+      'Action only allowed before loan funding is completed'
     );
 
     const shares = await repaymentManager.shares.call(payee.address);
@@ -235,7 +228,7 @@ contract('RepaymentManager', accounts => {
           from: payers[0].address
         }
       ),
-      // 'No amount set to pay'
+      'No amount set to pay'
     );
 
     await paymentToken.mint(accounts[3], new BN(100));
@@ -251,7 +244,7 @@ contract('RepaymentManager', accounts => {
           from: accounts[3]
         }
       ),
-      // 'Action only allowed while loan is Active'
+      'Action only allowed while loan is Active'
     );
 
 
@@ -305,7 +298,7 @@ contract('RepaymentManager', accounts => {
           from: lenders[0].address
         }
       ),
-      // 'Action only allowed while loan is Active'
+      'Action only allowed while loan is Active'
     );
 
     await paymentToken.approve(
@@ -328,7 +321,7 @@ contract('RepaymentManager', accounts => {
           from: lenders[0].address
         }
       ),
-      // 'Account has zero shares'
+      'Account has zero shares'
     );
 
     await Promise.all(
