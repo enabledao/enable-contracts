@@ -65,7 +65,6 @@ contract('RepaymentManager', accounts => {
 
     repaymentManager = await RepaymentManager.new();
     await repaymentManager.initialize(
-      paymentToken.address,
       termsContract.address,
       controllers
     );
@@ -73,11 +72,6 @@ contract('RepaymentManager', accounts => {
 
   it('RepaymentManager should deploy successfully', async () => {
     assert.exists(repaymentManager.address, 'repaymentManager was not successfully deployed');
-  });
-
-  it('RepaymentManager should have PaymentToken address initialized', async () => {
-    const result = await repaymentManager.paymentToken.call();
-    expect(result).to.be.equal(paymentToken.address);
   });
 
   it('RepaymentManager should have TermsContract address initialized', async () => {

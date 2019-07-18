@@ -56,7 +56,6 @@ contract('Crowdloan', accounts => {
     );
 
     await repaymentManager.initialize(
-      paymentToken.address,
       termsContract.address,
       controllers.concat([crowdloan.address])
     );

@@ -109,6 +109,11 @@ contract('Terms Contract', accounts => {
       assert.exists(instance.address, 'instance was not successfully deployed');
     });
 
+    it('should have valid PaymentToken address initialized', async () => {
+      const result = await instance.getPrincipalToken.call();
+      expect(result).to.be.equal(params.principalToken);
+    });
+
     it('should record loan params in storage', async () => {
       Object.keys(params).forEach(key => {
         const value = instanceParams[key];
