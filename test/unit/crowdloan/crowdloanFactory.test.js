@@ -13,7 +13,6 @@ const PaymentToken = artifacts.require('StandaloneERC20');
 contract('CrowdloanFactory', accounts => {
   const loanParams = {
     principal: web3.utils.toWei('60000', 'ether'), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
-    timeUnitType: 3,
     loanPeriod: 6,
     interestRate: 50,
     crowdfundLength: 10,
@@ -60,7 +59,6 @@ contract('CrowdloanFactory', accounts => {
     tx = await crowdloanFactory.deploy(
       crowdloanFactory.address,
       loanParams.principal,
-      loanParams.timeUnitType,
       loanParams.loanPeriod,
       loanParams.interestRate,
       loanParams.crowdfundLength,
@@ -74,7 +72,6 @@ contract('CrowdloanFactory', accounts => {
     tx = await crowdloanFactory.deploy(
       crowdloanFactory.address,
       loanParams.principal,
-      loanParams.timeUnitType,
       loanParams.loanPeriod,
       loanParams.interestRate,
       loanParams.crowdfundLength,

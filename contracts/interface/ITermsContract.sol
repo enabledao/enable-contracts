@@ -27,12 +27,10 @@ contract ITermsContract {
             address principalToken,
             uint256 principal,
             uint256 loanStatus,
-            uint256 timeUnitType,
             uint256 loanPeriod,
             uint256 interestRate,
             uint256 interestPayment,
-            uint256 loanStartTimestamp,
-            uint256 loanEndTimestamp
+            uint256 loanStartTimestamp
         );
 
     function setLoanStatus(TermsContractLib.LoanStatus _status) external;
