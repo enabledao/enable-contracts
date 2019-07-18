@@ -80,7 +80,35 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
 
     function getLoanEndTimestamp() public view returns (uint256 end) {
         require(loanParams.loanStartTimestamp != 0, "Loan hasn't been started yet");
-        end = BokkyPooBahsDateTimeLibrary.addMonths(loanParams.loanStartTimestamp, loanParams.loanPeriod);
+        end = BokkyPooBahsDateTimeLibrary.addMonths(
+            loanParams.loanStartTimestamp,
+            loanParams.loanPeriod
+        );
+    }
+
+    function getScheduledPayment(uint256 tranche)
+        public view
+        returns (uint256 due, uint256 principal, uint256 interest, uint256 total)
+    {
+        require(tranche <= loanParams.loanPeriod, "The loan period is shorter than requested tranche");
+
+        interest = loanParams.interestPayment;
+
+        if (tranche == loanParams.loanPeriod) {
+            principal = loanParams.principal;
+        } else {
+            principal = 0;
+        }
+
+        if (loanParams.loanStartTimestamp == 0) {
+            due = 0;
+        } else {
+            due = BokkyPooBahsDateTimeLibrary.addMonths(
+                loanParams.loanStartTimestamp,
+                tranche
+            );
+        }
+        total = interest + principal;
     }
 
     function getLoanParams()
