@@ -13,7 +13,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
 
     using TermsContractLib for TermsContractLib.LoanParams;
     using TermsContractLib for TermsContractLib.ScheduledPayment;
-    using TermsContractLib for TermsContractLib.TimeUnitType;
     using TermsContractLib for TermsContractLib.LoanStatus;
 
     TermsContractLib.LoanParams public loanParams;
@@ -31,13 +30,11 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         address borrower_,
         address _principalTokenAddr,
         uint256 _principal,
-        uint256 _timeUnitType,
         uint256 _loanPeriod,
         uint256 _interestRate,
         address[] memory _controllers
     ) public initializer {
         require(_principalTokenAddr != address(0), "Loaned token must be an ERC20 token"); //TODO(Dan): More rigorous way of testing ERC20?
-        require(_timeUnitType < 5, "Invalid time unit type");
         require(_loanPeriod > 0, "Loan period must be higher than 0");
         require(
             _interestRate > 9,
@@ -53,21 +50,18 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             principalToken: _principalTokenAddr,
             principal: _principal,
             loanStatus: TermsContractLib.LoanStatus.NOT_STARTED,
-            timeUnitType: TermsContractLib.TimeUnitType(_timeUnitType),
             loanPeriod: _loanPeriod,
             interestRate: _interestRate, // TODO: reassign constant values below
             interestPayment: calcInterestPayment(_principal, _interestRate),
-            loanStartTimestamp: 0,
-            loanEndTimestamp: 0
+            loanStartTimestamp: 0
         });
-        initializePaymentTable();
     }
 
     function setLoanStatus(TermsContractLib.LoanStatus _status) public onlyController {
         _setLoanStatus(_status);
     }
 
-    /** Public Functions
+    /** Public view functions
      */
     function borrower() public view returns (address) {
         return _borrower;
@@ -84,6 +78,14 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         return loanParams.principalToken;
     }
 
+    function getLoanEndTimestamp() public view returns (uint256 end) {
+        require(loanParams.loanStartTimestamp != 0, "Loan hasn't been started yet");
+        end = BokkyPooBahsDateTimeLibrary.addMonths(
+            loanParams.loanStartTimestamp,
+            loanParams.loanPeriod
+        );
+    }
+
     function getLoanParams()
         public
         view
@@ -92,12 +94,10 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             address principalToken,
             uint256 principal,
             uint256 loanStatus,
-            uint256 timeUnitType,
             uint256 loanPeriod,
             uint256 interestRate,
             uint256 interestPayment,
-            uint256 loanStartTimestamp,
-            uint256 loanEndTimestamp
+            uint256 loanStartTimestamp
         )
     {
         return (
@@ -105,66 +105,59 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             address(loanParams.principalToken),
             loanParams.principal,
             uint256(loanParams.loanStatus),
-            uint256(loanParams.timeUnitType),
             loanParams.loanPeriod,
             loanParams.interestRate,
             loanParams.interestPayment,
-            loanParams.loanStartTimestamp,
-            loanParams.loanEndTimestamp
+            loanParams.loanStartTimestamp
         );
     }
 
-    /** @dev this is currently a workaround for initializing a simple loan payment table
-     */
-    function initializePaymentTable() private {
-        for (uint256 i = 0; i < loanParams.loanPeriod.sub(1); i++) {
-            TermsContractLib.ScheduledPayment memory current = TermsContractLib.ScheduledPayment({
-                due: 0,
-                principal: 0,
-                interest: loanParams.interestPayment,
-                total: 0 + loanParams.interestPayment
-            });
-            paymentTable.push(current);
+    function getScheduledPayment(uint256 tranche)
+        public
+        view
+        returns (uint256 due, uint256 principal, uint256 interest, uint256 total)
+    {
+        require(
+            tranche <= loanParams.loanPeriod,
+            "The loan period is shorter than requested tranche"
+        );
+        interest = loanParams.interestPayment;
+        if (tranche == loanParams.loanPeriod) {
+            principal = loanParams.principal;
+        } else {
+            principal = 0;
         }
-        TermsContractLib.ScheduledPayment memory last = TermsContractLib.ScheduledPayment({
-            due: 0,
-            principal: loanParams.principal,
-            interest: loanParams.interestPayment,
-            total: loanParams.principal + loanParams.interestPayment
-        });
-        paymentTable.push(last);
+        if (loanParams.loanStartTimestamp == 0) {
+            due = 0;
+        } else {
+            due = BokkyPooBahsDateTimeLibrary.addMonths(loanParams.loanStartTimestamp, tranche);
+        }
+        total = interest + principal;
     }
 
     /** @dev Begins loan and writes timestamps to the payment table
      */
-    // TODO(CRITICAL): Must put permissions on this
     function startLoan() public onlyController returns (uint256 startTimestamp) {
+        require(
+            loanParams.loanStatus < TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
+            "Cannot start loan that has already been started"
+        );
         startTimestamp = now;
-        //TODO(Dan): Is there a way to alias the library name?
         (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(
             startTimestamp
         );
         loanParams.loanStartTimestamp = startTimestamp;
-        for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
-            TermsContractLib.ScheduledPayment storage current = paymentTable[i];
-            //TODO(Dan): Conditional addDays, Months, Years (or remove the timeAmortizationUnit altogether)
-            uint256 shifted = BokkyPooBahsDateTimeLibrary.addMonths(startTimestamp, i + 1);
-            current.due = shifted;
-            if (i == loanParams.loanPeriod - 1) {
-                loanParams.loanEndTimestamp = shifted;
-            }
-        }
         loanParams.loanStatus = TermsContractLib.LoanStatus.REPAYMENT_CYCLE;
     }
 
     /** PMT function to calculate periodic interest rate
+      * Note: divide by 10000 is because of basis points conversion
      */
     function calcInterestPayment(uint256 principal, uint256 interestRate)
         public
         pure
         returns (uint256)
     {
-        //TODO(Dan): Refactor into _percentage method
         uint256 result = principal.mul(interestRate).div(10000);
         return result;
     }
@@ -177,19 +170,17 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256) {
         uint256 total = 0;
         for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
-            TermsContractLib.ScheduledPayment memory cur = paymentTable[i];
-            if (cur.due < timestamp) {
-                total += cur.total;
+            (uint256 due, , , uint256 amount) = getScheduledPayment(i + 1);
+            if (due < timestamp) {
+                total += amount;
             }
         }
         return total;
     }
 
-    /// Returns the cumulative units-of-value repaid by the point at which this method is called.
-    /// @return uint256 The cumulative units-of-value repaid up until now.
-    function getValueRepaidToDate() public view returns (uint256) {
-        return 1; // TODO(Dan): Should be moved to the repaymentRouter
-    }
+    // function getValueRepaidToDate() external view returns (uint256) {
+    //     return 1;
+    // }
 
     // @notice set the present state of the Loan;
     // increase present state of the loan

@@ -1,5 +1,6 @@
 const fs = require('fs');
 const {BN, constants, expectEvent, expectRevert} = require('openzeppelin-test-helpers');
+
 const App = artifacts.require('App');
 const {encodeCall} = require('zos-lib');
 
