@@ -17,7 +17,7 @@ contract ITermsContract {
 
     /// Returns the cumulative units-of-value repaid by the point at which this method is called.
     /// @return uint256 The cumulative units-of-value repaid up until now.
-    function getValueRepaidToDate() external view returns (uint256);
+    // function getValueRepaidToDate() external view returns (uint256);
 
     function getLoanParams()
         external
