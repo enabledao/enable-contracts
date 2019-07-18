@@ -1,6 +1,6 @@
 import {BN} from 'openzeppelin-test-helpers';
 
-const crowdfundParams ={
+const crowdfundParams = {
   crowdfundLength: 600,
   crowdfundStart: 0
 };
@@ -9,7 +9,7 @@ const loanParams = {
   principal: web3.utils.toWei('60000', 'ether'), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
   timeUnitType: 3,
   loanPeriod: 6,
-  interestRate: 50,
+  interestRate: 50
 };
 
 const paymentTokenParams = {
@@ -18,8 +18,4 @@ const paymentTokenParams = {
   decimals: new BN(18)
 };
 
-export {
-  crowdfundParams,
-  loanParams,
-  paymentTokenParams
-}
+export {crowdfundParams, loanParams, paymentTokenParams};

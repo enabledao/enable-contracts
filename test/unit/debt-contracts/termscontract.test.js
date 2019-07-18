@@ -21,7 +21,7 @@ contract('Terms Contract', accounts => {
   };
 
   const reassign = (original, param, value) => {
-    return Object.assign({}, original, { [param]: value });
+    return Object.assign({}, original, {[param]: value});
   };
 
   const initializeInstance = async (
@@ -113,7 +113,7 @@ contract('Terms Contract', accounts => {
       Object.keys(params).forEach(key => {
         const value = instanceParams[key];
         if (key === 'borrower') {
-          expect(instanceParams[0]).to.equal(params[key])
+          expect(instanceParams[0]).to.equal(params[key]);
         } else if (value instanceof BN) {
           expect(value).to.be.a.bignumber.that.equals(new BN(params[key]));
         } else {
