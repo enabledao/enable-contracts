@@ -15,7 +15,7 @@ contract('Terms Contract', accounts => {
     borrower: accounts[0],
     principalToken: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
     principal: new BN(60000), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
-    loanPeriod: new BN(6),
+    loanPeriod: new BN(12),
     interestRate: new BN(50)
   };
 
@@ -143,10 +143,13 @@ contract('Terms Contract', accounts => {
         const int = new BN(amt);
         const t = p.add(int);
         expected.push({principal: p, interest: int, total: t});
-        queries.push(instance.paymentTable(i));
+        queries.push(instance.getScheduledPayment(i + 1));
       }
       const results = await Promise.all(queries);
       for (let cur = 0; cur < loanPeriod; cur += 1) {
+        console.log(
+          `Results  |  Principal : ${results[cur].principal}  |  Interest: ${results[cur].interest}  |  Total: ${results[cur].total}`
+        );
         expect(results[cur].principal).to.be.a.bignumber.that.equals(
           expected[cur].principal,
           `Incorrect principal amount in payments table in month ${cur}`
@@ -168,35 +171,49 @@ contract('Terms Contract', accounts => {
     it('borrower should be able to start the loan', async () => {});
     it('non-borrower should not be able to start the loan', async () => {});
 
-    it('starting a loan should write loanStartTimestamp, change loanStatus, create correct loanEndTimestamp', async () => {
-      const {loanPeriod} = params;
-      const now = Math.floor(new Date().getTime() / 1000);
+    context('starting a loan', async () => {
+      let tx;
+      let loanStartTimestamp;
+      let loanStatus;
+      let loanPeriod;
+      let loanEndTimestamp;
 
-      const tx = await instance.startLoan();
-      const {loanStartTimestamp, loanStatus} = await instance.getLoanParams();
-      const loanEndTimestamp = await instance.getLoanEndTimestamp();
+      before(async () => {
+        tx = await instance.startLoan();
+        ({loanStatus, loanStartTimestamp, loanPeriod} = await instance.getLoanParams());
+        loanEndTimestamp = await instance.getLoanEndTimestamp();
+      });
 
-      expect(loanStatus).to.be.a.bignumber.that.equals(
-        new BN(4),
-        'loan status should be updated to loan started / repayment cycle'
-      );
+      it('should write the loanStartTimestamp', async () => {
+        const now = Math.floor(new Date().getTime() / 1000);
+        expect(loanStartTimestamp.toNumber()).to.be.within(
+          now - threshold,
+          now + threshold,
+          'loanStartTimestamp is more than 1000 seconds from now'
+        );
+      });
 
-      expect(loanStartTimestamp.toNumber()).to.be.within(
-        now - threshold,
-        now + threshold,
-        'loanStartTimestamp is more than 1000 seconds from now'
-      );
+      it('should change loanStatus to started', async () => {
+        expect(loanStatus).to.be.a.bignumber.that.equals(
+          new BN(4),
+          'loan status should be updated to loan started / repayment cycle'
+        );
+      });
 
-      const cur = moment(new Date().getTime());
-      const end = cur.add(loanPeriod.toNumber(), 'months').unix();
-      expect(loanEndTimestamp.toNumber()).to.be.within(
-        end - threshold,
-        end + threshold,
-        'loanEndTimestamp is more than 1000 seconds from correct end date'
-      );
+      it('should create a correct loanEndTimestamp', async () => {
+        const cur = moment(new Date().getTime());
+        const end = cur.add(loanPeriod.toNumber(), 'months').unix();
+        expect(loanEndTimestamp.toNumber()).to.be.within(
+          end - threshold,
+          end + threshold,
+          'loanEndTimestamp is more than 1000 seconds from correct end date'
+        );
+      });
+
+      xit('should emit an event', async () => {});
     });
 
-    // it('starting a loan should write due timestamps to the payments table and update loan status', async () => {
+    // it.only('starting a loan should write due timestamps to the getScheduledPayment table', async () => {
     //   const {loanPeriod} = params;
     //   const queries = [];
     //   const now = Math.floor(new Date().getTime() / 1000);
