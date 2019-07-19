@@ -48,29 +48,41 @@ contract('Enable Suite', accounts => {
   let termsContract;
   let repaymentManager;
 
-  const HUNDERED = new BN(100);
+  const TENTHOUSAND = new BN(10000);
   const borrower = accounts[2];
   const appAddress = getAppAddress();
   const lenders = [
     {
+      address: accounts[1],
+      shares: (new BN(loanParams.principal)).mul(new BN(5000)).div(TENTHOUSAND)
+    },
+    {
       address: accounts[3],
-      shares: (new BN(loanParams.principal)).mul(new BN(15)).div(HUNDERED)
+      shares: (new BN(loanParams.principal)).mul(new BN(2500)).div(TENTHOUSAND)
     },
     {
       address: accounts[4],
-      shares: (new BN(loanParams.principal)).mul(new BN(50)).div(HUNDERED)
+      shares: (new BN(loanParams.principal)).mul(new BN(1500)).div(TENTHOUSAND)
     },
     {
       address: accounts[5],
-      shares: (new BN(loanParams.principal)).mul(new BN(25)).div(HUNDERED)
+      shares: (new BN(loanParams.principal)).mul(new BN(500)).div(TENTHOUSAND)
     },
     {
       address: accounts[6],
-      shares: (new BN(loanParams.principal)).mul(new BN(9.9)).div(HUNDERED)
+      shares: (new BN(loanParams.principal)).mul(new BN(300)).div(TENTHOUSAND)
     },
     {
       address: accounts[7],
-      shares: (new BN(loanParams.principal)).mul(new BN(0.1)).div(HUNDERED)
+      shares: (new BN(loanParams.principal)).mul(new BN(100)).div(TENTHOUSAND)
+    },
+    {
+      address: accounts[8],
+      shares: (new BN(loanParams.principal)).mul(new BN(99)).div(TENTHOUSAND)
+    },
+    {
+      address: accounts[9],
+      shares: (new BN(loanParams.principal)).mul(new BN(1)).div(TENTHOUSAND)
     }
   ];
 
@@ -150,6 +162,9 @@ contract('Enable Suite', accounts => {
       await Promise.all(lenders.map( lender => paymentToken.mint(lender.address, lender.shares)));
 
       await Promise.all(lenders.map( async lender => {
+        await paymentToken.approve(crowdloan.address, lender.shares,
+          {from: lender.address}
+        );
         const tx = await crowdloan.fund(lender.shares,
           {from: lender.address}
         );
@@ -159,6 +174,7 @@ contract('Enable Suite', accounts => {
         });
       }));
 
+      expect(await paymentToken.balanceOf.call(crowdloan.address)).to.be.bignumber.equal(new BN(loanParams.principal));
       expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(3));//FUNDING_STARTED
   });
 
@@ -176,16 +192,17 @@ contract('Enable Suite', accounts => {
       });
 
       expect(await paymentToken.balanceOf(borrower)).to.be.bignumber.equal(test);
-      expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(3));
+      expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(4));// REPAYMENT_CYCLE
 
-      await crowdloan.withdraw(await paymentToken.balanceOf(crowdloan.address),
+      const leftover = await paymentToken.balanceOf(crowdloan.address);
+      await crowdloan.withdraw(leftover ,
         { from: borrower}
       );
 
-      expect(await paymentToken.balanceOf(borrower)).to.be.bignumber.equal(new BN(loanParams.principal));
+      expect(await paymentToken.balanceOf(borrower)).to.be.bignumber.gte(new BN(loanParams.principal));
   });
 
-  xit('should successfully fund crowdloan', async () => {
+  xit('should successfully pay crowdloan', async () => {
       await Promise.all(lenders.map( lender => paymentToken.mint(lender.address, lender.shares)));
 
       await Promise.all(lenders.map( async lender => {
