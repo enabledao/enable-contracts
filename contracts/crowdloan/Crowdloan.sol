@@ -142,7 +142,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         );
 
         if (termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE) {
-            termsContract.startLoan(termsContract.getPrincipal());      // TODO(Dan): change this to be the amount actually raised
+            termsContract.startLoan(termsContract.getPrincipal()); // TODO(Dan): change this to be the amount actually raised
         }
 
         _validatedERC20Transfer(_getPrincipalToken(), address(this), msg.sender, amount);

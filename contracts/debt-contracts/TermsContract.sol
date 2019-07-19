@@ -146,7 +146,10 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             loanParams.loanStatus < TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
             "Cannot start loan that has already been started"
         );
-        require(principalDisbursed <= loanParams.principal, "principalDisbursed cannot be more than requested");
+        require(
+            principalDisbursed <= loanParams.principal,
+            "principalDisbursed cannot be more than requested"
+        );
         startTimestamp = now;
         (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(
             startTimestamp
@@ -156,7 +159,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         loanParams.loanStatus = TermsContractLib.LoanStatus.REPAYMENT_CYCLE;
     }
 
-    function getExpectedRepaymentValue() public view returns(uint256 total) {
+    function getExpectedRepaymentValue() public view returns (uint256 total) {
         return _getExpectedRepaymentValue(now);
     }
 
