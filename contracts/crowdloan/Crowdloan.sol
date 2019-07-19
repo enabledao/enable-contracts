@@ -74,8 +74,10 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         } else {
             token.transferFrom(_from, _to, _amount);
         }
-
-        require(token.balanceOf(_to) >= balance.add(_amount), "Were the tokens successfully sent?");
+        require(
+            token.balanceOf(_to) >= balance.add(_amount),
+            "Recipient's token count did not increase"
+        );
     }
 
     function _getPrincipalToken() internal view returns (IERC20 token) {

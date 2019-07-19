@@ -17,7 +17,7 @@ contract ITermsContract {
 
     /// Returns the cumulative units-of-value repaid by the point at which this method is called.
     /// @return uint256 The cumulative units-of-value repaid up until now.
-    function getValueRepaidToDate() external view returns (uint256);
+    // function getValueRepaidToDate() external view returns (uint256);
 
     function getLoanParams()
         external
@@ -27,12 +27,10 @@ contract ITermsContract {
             address principalToken,
             uint256 principal,
             uint256 loanStatus,
-            uint256 timeUnitType,
             uint256 loanPeriod,
             uint256 interestRate,
             uint256 interestPayment,
-            uint256 loanStartTimestamp,
-            uint256 loanEndTimestamp
+            uint256 loanStartTimestamp
         );
 
     function setLoanStatus(TermsContractLib.LoanStatus _status) external;
