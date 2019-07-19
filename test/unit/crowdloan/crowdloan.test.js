@@ -84,9 +84,9 @@ contract('Crowdloan', accounts => {
 
     const tx = await crowdloan.startCrowdfund({from: borrower});
 
-    // await expectEvent.inTransaction(tx.receipt.transactionHash, 'LoanStatusSet',{
-    //   status: new BN(1) //FUNDING_STARTED
-    // });
+    await expectEvent.inTransaction(tx.receipt.transactionHash, TermsContract, 'LoanStatusSet',{
+      status: new BN(1) //FUNDING_STARTED
+    });
 
     expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(1)); // FUNDING_STARTED
 

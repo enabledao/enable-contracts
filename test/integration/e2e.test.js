@@ -27,7 +27,7 @@
 
 I'd also want to make sure the loan values are correct for each payment with a simple loan calcuation.
 */
-import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
+import {BN, constants, expectEvent, expectRevert, time} from 'openzeppelin-test-helpers';
 
 const {expect} = require('chai');
 
@@ -48,20 +48,29 @@ contract('Enable Suite', accounts => {
   let termsContract;
   let repaymentManager;
 
+  const HUNDERED = new BN(100);
   const borrower = accounts[2];
   const appAddress = getAppAddress();
   const lenders = [
     {
       address: accounts[3],
-      shares: new BN(100)
+      shares: (new BN(loanParams.principal)).mul(new BN(15)).div(HUNDERED)
     },
     {
       address: accounts[4],
-      shares: new BN(200)
+      shares: (new BN(loanParams.principal)).mul(new BN(50)).div(HUNDERED)
     },
     {
       address: accounts[5],
-      shares: new BN(50)
+      shares: (new BN(loanParams.principal)).mul(new BN(25)).div(HUNDERED)
+    },
+    {
+      address: accounts[6],
+      shares: (new BN(loanParams.principal)).mul(new BN(9.9)).div(HUNDERED)
+    },
+    {
+      address: accounts[7],
+      shares: (new BN(loanParams.principal)).mul(new BN(0.1)).div(HUNDERED)
     }
   ];
 
@@ -75,7 +84,9 @@ contract('Enable Suite', accounts => {
     paymentToken.initialize(
       paymentTokenParams.name,
       paymentTokenParams.symbol,
-      paymentTokenParams.decimals
+      paymentTokenParams.decimals,
+      [accounts[0]], // minters
+      [], // pausers
     );
   });
 
@@ -99,23 +110,23 @@ contract('Enable Suite', accounts => {
 
       const loanCreated = expectEvent.inLogs( tx.logs, 'LoanCreated', {
           borrower,
-          amount: new BN(loanParams.pricipal)
+          // amount: new BN(loanParams.pricipal)
       });
 
-      console.log(loanCreated)
+      expect(loanCreated.args.amount).to.be.bignumber.equal(new BN(loanParams.principal))
 
-      crowdloan = loanCreated.args.crowdloan;;
-      termsContract = loanCreated.args.termsContract;
-      repaymentManager = loanCreated.args.repaymentManager;
+      crowdloan = await Crowdloan.at(loanCreated.args.crowdloan);
+      termsContract = await TermsContract.at(loanCreated.args.termsContract);
+      repaymentManager = await RepaymentManager.at(loanCreated.args.repaymentManager);
 
       // verify crowdloan contracts
       expect (
         await crowdloan.termsContract.call()
-      ).to.be.equal(termsContract);
+      ).to.be.equal(termsContract.address);
 
       expect (
         await crowdloan.repaymentManager.call()
-      ).to.be.equal(repaymentManager);
+      ).to.be.equal(repaymentManager.address);
 
       expect (
         await termsContract.borrower.call()
@@ -123,11 +134,69 @@ contract('Enable Suite', accounts => {
 
       expect (
         await repaymentManager.termsContract.call()
-      ).to.be.equal(termsContract);
-      // expectEvent.inLogs( tx.logs, 'LoanCreated', {
-      //     borrower,
-      //     _principal: new BN(loanParams.pricipal)
-      // });
-  })
+      ).to.be.equal(termsContract.address);
+  });
+
+  it('should successfully startCrowdfund', async () => {
+      const tx = await crowdloan.startCrowdfund({ from: borrower });
+
+      await expectEvent.inTransaction(tx.tx, TermsContract, 'LoanStatusSet',{
+        status: new BN(1) //FUNDING_STARTED
+      });
+      expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(1));//FUNDING_STARTED
+  });
+
+  it('should successfully fund crowdloan', async () => {
+      await Promise.all(lenders.map( lender => paymentToken.mint(lender.address, lender.shares)));
+
+      await Promise.all(lenders.map( async lender => {
+        const tx = await crowdloan.fund(lender.shares,
+          {from: lender.address}
+        );
+        expectEvent.inLogs(tx.logs, 'Fund', {
+          sender: lender.address,
+          amount: lender.shares
+        });
+      }));
+
+      expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(3));//FUNDING_STARTED
+  });
+
+  it('should successfully withdraw', async () => {
+      const test = new BN(1);
+      const balance = await paymentToken.balanceOf(borrower);
+
+      const tx = await crowdloan.withdraw(test,
+        { from: borrower}
+      );
+
+      expectEvent.inLogs (tx.logs, 'ReleaseFunds', {
+        borrower,
+        amount: test
+      });
+
+      expect(await paymentToken.balanceOf(borrower)).to.be.bignumber.equal(test);
+      expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(3));
+
+      await crowdloan.withdraw(await paymentToken.balanceOf(crowdloan.address),
+        { from: borrower}
+      );
+
+      expect(await paymentToken.balanceOf(borrower)).to.be.bignumber.equal(new BN(loanParams.principal));
+  });
+
+  xit('should successfully fund crowdloan', async () => {
+      await Promise.all(lenders.map( lender => paymentToken.mint(lender.address, lender.shares)));
+
+      await Promise.all(lenders.map( async lender => {
+        const tx = await crowdloan.fund(lender.shares,
+          {from: lender.address}
+        );
+        expectEvent.inLogs(tx.logs, 'Fund', {
+          sender: lender.address,
+          amount: lender.shares
+        });
+      }));
+  });
 
 });

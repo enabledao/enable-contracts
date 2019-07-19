@@ -147,7 +147,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             startTimestamp
         );
         loanParams.loanStartTimestamp = startTimestamp;
-        loanParams.loanStatus = TermsContractLib.LoanStatus.REPAYMENT_CYCLE;
+        _setLoanStatus(TermsContractLib.LoanStatus.REPAYMENT_CYCLE);
     }
 
     /** PMT function to calculate periodic interest rate
