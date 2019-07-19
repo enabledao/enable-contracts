@@ -50,8 +50,6 @@ contract('Terms Contract', accounts => {
 
   const invalidInputCheckRevert = async (original, param, value, error) => {
     const mutated = reassign(original, param, value);
-    // console.log(mutated);
-    // await expectRevert(TermsContract.new(...Object.values(mutated)), error);
     await expectRevert.unspecified(initializeInstance(...Object.values(mutated)), error);
   };
 
@@ -117,17 +115,13 @@ contract('Terms Contract', accounts => {
         }
       });
     });
+    
 
     it('should store loanStatus, loanStartTimestamp, and principalDisbursed as 0', async () => {
       expect(instanceParams.loanStatus).to.be.a.bignumber.that.equals(new BN(0));
       expect(instanceParams.principalDisbursed).to.be.a.bignumber.that.equals(new BN(0));
       expect(instanceParams.loanStartTimestamp).to.be.a.bignumber.that.equals(new BN(0));
     });
-
-    // xit('should get the correct borrower', async () => {
-    //   const a = await instance.getBorrower();
-    //   expect(a).to.equals(borrower);
-    // });
 
     it('should generate the correct monthly payment', async () => {
       const {principal, interestRate} = params;
@@ -137,7 +131,6 @@ contract('Terms Contract', accounts => {
     });
 
     it('should generate an payments table without timestamps if loan has not been started', async () => {
-      // calculate what should be correct
       const expected = [];
       const queries = [];
       const {principal, interestRate, loanPeriod} = params;
@@ -170,11 +163,20 @@ contract('Terms Contract', accounts => {
       }
     });
 
-    it('controller should be able to call appropriate set methods', async () => {});
-    it('non-controller should not be able to call appropriate set methods', async () => {});
+    xit('controller should be able to call appropriate set methods', async () => {});
+    xit('non-controller should not be able to call appropriate set methods', async () => {});
 
-    it('borrower should be able to start the loan', async () => {});
-    it('non-borrower should not be able to start the loan', async () => {});
+    context('starting a loan with invalid params', async () => {
+
+      it('should require that loan has not already been started', async () => {
+        await instance.startLoan(params.principal);
+        await expectRevert(instance.startLoan(params.principal), "Cannot start loan that has already been started");
+      });
+
+      it('should require principalDisbursed to be below principalRequested', async () => {
+        await expectRevert(instance.startLoan(params.principal.add(new BN(200))), "principalDisbursed cannot be more than requested");
+      });
+    });
 
     context('starting a loan', async () => {
       let tx;
@@ -185,10 +187,14 @@ contract('Terms Contract', accounts => {
       let interestRate;
 
       beforeEach(async () => {
-        tx = await instance.startLoan();
+        tx = await instance.startLoan(params.principal);
         ({loanStatus, loanStartTimestamp, loanPeriod, principal, interestRate} = await instance.getLoanParams());
         loanEndTimestamp = await instance.getLoanEndTimestamp();
       });
+
+
+      xit('borrower should be able to start the loan', async () => {});
+      xit('non-borrower should not be able to start the loan', async () => {});
 
       it('should write the loanStartTimestamp', async () => {
         const now = Math.floor(new Date().getTime() / 1000);

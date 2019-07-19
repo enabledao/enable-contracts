@@ -137,21 +137,27 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
 
     /** @dev Begins loan and writes timestamps to the payment table
      */
-    function startLoan() 
-        public 
-        onlyController 
-        returns (uint256 startTimestamp) 
+    function startLoan(uint256 principalDisbursed)
+        public
+        onlyController
+        returns (uint256 startTimestamp)
     {
         require(
             loanParams.loanStatus < TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
             "Cannot start loan that has already been started"
         );
+        require(principalDisbursed <= loanParams.principal, "principalDisbursed cannot be more than requested");
         startTimestamp = now;
         (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(
             startTimestamp
         );
+        loanParams.principalDisbursed = principalDisbursed;
         loanParams.loanStartTimestamp = startTimestamp;
         loanParams.loanStatus = TermsContractLib.LoanStatus.REPAYMENT_CYCLE;
+    }
+
+    function getExpectedRepaymentValue() public view returns(uint256 total) {
+        return _getExpectedRepaymentValue(now);
     }
 
     /// Returns the cumulative units-of-value expected to be repaid by a given block timestamp.
@@ -159,7 +165,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     ///  conditions (e.g. interest rates can be renegotiated if repayments are delinquent).
     /// @param  timestamp uint. The timestamp of the block for which repayment expectation is being queried.
     /// @return uint256 The cumulative units-of-value expected to be repaid by the time the given timestamp lapses.
-    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256 total) {
+    function _getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256 total) {
         total = 0;
         for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
             (uint256 due, , , uint256 amount) = getScheduledPayment(i + 1);
