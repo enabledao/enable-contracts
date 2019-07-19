@@ -118,8 +118,9 @@ contract('Terms Contract', accounts => {
       });
     });
 
-    it('should store loanStatus as unstarted and start/end timestamps as 0', async () => {
+    it('should store loanStatus, loanStartTimestamp, and principalDisbursed as 0', async () => {
       expect(instanceParams.loanStatus).to.be.a.bignumber.that.equals(new BN(0));
+      expect(instanceParams.principalDisbursed).to.be.a.bignumber.that.equals(new BN(0));
       expect(instanceParams.loanStartTimestamp).to.be.a.bignumber.that.equals(new BN(0));
     });
 

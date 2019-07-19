@@ -18,6 +18,7 @@ library TermsContractLib {
         LoanStatus loanStatus;
         uint256 loanPeriod;
         uint256 interestRate; // NOTE(Dan): in months
+        uint256 principalDisbursed;
         uint256 loanStartTimestamp;
     }
 

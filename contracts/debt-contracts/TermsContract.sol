@@ -51,7 +51,8 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             principal: _principal,
             loanStatus: TermsContractLib.LoanStatus.NOT_STARTED,
             loanPeriod: _loanPeriod,
-            interestRate: _interestRate, // TODO: reassign constant values below
+            interestRate: _interestRate,
+            principalDisbursed: 0,
             loanStartTimestamp: 0
         });
     }
@@ -95,6 +96,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             uint256 loanStatus,
             uint256 loanPeriod,
             uint256 interestRate,
+            uint256 principalDisbursed,
             uint256 loanStartTimestamp
         )
     {
@@ -105,6 +107,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             uint256(loanParams.loanStatus),
             loanParams.loanPeriod,
             loanParams.interestRate,
+            loanParams.principalDisbursed,
             loanParams.loanStartTimestamp
         );
     }
@@ -134,7 +137,11 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
 
     /** @dev Begins loan and writes timestamps to the payment table
      */
-    function startLoan() public onlyController returns (uint256 startTimestamp) {
+    function startLoan() 
+        public 
+        onlyController 
+        returns (uint256 startTimestamp) 
+    {
         require(
             loanParams.loanStatus < TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
             "Cannot start loan that has already been started"
@@ -147,18 +154,12 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         loanParams.loanStatus = TermsContractLib.LoanStatus.REPAYMENT_CYCLE;
     }
 
-
-
     /// Returns the cumulative units-of-value expected to be repaid by a given block timestamp.
     ///  Note this is not a constant function -- this value can vary on basis of any number of
     ///  conditions (e.g. interest rates can be renegotiated if repayments are delinquent).
     /// @param  timestamp uint. The timestamp of the block for which repayment expectation is being queried.
     /// @return uint256 The cumulative units-of-value expected to be repaid by the time the given timestamp lapses.
-    function getExpectedRepaymentValue(uint256 timestamp) 
-        public 
-        view 
-        returns (uint256 total) 
-    {
+    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256 total) {
         total = 0;
         for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
             (uint256 due, , , uint256 amount) = getScheduledPayment(i + 1);
@@ -168,7 +169,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         }
     }
 
-        /** PMT function to calculate periodic interest rate
+    /** PMT function to calculate periodic interest rate
       * Note: divide by 10000 is because of basis points conversion
      */
     function _calcMonthlyInterest(uint256 principal, uint256 interestRate)
@@ -181,7 +182,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
 
     // @notice set the present state of the Loan;
     // increase present state of the loan
-    // needs to be protected!!!
+    // TODO(Dan): should this be private instead of internal?
     function _setLoanStatus(TermsContractLib.LoanStatus _loanStatus) internal {
         if (loanParams.loanStatus != _loanStatus) {
             loanParams.loanStatus = _loanStatus;
@@ -189,5 +190,4 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         }
     }
 
-    
 }
