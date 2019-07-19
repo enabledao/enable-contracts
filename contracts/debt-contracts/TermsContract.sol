@@ -52,7 +52,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             loanStatus: TermsContractLib.LoanStatus.NOT_STARTED,
             loanPeriod: _loanPeriod,
             interestRate: _interestRate, // TODO: reassign constant values below
-            interestPayment: calcInterestPayment(_principal, _interestRate),
             loanStartTimestamp: 0
         });
     }
@@ -96,7 +95,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             uint256 loanStatus,
             uint256 loanPeriod,
             uint256 interestRate,
-            uint256 interestPayment,
             uint256 loanStartTimestamp
         )
     {
@@ -107,7 +105,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             uint256(loanParams.loanStatus),
             loanParams.loanPeriod,
             loanParams.interestRate,
-            loanParams.interestPayment,
             loanParams.loanStartTimestamp
         );
     }
@@ -121,7 +118,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             tranche <= loanParams.loanPeriod,
             "The loan period is shorter than requested tranche"
         );
-        interest = loanParams.interestPayment;
+        interest = _calcMonthlyInterest(loanParams.principal, loanParams.interestRate);
         if (tranche == loanParams.loanPeriod) {
             principal = loanParams.principal;
         } else {
@@ -150,37 +147,37 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         loanParams.loanStatus = TermsContractLib.LoanStatus.REPAYMENT_CYCLE;
     }
 
-    /** PMT function to calculate periodic interest rate
-      * Note: divide by 10000 is because of basis points conversion
-     */
-    function calcInterestPayment(uint256 principal, uint256 interestRate)
-        public
-        pure
-        returns (uint256)
-    {
-        uint256 result = principal.mul(interestRate).div(10000);
-        return result;
-    }
+
 
     /// Returns the cumulative units-of-value expected to be repaid by a given block timestamp.
     ///  Note this is not a constant function -- this value can vary on basis of any number of
     ///  conditions (e.g. interest rates can be renegotiated if repayments are delinquent).
     /// @param  timestamp uint. The timestamp of the block for which repayment expectation is being queried.
     /// @return uint256 The cumulative units-of-value expected to be repaid by the time the given timestamp lapses.
-    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256) {
-        uint256 total = 0;
+    function getExpectedRepaymentValue(uint256 timestamp) 
+        public 
+        view 
+        returns (uint256 total) 
+    {
+        total = 0;
         for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
             (uint256 due, , , uint256 amount) = getScheduledPayment(i + 1);
             if (due < timestamp) {
                 total += amount;
             }
         }
-        return total;
     }
 
-    // function getValueRepaidToDate() external view returns (uint256) {
-    //     return 1;
-    // }
+        /** PMT function to calculate periodic interest rate
+      * Note: divide by 10000 is because of basis points conversion
+     */
+    function _calcMonthlyInterest(uint256 principal, uint256 interestRate)
+        public
+        pure
+        returns (uint256 result)
+    {
+        result = principal.mul(interestRate).div(10000);
+    }
 
     // @notice set the present state of the Loan;
     // increase present state of the loan
@@ -191,4 +188,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             emit LoanStatusSet(_loanStatus);
         }
     }
+
+    
 }

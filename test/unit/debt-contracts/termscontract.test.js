@@ -131,7 +131,8 @@ contract('Terms Contract', accounts => {
     it('should generate the correct monthly payment', async () => {
       const {principal, interestRate} = params;
       const amt = interestPayment(principal, interestRate);
-      expect(instanceParams.interestPayment).to.be.a.bignumber.equals(amt);
+      const calc = await instance._calcMonthlyInterest(principal, interestRate);
+      expect(calc).to.be.a.bignumber.equals(amt);
     });
 
     it('should generate an payments table without timestamps if loan has not been started', async () => {

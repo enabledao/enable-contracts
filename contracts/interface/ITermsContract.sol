@@ -29,7 +29,6 @@ contract ITermsContract {
             uint256 loanStatus,
             uint256 loanPeriod,
             uint256 interestRate,
-            uint256 interestPayment,
             uint256 loanStartTimestamp
         );
 
