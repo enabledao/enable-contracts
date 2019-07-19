@@ -159,16 +159,16 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         loanParams.loanStatus = TermsContractLib.LoanStatus.REPAYMENT_CYCLE;
     }
 
-    function getExpectedRepaymentValue() public view returns (uint256 total) {
-        return _getExpectedRepaymentValue(now);
-    }
+    // function getExpectedRepaymentValue() public view returns (uint256 total) {
+    //     return _getExpectedRepaymentValue(now);
+    // }
 
     /// Returns the cumulative units-of-value expected to be repaid by a given block timestamp.
     ///  Note this is not a constant function -- this value can vary on basis of any number of
     ///  conditions (e.g. interest rates can be renegotiated if repayments are delinquent).
     /// @param  timestamp uint. The timestamp of the block for which repayment expectation is being queried.
     /// @return uint256 The cumulative units-of-value expected to be repaid by the time the given timestamp lapses.
-    function _getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256 total) {
+    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256 total) {
         total = 0;
         for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
             (uint256 due, , , uint256 amount) = getScheduledPayment(i + 1);
