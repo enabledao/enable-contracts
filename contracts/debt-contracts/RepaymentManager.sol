@@ -41,10 +41,11 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     /**
      * @dev Constructor
      */
-    function initialize(
-        address _termsContract,
-        address[] memory _controllers
-    ) public payable initializer {
+    function initialize(address _termsContract, address[] memory _controllers)
+        public
+        payable
+        initializer
+    {
         // address[] memory _controllers = new address[](1);
         // _controllers[0] = _controller;
 
