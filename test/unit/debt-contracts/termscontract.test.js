@@ -171,16 +171,16 @@ contract('Terms Contract', accounts => {
 
     context('starting a loan with invalid params', async () => {
       it('should require that loan has not already been started', async () => {
-        await instance.startLoan(params.principal);
+        await instance.startRepaymentCycle(params.principal);
         await expectRevert(
-          instance.startLoan(params.principal),
-          'Cannot start loan that has already been started'
+          instance.startRepaymentCycle(params.principal),
+          'Requires loanStatus to be before RepaymentCycle'
         );
       });
 
       it('should require principalDisbursed to be below principalRequested', async () => {
         await expectRevert(
-          instance.startLoan(params.principal.add(new BN(200))),
+          instance.startRepaymentCycle(params.principal.add(new BN(200))),
           'principalDisbursed cannot be more than requested'
         );
       });
@@ -196,7 +196,7 @@ contract('Terms Contract', accounts => {
       let interestRate;
 
       beforeEach(async () => {
-        tx = await instance.startLoan(params.principal);
+        tx = await instance.startRepaymentCycle(params.principal);
         ({
           loanStatus,
           loanStartTimestamp,

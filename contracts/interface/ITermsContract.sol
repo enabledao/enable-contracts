@@ -27,7 +27,9 @@ contract ITermsContract {
         );
 
     function setLoanStatus(TermsContractLib.LoanStatus _status) external;
-    function startLoan(uint256 principalDisbursed) external returns (uint256 startTimestamp);
+    function startRepaymentCycle(uint256 principalDisbursed)
+        external
+        returns (uint256 startTimestamp);
 
     function getLoanStatus() external view returns (TermsContractLib.LoanStatus loanStatus);
     function getPrincipal() external view returns (uint256);

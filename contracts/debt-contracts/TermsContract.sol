@@ -19,12 +19,22 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     TermsContractLib.ScheduledPayment[] public paymentTable;
 
     address private _borrower;
-    // TODO(Dan): To implement
-    // modifier onlyAtStatus(LoanStatus status) {}
 
-    // modifier onlyBeforeStatus(LoanStatus status) {}
+    modifier onlyBeforeRepaymentCycle() {
+        require(
+            loanParams.loanStatus < TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
+            "Requires loanStatus to be before RepaymentCycle"
+        );
+        _;
+    }
 
-    // modifier onlyAfterStatus(LoanStatus status) {}
+    modifier onlyDuringRepaymentCycle() {
+        require(
+            loanParams.loanStatus >= TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
+            "Requires loanStatus to be during RepaymentCycle"
+        );
+        _;
+    }
 
     function initialize(
         address borrower_,
@@ -90,6 +100,9 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         );
     }
 
+    /**
+     * @dev gets loanParams as a tuple
+     */
     function getLoanParams()
         public
         view
@@ -116,6 +129,11 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         );
     }
 
+    /**
+     * @dev Calculates the scheduled payment for a given period
+     * Note Uses simple principal calculation for a balloon loan. Will change for future loan types
+     * Note Uses principalRequested if in crowdfunding stage, uses principalDisbursed if repayment cycle
+     */
     function getScheduledPayment(uint256 tranche)
         public
         view
@@ -126,31 +144,38 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             "The loan period is shorter than requested tranche"
         );
         interest = _calcMonthlyInterest(loanParams.principal, loanParams.interestRate);
+
+        /** Principal is only paid on last loan period */
         if (tranche == loanParams.loanPeriod) {
-            principal = loanParams.principal;
+            if (loanParams.loanStatus >= TermsContractLib.LoanStatus.REPAYMENT_CYCLE) {
+                principal = loanParams.principalDisbursed;
+
+            } else {
+                principal = loanParams.principal;
+            }
         } else {
             principal = 0;
         }
+
+        /** dueTimestamp is only given if loan has been started  */
         if (loanParams.loanStartTimestamp == 0) {
             due = 0;
         } else {
             due = BokkyPooBahsDateTimeLibrary.addMonths(loanParams.loanStartTimestamp, tranche);
         }
+
         total = interest + principal;
     }
 
     /** 
      * @dev Begins loan and writes timestamps to the payment table
      */
-    function startLoan(uint256 principalDisbursed)
+    function startRepaymentCycle(uint256 principalDisbursed)
         public
         onlyController
+        onlyBeforeRepaymentCycle
         returns (uint256 startTimestamp)
     {
-        require(
-            loanParams.loanStatus < TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
-            "Cannot start loan that has already been started"
-        );
         require(
             principalDisbursed <= loanParams.principal,
             "principalDisbursed cannot be more than requested"
@@ -177,8 +202,12 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
      * @param timestamp uint256
      * @return uint256 total number of currencyTokens expected to be repaid
      */
-    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256 total) {
-        require(loanParams.loanStatus >= TermsContractLib.LoanStatus.REPAYMENT_CYCLE, 'Loan needs to be started to getExpectedRepaymentValue');
+    function getExpectedRepaymentValue(uint256 timestamp)
+        public
+        view
+        onlyDuringRepaymentCycle
+        returns (uint256 total)
+    {
         total = 0;
         for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
             (uint256 due, , , uint256 amount) = getScheduledPayment(i + 1);
