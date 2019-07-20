@@ -130,7 +130,7 @@ contract('Terms Contract', accounts => {
     });
 
     it('should get the correct loanPeriod', async () => {
-      expect(await instance.getLoanPeriod()).to.be.a.bignumber.that.equals(params.loanPeriod);
+      expect(await instance.getNumScheduledPayments()).to.be.a.bignumber.that.equals(params.loanPeriod);
     });
 
     it('should generate an payments table without timestamps if loan has not been started', async () => {

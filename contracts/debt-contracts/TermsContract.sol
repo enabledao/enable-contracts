@@ -70,7 +70,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         return loanParams.loanStatus;
     }
 
-    function getLoanPeriod() public view returns (uint256) {
+    function getNumScheduledPayments() public view returns (uint256) {
         return loanParams.loanPeriod;
     }
 
@@ -139,7 +139,8 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         total = interest + principal;
     }
 
-    /** @dev Begins loan and writes timestamps to the payment table
+    /** 
+     * @dev Begins loan and writes timestamps to the payment table
      */
     function startLoan(uint256 principalDisbursed)
         public
@@ -163,16 +164,21 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         loanParams.loanStatus = TermsContractLib.LoanStatus.REPAYMENT_CYCLE;
     }
 
-    // function getExpectedRepaymentValue() public view returns (uint256 total) {
-    //     return _getExpectedRepaymentValue(now);
-    // }
+    /**
+     * @dev Overloaded function. `now` will be the block's timestamp as reported by the miner
+     */
+    function getExpectedRepaymentValue() public view returns (uint256 total) {
+        total = getExpectedRepaymentValue(now);
+    }
 
-    /// Returns the cumulative units-of-value expected to be repaid by a given block timestamp.
-    ///  Note this is not a constant function -- this value can vary on basis of any number of
-    ///  conditions (e.g. interest rates can be renegotiated if repayments are delinquent).
-    /// @param  timestamp uint. The timestamp of the block for which repayment expectation is being queried.
-    /// @return uint256 The cumulative units-of-value expected to be repaid by the time the given timestamp lapses.
+    /**
+     * @dev returns the expected repayment value for a given timestamp for the loan's scheduled payments
+     * @dev future developments will allow this to be more dynamic (e.g. delinquent fees, penalties)
+     * @param timestamp uint256
+     * @return uint256 total number of currencyTokens expected to be repaid
+     */
     function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256 total) {
+        require(loanParams.loanStatus >= TermsContractLib.LoanStatus.REPAYMENT_CYCLE, 'Loan needs to be started to getExpectedRepaymentValue');
         total = 0;
         for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
             (uint256 due, , , uint256 amount) = getScheduledPayment(i + 1);
@@ -182,8 +188,9 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         }
     }
 
-    /** PMT function to calculate periodic interest rate
-      * Note: divide by 10000 is because of basis points conversion
+    /** 
+     * @dev calculates monthly interest payment
+     * @dev Note 10000 divisor is because of basis points (100) * percentage (100)
      */
     function _calcMonthlyInterest(uint256 principal, uint256 interestRate)
         public
@@ -193,9 +200,9 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         result = principal.mul(interestRate).div(10000);
     }
 
-    // @notice set the present state of the Loan;
-    // increase present state of the loan
-    // TODO(Dan): should this be private instead of internal?
+    /**
+     * @dev internal method to set the loanStatus of the loan
+     */
     function _setLoanStatus(TermsContractLib.LoanStatus _loanStatus) internal {
         if (loanParams.loanStatus != _loanStatus) {
             loanParams.loanStatus = _loanStatus;
