@@ -139,16 +139,27 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         onlyDuringRepaymentCycle
         returns (uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
     {
-        (principalPayment, interestPayment, totalPayment) = _calcScheduledPayment(period, loanParams.principalRequested);
+        (principalPayment, interestPayment, totalPayment) = _calcScheduledPayment(
+            period,
+            loanParams.principalRequested
+        );
     }
 
     function getScheduledPayment(uint256 period)
         public
         view
         onlyDuringRepaymentCycle
-        returns (uint256 dueTimestamp, uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
+        returns (
+            uint256 dueTimestamp,
+            uint256 principalPayment,
+            uint256 interestPayment,
+            uint256 totalPayment
+        )
     {
-        (principalPayment, interestPayment, totalPayment) = _calcScheduledPayment(period, loanParams.principalDisbursed);
+        (principalPayment, interestPayment, totalPayment) = _calcScheduledPayment(
+            period,
+            loanParams.principalDisbursed
+        );
         dueTimestamp = BokkyPooBahsDateTimeLibrary.addMonths(loanParams.loanStartTimestamp, period);
     }
 
