@@ -12,11 +12,11 @@ const verbose = true;
 contract('Terms Contract', accounts => {
   let instance;
   let instanceParams;
-  const threshold = 1000; // Testing offset for timestamps in seconds
+  const threshold = 100; // Testing offset for timestamps in seconds
   const params = {
     borrower: accounts[0],
     principalToken: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
-    principal: new BN(60000), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
+    principalRequested: new BN(60000), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
     loanPeriod: new BN(12),
     interestRate: new BN(50)
   };
@@ -28,7 +28,7 @@ contract('Terms Contract', accounts => {
   const initializeInstance = async (
     borrower,
     principalTokenAddr,
-    principal,
+    principalRequested,
     loanPeriod,
     interestRate
   ) => {
@@ -38,7 +38,7 @@ contract('Terms Contract', accounts => {
       [
         borrower,
         principalTokenAddr,
-        principal.toNumber(),
+        principalRequested.toNumber(),
         loanPeriod.toNumber(),
         interestRate.toNumber(),
         [accounts[0]]
@@ -123,9 +123,9 @@ contract('Terms Contract', accounts => {
     });
 
     it('should generate the correct monthly payment', async () => {
-      const {principal, interestRate} = params;
-      const amt = interestPayment(principal, interestRate);
-      const calc = await instance._calcMonthlyInterest(principal, interestRate);
+      const {principalRequested, interestRate} = params;
+      const amt = interestPayment(principalRequested, interestRate);
+      const calc = await instance._calcMonthlyInterest(principalRequested, interestRate);
       expect(calc).to.be.a.bignumber.equals(amt);
     });
 
@@ -136,32 +136,32 @@ contract('Terms Contract', accounts => {
     it('should generate an payments table without timestamps if loan has not been started', async () => {
       const expected = [];
       const queries = [];
-      const {principal, interestRate, loanPeriod} = params;
-      const amt = interestPayment(principal, interestRate);
+      const {principalRequested, interestRate, loanPeriod} = params;
+      const amt = interestPayment(principalRequested, interestRate);
       for (let i = 0; i < loanPeriod; i += 1) {
-        const p = i < loanPeriod.toNumber() - 1 ? new BN(0) : new BN(principal);
+        const p = i < loanPeriod.toNumber() - 1 ? new BN(0) : new BN(principalRequested);
         const int = new BN(amt);
         const t = p.add(int);
-        expected.push({principal: p, interest: int, total: t});
-        queries.push(instance.getScheduledPayment(i + 1));
+        expected.push({principalPayment: p, interest: int, totalPayment: t});
+        queries.push(instance.getRequestedScheduledPayment(i + 1));
       }
       const results = await Promise.all(queries);
       for (let cur = 0; cur < loanPeriod; cur += 1) {
         if (verbose)
           console.log(
-            `Results  |  Principal : ${results[cur].principal}  |  Interest: ${results[cur].interest}  |  Total: ${results[cur].total}`
+            `Results  |  principalPayment : ${results[cur].principalPayment}  |  Interest: ${results[cur].interest}  |  totalPayment: ${results[cur].totalPayment}`
           );
-        expect(results[cur].principal).to.be.a.bignumber.that.equals(
-          expected[cur].principal,
-          `Incorrect principal amount in payments table in month ${cur}`
+        expect(results[cur].principalPayment).to.be.a.bignumber.that.equals(
+          expected[cur].principalPayment,
+          `Incorrect principalPayment amount in payments table in month ${cur}`
         );
         expect(results[cur].interest).to.be.a.bignumber.that.equals(
           expected[cur].interest,
           `Incorrect interest amount in payments table in month ${cur}`
         );
-        expect(results[cur].total).to.be.a.bignumber.that.equals(
-          expected[cur].total,
-          `Incorrect principal amount in payments table in month ${cur}`
+        expect(results[cur].totalPayment).to.be.a.bignumber.that.equals(
+          expected[cur].totalPayment,
+          `Incorrect principalPayment amount in payments table in month ${cur}`
         );
       }
     });
@@ -169,39 +169,42 @@ contract('Terms Contract', accounts => {
     xit('controller should be able to call appropriate set methods', async () => {});
     xit('non-controller should not be able to call appropriate set methods', async () => {});
 
-    context('starting a loan with invalid params', async () => {
+    context('start repayment cycle with invalid params', async () => {
       it('should require that loan has not already been started', async () => {
-        await instance.startRepaymentCycle(params.principal);
+        await instance.startRepaymentCycle(params.principalRequested);
         await expectRevert(
-          instance.startRepaymentCycle(params.principal),
+          instance.startRepaymentCycle(params.principalRequested),
           'Requires loanStatus to be before RepaymentCycle'
         );
       });
 
       it('should require principalDisbursed to be below principalRequested', async () => {
         await expectRevert(
-          instance.startRepaymentCycle(params.principal.add(new BN(200))),
+          instance.startRepaymentCycle(params.principalRequested.add(new BN(200))),
           'principalDisbursed cannot be more than requested'
         );
       });
     });
 
-    context('starting a loan', async () => {
+    context('start repayment cycle with partial fundraise', async () => {
       let tx;
       let loanStartTimestamp;
       let loanStatus;
       let loanPeriod;
       let loanEndTimestamp;
-      let principal;
+      let principalRequested;
       let interestRate;
+      let principalDisbursed = params.principalRequested.sub(new BN(200));    
+      // TODO(Dan): Should be a random value
 
       beforeEach(async () => {
-        tx = await instance.startRepaymentCycle(params.principal);
+        tx = await instance.startRepaymentCycle(principalDisbursed);
         ({
           loanStatus,
           loanStartTimestamp,
           loanPeriod,
-          principal,
+          principalRequested,
+          principalDisbursed,
           interestRate
         } = await instance.getLoanParams());
         loanEndTimestamp = await instance.getLoanEndTimestamp();
@@ -209,6 +212,7 @@ contract('Terms Contract', accounts => {
 
       xit('borrower should be able to start the loan', async () => {});
       xit('non-borrower should not be able to start the loan', async () => {});
+      xit('should emit an event', async () => {});
 
       it('should write the loanStartTimestamp', async () => {
         const now = Math.floor(new Date().getTime() / 1000);
@@ -226,6 +230,7 @@ contract('Terms Contract', accounts => {
         );
       });
 
+
       it('should create a correct loanEndTimestamp', async () => {
         const cur = moment(new Date().getTime());
         const end = cur.add(loanPeriod.toNumber(), 'months').unix();
@@ -236,38 +241,44 @@ contract('Terms Contract', accounts => {
         );
       });
 
-      it('should generate correct due timestamps on getScheduledPayments', async () => {
+      xit('should return the correct principalDisbursed', async () => {})
+      
+      it.only('should generate correct dueTimestamp, principalPayment, interestPayment and totalPayment on getScheduledPayments', async () => {
         const queries = [];
+        const expected = [];
+        const amt = interestPayment(principalDisbursed, interestRate);
+        const start = moment.unix(loanStartTimestamp);
+        /** Generate simulated  */
         for (let i = 0; i < loanPeriod.toNumber(); i += 1) {
+          const p = i < loanPeriod.toNumber() - 1 ? new BN(0) : new BN(principalDisbursed);
+          const int = new BN(amt);
+          const t = p.add(int);
+          const d = start.add(i+1, 'months').unix();
+          expected.push({dueTimestamp: d, principalPayment: p, interest: int, totalPayment: t});
           queries.push(instance.getScheduledPayment(i + 1));
         }
         const results = await Promise.all(queries);
-        results.map((payment, i) => {
+        results.map((result, i) => {
           if (verbose)
             console.log(
-              `Results  |  Timestamp : ${payment.due}  |  Principal : ${payment.principal}  |  Interest: ${payment.interest}  |  Total: ${payment.total}`
+              `Results  |  Timestamp : ${result.dueTimestamp}  |  Principal : ${result.principalPayment}  |  Interest: ${result.interestPayment}  |  totalPayment: ${result.totalPayment}`
             );
-          const actual = payment.due.toNumber();
-          const cur = moment(new Date().getTime());
-          const simulated = cur.add(i + 1, 'months').unix();
-          expect(actual).to.be.within(
-            simulated - threshold,
-            simulated + threshold,
-            `incorrect due timestamp for month ${i}${1}`
+          expect(result.principalPayment).to.be.a.bignumber.that.equals(
+            expected[i].principalPayment,
+            `Incorrect principalPayment amount in payments table in month ${i}`
           );
         });
       });
 
-      xit('should emit an event', async () => {});
 
       it('should get the correct expectedRepaymentTotal for a given timestamp', async () => {
-        const tranche = interestPayment(principal, interestRate);
+        const tranche = interestPayment(principalDisbursed, interestRate);
 
         for (let i = 0; i < loanPeriod.toNumber(); i += 1) {
           const estimated =
             i < loanPeriod.toNumber() - 1
               ? new BN(i + 1).mul(tranche)
-              : new BN(i + 1).mul(tranche).add(principal); // TODO(Dan): Should actually be done in BN
+              : new BN(i + 1).mul(tranche).add(principalDisbursed); 
 
           const cur = moment(new Date().getTime());
           const future = cur.add(i + 1, 'months').unix();

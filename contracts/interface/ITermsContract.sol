@@ -18,7 +18,7 @@ contract ITermsContract {
         returns (
             address,
             address principalToken,
-            uint256 principal,
+            uint256 principalRequested,
             uint256 loanStatus,
             uint256 loanPeriod,
             uint256 interestRate,
@@ -32,7 +32,7 @@ contract ITermsContract {
         returns (uint256 startTimestamp);
 
     function getLoanStatus() external view returns (TermsContractLib.LoanStatus loanStatus);
-    function getPrincipal() external view returns (uint256);
+    function getPrincipalRequested() external view returns (uint256);
     function getPrincipalToken() external view returns (address);
 
 }

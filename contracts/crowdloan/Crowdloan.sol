@@ -25,6 +25,8 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     ITermsContract public termsContract;
     IRepaymentManager public repaymentManager;
 
+    // uint256 totalRaised = 0;
+
     modifier trackCrowdfundStatus() {
         _updateCrowdfundStatus();
         _;
@@ -44,23 +46,23 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
 
     // @notice additional payment does not exceed the pricipal Amount
     function _isBelowMaxSupply(uint256 amount) internal view returns (bool) {
-        uint256 principal = termsContract.getPrincipal();
-        return repaymentManager.totalShares().add(amount) <= principal;
+        uint256 principalRequested = termsContract.getPrincipalRequested();
+        return repaymentManager.totalShares().add(amount) <= principalRequested;
     }
 
     // @notice reconcile the loans funding status
     function _updateCrowdfundStatus() internal {
-        uint256 principal = termsContract.getPrincipal();
+        uint256 principalRequested = termsContract.getPrincipalRequested();
         uint256 totalShares = repaymentManager.totalShares();
         uint256 totalPaid = repaymentManager.totalPaid();
 
         if (
             totalShares > 0 &&
-            totalShares < principal &&
+            totalShares < principalRequested &&
             termsContract.getLoanStatus() < TermsContractLib.LoanStatus.FUNDING_FAILED
         ) {
             termsContract.setLoanStatus(TermsContractLib.LoanStatus.FUNDING_STARTED);
-        } else if (totalShares >= principal && totalPaid == 0) {
+        } else if (totalShares >= principalRequested && totalPaid == 0) {
             termsContract.setLoanStatus(TermsContractLib.LoanStatus.FUNDING_COMPLETE);
         }
     }
@@ -142,7 +144,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         );
 
         if (termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE) {
-            termsContract.startRepaymentCycle(termsContract.getPrincipal()); // TODO(Dan): change this to be the amount actually raised
+            termsContract.startRepaymentCycle(termsContract.getPrincipalRequested()); // TODO(Dan): change this to be the amount actually raised
         }
 
         _validatedERC20Transfer(_getPrincipalToken(), address(this), msg.sender, amount);

@@ -39,7 +39,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     function initialize(
         address borrower_,
         address _principalTokenAddr,
-        uint256 _principal,
+        uint256 _principalRequested,
         uint256 _loanPeriod,
         uint256 _interestRate,
         address[] memory _controllers
@@ -58,7 +58,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         ControllerRole.initialize(_controllers);
         loanParams = TermsContractLib.LoanParams({
             principalToken: _principalTokenAddr,
-            principal: _principal,
+            principalRequested: _principalRequested,
             loanStatus: TermsContractLib.LoanStatus.NOT_STARTED,
             loanPeriod: _loanPeriod,
             interestRate: _interestRate,
@@ -84,8 +84,12 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         return loanParams.loanPeriod;
     }
 
-    function getPrincipal() public view returns (uint256) {
-        return loanParams.principal;
+    function getPrincipalRequested() public view returns (uint256) {
+        return loanParams.principalRequested;
+    }
+
+    function getPrincipalDisbursed() public view returns (uint256) {
+        return loanParams.principalDisbursed;
     }
 
     function getPrincipalToken() public view returns (address) {
@@ -109,7 +113,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         returns (
             address,
             address principalToken,
-            uint256 principal,
+            uint256 principalRequested,
             uint256 loanStatus,
             uint256 loanPeriod,
             uint256 interestRate,
@@ -120,7 +124,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         return (
             _borrower,
             address(loanParams.principalToken),
-            loanParams.principal,
+            loanParams.principalRequested,
             uint256(loanParams.loanStatus),
             loanParams.loanPeriod,
             loanParams.interestRate,
@@ -129,42 +133,46 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         );
     }
 
+    function getRequestedScheduledPayment(uint256 period)
+        public
+        view
+        onlyDuringRepaymentCycle
+        returns (uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
+    {
+        (principalPayment, interestPayment, totalPayment) = _calcScheduledPayment(period, loanParams.principalRequested);
+    }
+
+    function getScheduledPayment(uint256 period)
+        public
+        view
+        onlyDuringRepaymentCycle
+        returns (uint256 dueTimestamp, uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
+    {
+        (principalPayment, interestPayment, totalPayment) = _calcScheduledPayment(period, loanParams.principalDisbursed);
+        dueTimestamp = BokkyPooBahsDateTimeLibrary.addMonths(loanParams.loanStartTimestamp, period);
+    }
+
     /**
      * @dev Calculates the scheduled payment for a given period
      * Note Uses simple principal calculation for a balloon loan. Will change for future loan types
-     * Note Uses principalRequested if in crowdfunding stage, uses principalDisbursed if repayment cycle
      */
-    function getScheduledPayment(uint256 tranche)
-        public
+    function _calcScheduledPayment(uint256 period, uint256 principal)
+        internal
         view
-        returns (uint256 due, uint256 principal, uint256 interest, uint256 total)
+        returns (uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
     {
         require(
-            tranche <= loanParams.loanPeriod,
-            "The loan period is shorter than requested tranche"
+            period <= loanParams.loanPeriod,
+            "The loan period is shorter than requested period"
         );
-        interest = _calcMonthlyInterest(loanParams.principal, loanParams.interestRate);
-
-        /** Principal is only paid on last loan period */
-        if (tranche == loanParams.loanPeriod) {
-            if (loanParams.loanStatus >= TermsContractLib.LoanStatus.REPAYMENT_CYCLE) {
-                principal = loanParams.principalDisbursed;
-
-            } else {
-                principal = loanParams.principal;
-            }
+        interestPayment = _calcMonthlyInterest(principal, loanParams.interestRate);
+        /** Principal is only paid during the last period */
+        if (period == loanParams.loanPeriod) {
+            principalPayment = principal;
         } else {
-            principal = 0;
+            principalPayment = 0;
         }
-
-        /** dueTimestamp is only given if loan has been started  */
-        if (loanParams.loanStartTimestamp == 0) {
-            due = 0;
-        } else {
-            due = BokkyPooBahsDateTimeLibrary.addMonths(loanParams.loanStartTimestamp, tranche);
-        }
-
-        total = interest + principal;
+        totalPayment = interestPayment + principalPayment;
     }
 
     /** 
@@ -177,7 +185,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         returns (uint256 startTimestamp)
     {
         require(
-            principalDisbursed <= loanParams.principal,
+            principalDisbursed <= loanParams.principalRequested,
             "principalDisbursed cannot be more than requested"
         );
         startTimestamp = now;

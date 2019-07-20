@@ -143,14 +143,14 @@ contract('Crowdloan', accounts => {
     const balance = await paymentToken.balanceOf.call(crowdloan.address);
     expect(balance).to.be.bignumber.equal(contributor.value);
 
-    await paymentToken.mint(contributor.address, new BN(loanParams.principal));
+    await paymentToken.mint(contributor.address, new BN(loanParams.principalRequested));
 
-    await paymentToken.approve(crowdloan.address, new BN(loanParams.principal), {
+    await paymentToken.approve(crowdloan.address, new BN(loanParams.principalRequested), {
       from: contributor.address
     });
 
     await expectRevert.unspecified(
-      crowdloan.fund(new BN(loanParams.principal), {from: contributor.address}),
+      crowdloan.fund(new BN(loanParams.principalRequested), {from: contributor.address}),
       'Amount exceeds capital'
     );
 
@@ -162,7 +162,7 @@ contract('Crowdloan', accounts => {
 
     await termsContract.setLoanStatus(new BN(1)); // FUNDING_STARTED
 
-    await crowdloan.fund(new BN(loanParams.principal).sub(contributor.value), {
+    await crowdloan.fund(new BN(loanParams.principalRequested).sub(contributor.value), {
       from: contributor.address
     });
 
@@ -179,7 +179,7 @@ contract('Crowdloan', accounts => {
 
     const contributor = {
       address: accounts[2],
-      value: new BN(loanParams.principal)
+      value: new BN(loanParams.principalRequested)
     };
     await paymentToken.mint(contributor.address, contributor.value);
 
@@ -237,7 +237,7 @@ contract('Crowdloan', accounts => {
     const bit = new BN(150);
     const contributor = {
       address: accounts[1],
-      value: new BN(loanParams.principal)
+      value: new BN(loanParams.principalRequested)
     };
     await paymentToken.mint(contributor.address, contributor.value);
 

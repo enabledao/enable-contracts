@@ -12,7 +12,7 @@ const PaymentToken = artifacts.require('StandaloneERC20');
 
 contract('CrowdloanFactory', accounts => {
   const loanParams = {
-    principal: web3.utils.toWei('60000', 'ether'), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
+    principalRequested: web3.utils.toWei('60000', 'ether'), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
     loanPeriod: 6,
     interestRate: 50,
     crowdfundLength: 10,
@@ -58,7 +58,7 @@ contract('CrowdloanFactory', accounts => {
   it('should emit a LoanCreated event on successful deploy', async () => {
     tx = await crowdloanFactory.deploy(
       crowdloanFactory.address,
-      loanParams.principal,
+      loanParams.principalRequested,
       loanParams.loanPeriod,
       loanParams.interestRate,
       loanParams.crowdfundLength,
@@ -71,7 +71,7 @@ contract('CrowdloanFactory', accounts => {
   it('should deploy all contracts on successful deploy', async () => {
     tx = await crowdloanFactory.deploy(
       crowdloanFactory.address,
-      loanParams.principal,
+      loanParams.principalRequested,
       loanParams.loanPeriod,
       loanParams.interestRate,
       loanParams.crowdfundLength,
@@ -86,7 +86,7 @@ contract('CrowdloanFactory', accounts => {
     const repaymentManager = await RepaymentManager.at(loanCreatedEvent.args.repaymentManager);
 
     // Call methods on all contracts to verify deployment
-    expect(await termsContract.getPrincipal()).to.be.bignumber.equal(new BN(loanParams.principal));
+    expect(await termsContract.getPrincipalRequested()).to.be.bignumber.equal(new BN(loanParams.principalRequested));
     expect(await repaymentManager.totalShares()).to.be.bignumber.equal(new BN(0));
   });
 

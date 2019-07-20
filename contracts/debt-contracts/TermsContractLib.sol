@@ -14,7 +14,7 @@ library TermsContractLib {
 
     struct LoanParams {
         address principalToken;
-        uint256 principal;
+        uint256 principalRequested;
         LoanStatus loanStatus;
         uint256 loanPeriod;
         uint256 interestRate; // NOTE(Dan): in months
