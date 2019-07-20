@@ -21,11 +21,4 @@ library TermsContractLib {
         uint256 principalDisbursed;
         uint256 loanStartTimestamp;
     }
-
-    struct ScheduledPayment {
-        uint256 due;
-        uint256 principal;
-        uint256 interest;
-        uint256 total;
-    }
 }

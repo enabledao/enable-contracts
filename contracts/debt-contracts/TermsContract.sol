@@ -12,11 +12,9 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     using SafeMath for uint256;
 
     using TermsContractLib for TermsContractLib.LoanParams;
-    using TermsContractLib for TermsContractLib.ScheduledPayment;
     using TermsContractLib for TermsContractLib.LoanStatus;
 
     TermsContractLib.LoanParams public loanParams;
-    TermsContractLib.ScheduledPayment[] public paymentTable;
 
     address private _borrower;
 
