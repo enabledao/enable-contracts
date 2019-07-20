@@ -70,6 +70,10 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         return loanParams.loanStatus;
     }
 
+    function getLoanPeriod() public view returns (uint256) {
+        return loanParams.loanPeriod;
+    }
+
     function getPrincipal() public view returns (uint256) {
         return loanParams.principal;
     }

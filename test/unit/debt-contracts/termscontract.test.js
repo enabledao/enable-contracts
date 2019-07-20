@@ -115,7 +115,6 @@ contract('Terms Contract', accounts => {
         }
       });
     });
-    
 
     it('should store loanStatus, loanStartTimestamp, and principalDisbursed as 0', async () => {
       expect(instanceParams.loanStatus).to.be.a.bignumber.that.equals(new BN(0));
@@ -128,6 +127,10 @@ contract('Terms Contract', accounts => {
       const amt = interestPayment(principal, interestRate);
       const calc = await instance._calcMonthlyInterest(principal, interestRate);
       expect(calc).to.be.a.bignumber.equals(amt);
+    });
+
+    it('should get the correct loanPeriod', async () => {
+      expect(await instance.getLoanPeriod()).to.be.a.bignumber.that.equals(params.loanPeriod);
     });
 
     it('should generate an payments table without timestamps if loan has not been started', async () => {
@@ -167,20 +170,26 @@ contract('Terms Contract', accounts => {
     xit('non-controller should not be able to call appropriate set methods', async () => {});
 
     context('starting a loan with invalid params', async () => {
-
       it('should require that loan has not already been started', async () => {
         await instance.startLoan(params.principal);
-        await expectRevert(instance.startLoan(params.principal), "Cannot start loan that has already been started");
+        await expectRevert(
+          instance.startLoan(params.principal),
+          'Cannot start loan that has already been started'
+        );
       });
 
       it('should require principalDisbursed to be below principalRequested', async () => {
-        await expectRevert(instance.startLoan(params.principal.add(new BN(200))), "principalDisbursed cannot be more than requested");
+        await expectRevert(
+          instance.startLoan(params.principal.add(new BN(200))),
+          'principalDisbursed cannot be more than requested'
+        );
       });
     });
 
     context('starting a loan', async () => {
       let tx;
-      let loanStartTimestamp, loanStatus
+      let loanStartTimestamp;
+      let loanStatus;
       let loanPeriod;
       let loanEndTimestamp;
       let principal;
@@ -188,10 +197,15 @@ contract('Terms Contract', accounts => {
 
       beforeEach(async () => {
         tx = await instance.startLoan(params.principal);
-        ({loanStatus, loanStartTimestamp, loanPeriod, principal, interestRate} = await instance.getLoanParams());
+        ({
+          loanStatus,
+          loanStartTimestamp,
+          loanPeriod,
+          principal,
+          interestRate
+        } = await instance.getLoanParams());
         loanEndTimestamp = await instance.getLoanEndTimestamp();
       });
-
 
       xit('borrower should be able to start the loan', async () => {});
       xit('non-borrower should not be able to start the loan', async () => {});
@@ -230,9 +244,9 @@ contract('Terms Contract', accounts => {
         const results = await Promise.all(queries);
         results.map((payment, i) => {
           if (verbose)
-          console.log(
-            `Results  |  Timestamp : ${payment.due}  |  Principal : ${payment.principal}  |  Interest: ${payment.interest}  |  Total: ${payment.total}`
-          );
+            console.log(
+              `Results  |  Timestamp : ${payment.due}  |  Principal : ${payment.principal}  |  Interest: ${payment.interest}  |  Total: ${payment.total}`
+            );
           const actual = payment.due.toNumber();
           const cur = moment(new Date().getTime());
           const simulated = cur.add(i + 1, 'months').unix();
@@ -262,6 +276,5 @@ contract('Terms Contract', accounts => {
         }
       });
     });
-
   });
 });
