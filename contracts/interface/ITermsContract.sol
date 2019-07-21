@@ -9,8 +9,8 @@ contract ITermsContract {
 
     function borrower() external view returns (address);
 
-    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256);
     function getExpectedRepaymentValue() public view returns (uint256);
+    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256);
 
     function getLoanParams()
         external

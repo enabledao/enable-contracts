@@ -86,7 +86,9 @@ contract('CrowdloanFactory', accounts => {
     const repaymentManager = await RepaymentManager.at(loanCreatedEvent.args.repaymentManager);
 
     // Call methods on all contracts to verify deployment
-    expect(await termsContract.getPrincipalRequested()).to.be.bignumber.equal(new BN(loanParams.principalRequested));
+    expect(await termsContract.getPrincipalRequested()).to.be.bignumber.equal(
+      new BN(loanParams.principalRequested)
+    );
     expect(await repaymentManager.totalShares()).to.be.bignumber.equal(new BN(0));
   });
 

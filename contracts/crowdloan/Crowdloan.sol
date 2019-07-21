@@ -130,8 +130,9 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         _validatedERC20Transfer(_getPrincipalToken(), msg.sender, address(this), amount);
         //Mint new debt token and transfer to sender
         repaymentManager.increaseShares(msg.sender, amount);
-        totalCrowdfunded.add(amount);
-        emit Fund(msg.sender, amount); // TODO(Dan): Remove comments once IClaimsToken is implemented
+        totalCrowdfunded = totalCrowdfunded.add(amount);
+        emit TotalCrowdfunded(totalCrowdfunded, int256(amount), "fund function");
+        emit Fund(msg.sender, amount);
     }
 
     /// @notice Get a refund for a debt token owned by the sender
@@ -145,17 +146,13 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
 
         repaymentManager.decreaseShares(msg.sender, amount);
         _validatedERC20Transfer(_getPrincipalToken(), address(this), msg.sender, amount);
-        totalCrowdfunded.sub(amount);
+        totalCrowdfunded = totalCrowdfunded.sub(amount);
+        emit TotalCrowdfunded(totalCrowdfunded, int256(-amount), "refund function");
         emit Refund(msg.sender, amount);
     }
 
-    /**
-     * @dev Withdraw method
-     */
-    function withdraw() public {
-        withdraw(_getPrincipalToken().balanceOf(address(this)));
-    }
-    
+
+
     // @notice Withdraw loan
     function withdraw(uint256 amount) public {
         require(
@@ -174,6 +171,13 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
 
         _validatedERC20Transfer(_getPrincipalToken(), address(this), msg.sender, amount);
         emit ReleaseFunds(msg.sender, amount);
+    }
+
+    /**
+     * @notice Withdraw method
+     */
+    function withdraw() public {
+        withdraw(_getPrincipalToken().balanceOf(address(this)));
     }
 
     /**

@@ -68,11 +68,7 @@ contract('Terms Contract', accounts => {
       );
     });
     it('should have a principalRequested greater than 0', async () => {
-      await invalidInputCheckRevert(
-        params,
-        'principalRequested',
-        new BN(0)
-      );
+      await invalidInputCheckRevert(params, 'principalRequested', new BN(0));
     });
     it('should revert if loan period is 0', async () => {
       await invalidInputCheckRevert(
@@ -137,7 +133,9 @@ contract('Terms Contract', accounts => {
     });
 
     it('should get the correct loanPeriod', async () => {
-      expect(await instance.getNumScheduledPayments()).to.be.a.bignumber.that.equals(params.loanPeriod);
+      expect(await instance.getNumScheduledPayments()).to.be.a.bignumber.that.equals(
+        params.loanPeriod
+      );
     });
 
     it('should generate an payments table without timestamps if loan has not been started', async () => {
@@ -201,7 +199,7 @@ contract('Terms Contract', accounts => {
       let loanEndTimestamp;
       let principalRequested;
       let interestRate;
-      let principalDisbursed = params.principalRequested.sub(new BN(200));    
+      let principalDisbursed = params.principalRequested.sub(new BN(200));
       // TODO(Dan): Should be a random value
 
       beforeEach(async () => {
@@ -237,7 +235,6 @@ contract('Terms Contract', accounts => {
         );
       });
 
-
       it('should create a correct loanEndTimestamp', async () => {
         const cur = moment(new Date().getTime());
         const end = cur.add(loanPeriod.toNumber(), 'months').unix();
@@ -248,8 +245,8 @@ contract('Terms Contract', accounts => {
         );
       });
 
-      xit('should return the correct principalDisbursed', async () => {})
-      
+      xit('should return the correct principalDisbursed', async () => {});
+
       it('should generate correct dueTimestamp, principalPayment, interestPayment and totalPayment on getScheduledPayments', async () => {
         const queries = [];
         const expected = [];
@@ -260,7 +257,7 @@ contract('Terms Contract', accounts => {
           const p = i < loanPeriod.toNumber() - 1 ? new BN(0) : new BN(principalDisbursed);
           const int = new BN(amt);
           const t = p.add(int);
-          const d = start.add(i+1, 'months').unix();
+          const d = start.add(i + 1, 'months').unix();
           expected.push({dueTimestamp: d, principalPayment: p, interest: int, totalPayment: t});
           queries.push(instance.getScheduledPayment(i + 1));
         }
@@ -277,7 +274,6 @@ contract('Terms Contract', accounts => {
         });
       });
 
-
       it('should get the correct expectedRepaymentTotal for a given timestamp', async () => {
         const tranche = interestPayment(principalDisbursed, interestRate);
 
@@ -285,7 +281,7 @@ contract('Terms Contract', accounts => {
           const estimated =
             i < loanPeriod.toNumber() - 1
               ? new BN(i + 1).mul(tranche)
-              : new BN(i + 1).mul(tranche).add(principalDisbursed); 
+              : new BN(i + 1).mul(tranche).add(principalDisbursed);
 
           const cur = moment(new Date().getTime());
           const future = cur.add(i + 1, 'months').unix();

@@ -76,3 +76,32 @@ We use [Solidity Coverage](https://github.com/sc-forks/solidity-coverage).
 ```
 $(npm bin)/solidity-coverage
 ```
+
+# Draft Loan Statuses
+
+**crowdfundStatus** (pertains to _stage_ of crowdfund)
+
+1. notStarted
+2. started
+3. paused
+4. ended (either early end by borrower, or hit goal)
+
+**crowdfundSuccess** (pertains to _outcome_ of crowdfund)
+
+1. pending (i.e. during phase)
+2. accepted (i.e. borrower starts the loan)
+3. refunded (i.e. borrower rejects the crowdfund, returns money)
+
+**loanStatus** (pertains to _stage_ of loan)
+
+1. Crowdfunding
+2. Disbursed
+3. RepaymentCycle (ie. >30 days after disbursement, also covers loans that are in default). Can also rename this to "in progress",
+4. Completed (i.e. either fully paid back or written off)
+
+**loanOutcome** (pertains to _outcome_ of loan)
+
+1. on time (not fully paid back yet)
+2. late 30, 60, 90
+3. fully paid back
+4. written off (default)
