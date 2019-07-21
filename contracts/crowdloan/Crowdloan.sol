@@ -151,8 +151,6 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         emit Refund(msg.sender, amount);
     }
 
-
-
     // @notice Withdraw loan
     function withdraw(uint256 amount) public {
         require(
