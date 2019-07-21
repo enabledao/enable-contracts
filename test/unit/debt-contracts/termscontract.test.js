@@ -67,6 +67,13 @@ contract('Terms Contract', accounts => {
         // 'Loaned tsoken must be an ERC20 token'
       );
     });
+    it('should have a principalRequested greater than 0', async () => {
+      await invalidInputCheckRevert(
+        params,
+        'principalRequested',
+        new BN(0)
+      );
+    });
     it('should revert if loan period is 0', async () => {
       await invalidInputCheckRevert(
         params,
@@ -142,21 +149,21 @@ contract('Terms Contract', accounts => {
         const p = i < loanPeriod.toNumber() - 1 ? new BN(0) : new BN(principalRequested);
         const int = new BN(amt);
         const t = p.add(int);
-        expected.push({principalPayment: p, interest: int, totalPayment: t});
+        expected.push({principalPayment: p, interestPayment: int, totalPayment: t});
         queries.push(instance.getRequestedScheduledPayment(i + 1));
       }
       const results = await Promise.all(queries);
       for (let cur = 0; cur < loanPeriod; cur += 1) {
         if (verbose)
           console.log(
-            `Results  |  principalPayment : ${results[cur].principalPayment}  |  Interest: ${results[cur].interest}  |  totalPayment: ${results[cur].totalPayment}`
+            `Results  |  principalPayment : ${results[cur].principalPayment}  |  Interest: ${results[cur].interestPayment}  |  totalPayment: ${results[cur].totalPayment}`
           );
         expect(results[cur].principalPayment).to.be.a.bignumber.that.equals(
           expected[cur].principalPayment,
           `Incorrect principalPayment amount in payments table in month ${cur}`
         );
-        expect(results[cur].interest).to.be.a.bignumber.that.equals(
-          expected[cur].interest,
+        expect(results[cur].interestPayment).to.be.a.bignumber.that.equals(
+          expected[cur].interestPayment,
           `Incorrect interest amount in payments table in month ${cur}`
         );
         expect(results[cur].totalPayment).to.be.a.bignumber.that.equals(
@@ -210,9 +217,9 @@ contract('Terms Contract', accounts => {
         loanEndTimestamp = await instance.getLoanEndTimestamp();
       });
 
-      xit('borrower should be able to start the loan', async () => {});
-      xit('non-borrower should not be able to start the loan', async () => {});
-      xit('should emit an event', async () => {});
+      xit('only a controller address should be able to start the loan', async () => {});
+      xit('non-controller address should not be able to start the loan', async () => {});
+      xit('should emit an event for loanStart', async () => {});
 
       it('should write the loanStartTimestamp', async () => {
         const now = Math.floor(new Date().getTime() / 1000);
@@ -243,7 +250,7 @@ contract('Terms Contract', accounts => {
 
       xit('should return the correct principalDisbursed', async () => {})
       
-      it.only('should generate correct dueTimestamp, principalPayment, interestPayment and totalPayment on getScheduledPayments', async () => {
+      it('should generate correct dueTimestamp, principalPayment, interestPayment and totalPayment on getScheduledPayments', async () => {
         const queries = [];
         const expected = [];
         const amt = interestPayment(principalDisbursed, interestRate);

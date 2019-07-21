@@ -43,6 +43,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         address[] memory _controllers
     ) public initializer {
         require(_principalTokenAddr != address(0), "Loaned token must be an ERC20 token"); //TODO(Dan): More rigorous way of testing ERC20?
+        require(_principalRequested != 0, "PrincipalRequested must be greater than 0"); 
         require(_loanPeriod > 0, "Loan period must be higher than 0");
         require(
             _interestRate > 9,
@@ -134,7 +135,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     function getRequestedScheduledPayment(uint256 period)
         public
         view
-        onlyDuringRepaymentCycle
+        onlyBeforeRepaymentCycle
         returns (uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
     {
         (principalPayment, interestPayment, totalPayment) = _calcScheduledPayment(
@@ -159,29 +160,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             loanParams.principalDisbursed
         );
         dueTimestamp = BokkyPooBahsDateTimeLibrary.addMonths(loanParams.loanStartTimestamp, period);
-    }
-
-    /**
-     * @dev Calculates the scheduled payment for a given period
-     * Note Uses simple principal calculation for a balloon loan. Will change for future loan types
-     */
-    function _calcScheduledPayment(uint256 period, uint256 principal)
-        internal
-        view
-        returns (uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
-    {
-        require(
-            period <= loanParams.loanPeriod,
-            "The loan period is shorter than requested period"
-        );
-        interestPayment = _calcMonthlyInterest(principal, loanParams.interestRate);
-        /** Principal is only paid during the last period */
-        if (period == loanParams.loanPeriod) {
-            principalPayment = principal;
-        } else {
-            principalPayment = 0;
-        }
-        totalPayment = interestPayment + principalPayment;
     }
 
     /** 
@@ -232,6 +210,29 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
                 total += amount;
             }
         }
+    }
+
+    /**
+     * @dev Calculates the scheduled payment for a given period
+     * Note Uses simple principal calculation for a balloon loan. Will change for future loan types
+     */
+    function _calcScheduledPayment(uint256 period, uint256 principal)
+        internal
+        view
+        returns (uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
+    {
+        require(
+            period <= loanParams.loanPeriod,
+            "The loan period is shorter than requested period"
+        );
+        interestPayment = _calcMonthlyInterest(principal, loanParams.interestRate);
+        /** Principal is only paid during the last period */
+        if (period == loanParams.loanPeriod) {
+            principalPayment = principal;
+        } else {
+            principalPayment = 0;
+        }
+        totalPayment = interestPayment + principalPayment;
     }
 
     /** 
