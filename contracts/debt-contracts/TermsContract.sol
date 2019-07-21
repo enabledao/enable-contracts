@@ -43,7 +43,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         address[] memory _controllers
     ) public initializer {
         require(_principalTokenAddr != address(0), "Loaned token must be an ERC20 token"); //TODO(Dan): More rigorous way of testing ERC20?
-        require(_principalRequested != 0, "PrincipalRequested must be greater than 0"); 
+        require(_principalRequested != 0, "PrincipalRequested must be greater than 0");
         require(_loanPeriod > 0, "Loan period must be higher than 0");
         require(
             _interestRate > 9,
@@ -132,6 +132,10 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         );
     }
 
+    /**
+     * @dev: Gets proposed payment schedule based on principalRequested
+     * NOTE: This should only be used during crowdfund period
+     */
     function getRequestedScheduledPayment(uint256 period)
         public
         view
@@ -144,6 +148,10 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         );
     }
 
+    /**
+     * @dev: Gets finalized payment schedule based on principalDisbursed
+     * NOTE: This should only be used when repaymentSchedule has started
+     */
     function getScheduledPayment(uint256 period)
         public
         view
