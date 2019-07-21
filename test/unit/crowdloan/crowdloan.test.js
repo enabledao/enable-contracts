@@ -233,7 +233,7 @@ contract('Crowdloan', accounts => {
     );
   });
 
-  it('should successfully withdraw', async () => {
+  it('should allow the borrower to withdraw upon successful crowdfunding', async () => {
     const bit = new BN(150);
     const contributor = {
       address: accounts[1],
