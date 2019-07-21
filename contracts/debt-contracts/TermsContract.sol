@@ -133,8 +133,8 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     }
 
     /**
-     * @dev: Gets proposed payment schedule based on principalRequested
-     * NOTE: This should only be used during crowdfund period
+     * @dev Gets proposed payment schedule based on principalRequested
+     * NOTE This should only be used during crowdfund period
      */
     function getRequestedScheduledPayment(uint256 period)
         public
@@ -149,8 +149,8 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     }
 
     /**
-     * @dev: Gets finalized payment schedule based on principalDisbursed
-     * NOTE: This should only be used when repaymentSchedule has started
+     * @dev Gets finalized payment schedule based on principalDisbursed
+     * NOTE This should only be used when repaymentSchedule has started
      */
     function getScheduledPayment(uint256 period)
         public
