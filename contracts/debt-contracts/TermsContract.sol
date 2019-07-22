@@ -178,10 +178,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         return total;
     }
 
-    // function getValueRepaidToDate() external view returns (uint256) {
-    //     return 1;
-    // }
-
     // @notice set the present state of the Loan;
     // increase present state of the loan
     // needs to be protected!!!

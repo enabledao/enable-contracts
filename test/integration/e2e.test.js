@@ -244,5 +244,63 @@ contract('Enable Suite', accounts => {
       })
     );
   });
-  it('should successfully complete loan repayment', async () => {});
+  it('should successfully complete loan repayment', async () => {
+    const MONTH = 86400*30;//seconds in a month: 30 days
+    const BULKPERIOD = 2;
+
+    const expectedRepayment = async timestamp => {
+      let tranchTimestamp;
+      let totalDue = new BN(0);
+      while (tranchTimestamp < timestamp) {
+        const repayment = await termsContract.getExpectedRepaymentValue(timestamp);
+        tranchTimestamp = repayment[0];
+        if (tranchTimestamp < timestamp) {
+          totalDue = totalDue.add(repayment[3]);
+        }
+      }
+    };
+    const totalShares = () => lenders.reduce((a, b) => a.add(b.shares), new BN(0));
+    const expectedTranchRepayment = async tranch => (await termsContract.getScheduledPayment(new BN(tranch + 1)))[3];
+    const serializePromise = promiseArray => console.log(promiseArray) || promiseArray.reduce( (previousPromise, nextPromiseFn) => {
+      return previousPromise.then(() => {
+        return nextPromiseFn();
+      });
+    }, Promise.resolve());
+
+    const bulkTranch = tranch => {
+      return new Array(tranch+1).fill('').reduce(
+        async (a,b,ind) => a.add(await expectedTranchRepayment(ind+1)),
+        new BN(0)
+      )
+    }
+
+    console.log(await bulkTranch(2));
+
+    const remainderMonths = loanParams.loanPeriod-(BULKPERIOD+1);
+    const monthCycles = new Array(remainderMonths).fill('').map( (empty,ind) =>
+      () => new Promise(async (resolve) => {
+          await time.increase(MONTH);
+          const tranch = loanParams.loanPeriod-(remainderMonths-ind);
+          const expectedTranch = await expectedTranchRepayment(tranch);
+          await paymentToken.mint(borrower, expectedTranch);
+          await paymentToken.approve(repaymentManager.address, expectedTranch, {from: borrower});
+
+          await repaymentManager.pay(expectedTranch, {from: borrower});
+          resolve();
+        })
+    );
+
+    // const monthCycles = new Array(remainderMonths).fill('').map( (empty,ind) => {
+    //   return () => {
+    //     return new Promise( async (resolve) => {
+    //       setTimeout(
+    //         () => resolve(ind),
+    //         1000*Math.round()
+    //       )
+    //     })
+    //   }
+    // });
+    console.log(monthCycles)
+    await serializePromise(monthCycles)
+  });
 });
