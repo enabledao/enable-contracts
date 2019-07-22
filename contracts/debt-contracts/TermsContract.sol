@@ -175,20 +175,20 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     /**
      * @dev Begins loan and writes timestamps to the payment table
      */
-    function startRepaymentCycle(uint256 principalDisbursed)
+    function startRepaymentCycle(uint256 totalCrowdfunded)
         public
         onlyController
         onlyBeforeRepaymentCycle
         returns (uint256 startTimestamp)
     {
-        require(
-            principalDisbursed <= loanParams.principalRequested,
-            "principalDisbursed cannot be more than requested"
-        );
+        uint256 principalDisbursed;
+        /** NOTE: prevents over-debt through unauthorized transfers (e.g. native token transfers) into crowdloan */
+        if (totalCrowdfunded > loanParams.principalRequested) {
+            principalDisbursed = loanParams.principalRequested;
+        } else {
+            principalDisbursed = totalCrowdfunded;
+        }
         startTimestamp = now;
-        (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(
-            startTimestamp
-        );
         loanParams.principalDisbursed = principalDisbursed;
         loanParams.loanStartTimestamp = startTimestamp;
         loanParams.loanStatus = TermsContractLib.LoanStatus.REPAYMENT_CYCLE;

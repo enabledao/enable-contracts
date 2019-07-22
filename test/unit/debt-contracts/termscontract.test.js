@@ -208,15 +208,6 @@ contract('Terms Contract', accounts => {
           'Requires loanStatus to be before RepaymentCycle'
         );
       });
-
-      it('should require principalDisbursed to be below principalRequested', async () => {
-        await expectRevert(
-          instance.startRepaymentCycle(params.principalRequested.add(new BN(200)), {
-            from: controller
-          }),
-          'principalDisbursed cannot be more than requested'
-        );
-      });
     });
 
     context('start repayment cycle with partial fundraise', async () => {
@@ -324,6 +315,16 @@ contract('Terms Contract', accounts => {
             expect(amount).to.be.bignumber.that.equals(estimated);
           }
         });
+      });
+    });
+
+    context('start repayment cycle with overfunded fundraise', async () => {
+      it('should cap debt at principalRequested', async () => {
+        const overfunded = params.principalRequested.add(new BN(200));
+        await instance.startRepaymentCycle(overfunded, {from: controller});
+        const {principalDisbursed} = await instance.getLoanParams();
+        expect(principalDisbursed).to.be.bignumber.equal(params.principalRequested);
+        expect(principalDisbursed).to.be.bignumber.that.is.lessThan(overfunded);
       });
     });
   });

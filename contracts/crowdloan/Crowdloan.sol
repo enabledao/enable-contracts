@@ -25,8 +25,6 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     ITermsContract public termsContract;
     IRepaymentManager public repaymentManager;
 
-    uint256 totalCrowdfunded;
-
     modifier trackCrowdfundStatus() {
         _updateCrowdfundStatus();
         _;
@@ -42,7 +40,6 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         termsContract = ITermsContract(_termsContract);
         repaymentManager = IRepaymentManager(_repaymentManager);
         crowdfundParams = CrowdfundParams(_crowdfundLength, _crowdfundStart);
-        totalCrowdfunded = 0;
     }
 
     function getCrowdfundParams() public view returns (uint256, uint256) {
@@ -53,8 +50,9 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         return (crowdfundParams.crowdfundStart.add(crowdfundParams.crowdfundLength));
     }
 
-    function getTotalCrowdfunded() public view returns (uint256) {
-        return totalCrowdfunded;
+    function getTotalCrowdfunded() public view returns (uint256 total) {
+        /** Note: this may return more than principalRequested because of native ERC20 transfers */
+        total = _getPrincipalToken().balanceOf(address(this));
     }
 
     function getBorrower() public view returns (address) {
@@ -130,7 +128,6 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         _validatedERC20Transfer(_getPrincipalToken(), msg.sender, address(this), amount);
         //Mint new debt token and transfer to sender
         repaymentManager.increaseShares(msg.sender, amount);
-        totalCrowdfunded = totalCrowdfunded.add(amount);
         emit Fund(msg.sender, amount);
     }
 
@@ -145,7 +142,6 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
 
         repaymentManager.decreaseShares(msg.sender, amount);
         _validatedERC20Transfer(_getPrincipalToken(), address(this), msg.sender, amount);
-        totalCrowdfunded = totalCrowdfunded.sub(amount);
         emit Refund(msg.sender, amount);
     }
 
@@ -163,15 +159,14 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
             "Crowdfund not completed"
         );
         require(msg.sender == termsContract.borrower(), "Withdrawal only allowed for Borrower");
+        uint256 totalCrowdfunded = _getPrincipalToken().balanceOf(address(this));
         require(
-            _getPrincipalToken().balanceOf(address(this)) >= amount,
+            amount <= totalCrowdfunded,
             "Amount exceeds available balance"
         );
-
         if (termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE) {
             termsContract.startRepaymentCycle(totalCrowdfunded); // TODO(Dan): change this to be the amount actually raised
         }
-
         _validatedERC20Transfer(_getPrincipalToken(), address(this), msg.sender, amount);
         emit ReleaseFunds(msg.sender, amount);
     }

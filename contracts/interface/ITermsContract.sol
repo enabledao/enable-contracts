@@ -27,7 +27,7 @@ contract ITermsContract {
         );
 
     function setLoanStatus(TermsContractLib.LoanStatus _status) external;
-    function startRepaymentCycle(uint256 principalDisbursed)
+    function startRepaymentCycle(uint256 totalCrowdfunded)
         external
         returns (uint256 startTimestamp);
 
