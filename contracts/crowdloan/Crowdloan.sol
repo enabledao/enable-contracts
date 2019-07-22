@@ -131,7 +131,6 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         //Mint new debt token and transfer to sender
         repaymentManager.increaseShares(msg.sender, amount);
         totalCrowdfunded = totalCrowdfunded.add(amount);
-        emit TotalCrowdfunded(totalCrowdfunded, int256(amount), "fund function");
         emit Fund(msg.sender, amount);
     }
 
@@ -147,7 +146,6 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         repaymentManager.decreaseShares(msg.sender, amount);
         _validatedERC20Transfer(_getPrincipalToken(), address(this), msg.sender, amount);
         totalCrowdfunded = totalCrowdfunded.sub(amount);
-        emit TotalCrowdfunded(totalCrowdfunded, int256(-amount), "refund function");
         emit Refund(msg.sender, amount);
     }
 
@@ -177,7 +175,6 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         _validatedERC20Transfer(_getPrincipalToken(), address(this), msg.sender, amount);
         emit ReleaseFunds(msg.sender, amount);
     }
-
 
     /**
      * @dev fallback function ***DO NOT OVERRIDE***

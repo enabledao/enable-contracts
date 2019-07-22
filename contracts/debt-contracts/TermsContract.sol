@@ -18,6 +18,8 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
 
     address private _borrower;
 
+    event RepaymentCycleStarted(uint256 loanStartTimestamp, uint256 principalDisbursed);
+
     modifier onlyBeforeRepaymentCycle() {
         require(
             loanParams.loanStatus < TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
@@ -190,6 +192,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         loanParams.principalDisbursed = principalDisbursed;
         loanParams.loanStartTimestamp = startTimestamp;
         loanParams.loanStatus = TermsContractLib.LoanStatus.REPAYMENT_CYCLE;
+        emit RepaymentCycleStarted(startTimestamp, principalDisbursed);
     }
 
     /**
@@ -261,7 +264,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     function _setLoanStatus(TermsContractLib.LoanStatus _loanStatus) internal {
         if (loanParams.loanStatus != _loanStatus) {
             loanParams.loanStatus = _loanStatus;
-            emit LoanStatusSet(_loanStatus);
+            emit loanStatusUpdated(_loanStatus);
         }
     }
 

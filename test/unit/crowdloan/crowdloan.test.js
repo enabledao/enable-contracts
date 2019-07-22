@@ -7,7 +7,7 @@
 // Lender should not be able to contribute after loan is fully funded
 // Lender should not be able to contribute after loan is withdrawn by borrower
 
-import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
+import {BN, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
 
 const {expect} = require('chai');
 
@@ -88,7 +88,7 @@ contract('Crowdloan', accounts => {
 
     const tx = await crowdloan.startCrowdfund({from: borrower});
 
-    // await expectEvent.inTransaction(tx.receipt.transactionHash, 'LoanStatusSet',{
+    // await expectEvent.inTransaction(tx.receipt.transactionHash, 'loanStatusUpdated',{
     //   status: new BN(1) //FUNDING_STARTED
     // });
 

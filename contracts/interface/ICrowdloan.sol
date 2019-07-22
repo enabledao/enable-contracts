@@ -4,7 +4,6 @@ interface ICrowdloan {
     event Fund(address indexed sender, uint256 amount);
     event Refund(address indexed sender, uint256 amount);
     event ReleaseFunds(address indexed borrower, uint256 amount);
-    event TotalCrowdfunded(uint256 amount, int256 difference, string message); // TODO(Dan): Remove
 
     function startCrowdfund() external;
 
