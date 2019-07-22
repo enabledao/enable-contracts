@@ -170,7 +170,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         dueTimestamp = BokkyPooBahsDateTimeLibrary.addMonths(loanParams.loanStartTimestamp, period);
     }
 
-    /** 
+    /**
      * @dev Begins loan and writes timestamps to the payment table
      */
     function startRepaymentCycle(uint256 principalDisbursed)
@@ -243,7 +243,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         totalPayment = interestPayment + principalPayment;
     }
 
-    /** 
+    /**
      * @dev calculates monthly interest payment
      * @dev Note 10000 divisor is because of basis points (100) * percentage (100)
      */

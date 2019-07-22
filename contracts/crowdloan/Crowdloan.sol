@@ -151,6 +151,13 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         emit Refund(msg.sender, amount);
     }
 
+    /**
+     * @notice Withdraw method
+     */
+    function withdraw() public {
+        withdraw(_getPrincipalToken().balanceOf(address(this)));
+    }
+
     // @notice Withdraw loan
     function withdraw(uint256 amount) public {
         require(
@@ -171,12 +178,6 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         emit ReleaseFunds(msg.sender, amount);
     }
 
-    /**
-     * @notice Withdraw method
-     */
-    function withdraw() public {
-        withdraw(_getPrincipalToken().balanceOf(address(this)));
-    }
 
     /**
      * @dev fallback function ***DO NOT OVERRIDE***
