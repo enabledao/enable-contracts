@@ -248,33 +248,45 @@ contract('Enable Suite', accounts => {
     const MONTH = 86400*30;//seconds in a month: 30 days
     const BULKPERIOD = 2;
 
-    const expectedRepayment = async timestamp => {
+    const totalShares = () => lenders.reduce((a, b) => a.add(b.shares), new BN(0));
+    const expectedRepayment = (shares, payment, previousRelease) =>
+      shares
+        .mul(payment)
+        .div(totalShares())
+        .sub(previousRelease);
+    const expectedTimestampRepayment = async timestamp => {
       let tranchTimestamp;
       let totalDue = new BN(0);
       while (tranchTimestamp < timestamp) {
-        const repayment = await termsContract.getExpectedRepaymentValue(timestamp);
+        const repayment = await termsContract.getExpectedRepaymentValue.call(timestamp);
         tranchTimestamp = repayment[0];
         if (tranchTimestamp < timestamp) {
           totalDue = totalDue.add(repayment[3]);
         }
       }
     };
-    const totalShares = () => lenders.reduce((a, b) => a.add(b.shares), new BN(0));
-    const expectedTranchRepayment = async tranch => (await termsContract.getScheduledPayment(new BN(tranch + 1)))[3];
-    const serializePromise = promiseArray => console.log(promiseArray) || promiseArray.reduce( (previousPromise, nextPromiseFn) => {
+    const expectedTranchRepayment = async tranch => (await termsContract.getScheduledPayment.call(new BN(tranch + 1)))[3];
+    const serializePromise = promiseArray => promiseArray.reduce( (previousPromise, nextPromiseFn) => {
       return previousPromise.then(() => {
         return nextPromiseFn();
       });
     }, Promise.resolve());
 
-    const bulkTranch = tranch => {
-      return new Array(tranch+1).fill('').reduce(
-        async (a,b,ind) => a.add(await expectedTranchRepayment(ind+1)),
-        new BN(0)
-      )
-    }
+    const bulkTranchRepayment = async tranch => {
+      let total = new BN(0);
+      await Promise.all(new Array(tranch+1).fill('').map(
+        async (empty,ind) => total.iadd(await expectedTranchRepayment(ind+1))
+      ));
+      return total;
+    };
 
-    console.log(await bulkTranch(2));
+    // Make bulk payment for BULKPERIOD
+    const bulkpayment = await bulkTranchRepayment(BULKPERIOD);
+    await paymentToken.mint(borrower, bulkpayment);
+    await paymentToken.approve(repaymentManager.address, bulkpayment, {from: borrower});
+
+    await repaymentManager.pay(bulkpayment, {from: borrower});
+    await time.increase(MONTH*2);
 
     const remainderMonths = loanParams.loanPeriod-(BULKPERIOD+1);
     const monthCycles = new Array(remainderMonths).fill('').map( (empty,ind) =>
@@ -290,17 +302,9 @@ contract('Enable Suite', accounts => {
         })
     );
 
-    // const monthCycles = new Array(remainderMonths).fill('').map( (empty,ind) => {
-    //   return () => {
-    //     return new Promise( async (resolve) => {
-    //       setTimeout(
-    //         () => resolve(ind),
-    //         1000*Math.round()
-    //       )
-    //     })
-    //   }
-    // });
-    console.log(monthCycles)
-    await serializePromise(monthCycles)
+    await serializePromise(monthCycles);
+    expect(
+      await termsContract.getLoanStatus.call()
+    ).to.be.bignumber.equal(new BN(5)) //REPAYMENT_COMPLETE
   });
 });
