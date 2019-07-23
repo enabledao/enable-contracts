@@ -3,7 +3,7 @@
 Enable is a **open source stablecoin loan kit** that enables anyone to deploy a fullly functional peer-to-peer stablecoin loan with the following features:
 
 1. Immutable record of loan agreement and automatic tracking of repayments and defaults
-2. Out-of-the-box handling of crowdfunding and fractional ownership through debt tokens
+2. Out-of-the-box handling of crowdfunding and fractional ownership through loan shares
 3. Automatic routing of repayments to fractional owners
 
 We built Enable with the vision to expand opportunity to emerging market borrowers through access to credit, to fund value-creating activities like education and starting a business.
@@ -53,7 +53,7 @@ For background: read [Publishing an EVM package](https://docs.zeppelinos.org/doc
 
 ### Running tests
 
-1. `npm run test`. Also runs `zos push` (Dan: does it upgrade contracts as well?)
+1. `npm run test`. This also runs `zos push`, which updates the contracts with the latest vrsions
 
 ### Upgrading contracts
 
@@ -77,31 +77,91 @@ We use [Solidity Coverage](https://github.com/sc-forks/solidity-coverage).
 $(npm bin)/solidity-coverage
 ```
 
-# Draft Loan Statuses
+# Troubleshooting
 
-**crowdfundStatus** (pertains to _stage_ of crowdfund)
+## Common errors
 
-1. notStarted
-2. started
-3. paused
-4. ended (either early end by borrower, or hit goal)
+### Cannot read property `address`
 
-**crowdfundSuccess** (pertains to _outcome_ of crowdfund)
+```javascript
+// Example
+> npm t
+TypeError: Cannot read property 'address' of undefined
+```
 
-1. pending (i.e. during phase)
-2. accepted (i.e. borrower starts the loan)
-3. refunded (i.e. borrower rejects the crowdfund, returns money)
+This happens because zos needs contracts to be `published`. To resolve, run:
 
-**loanStatus** (pertains to _stage_ of loan)
+```
+zos publish
+zos publish --network development
+```
 
-1. Crowdfunding
-2. Disbursed
-3. RepaymentCycle (ie. >30 days after disbursement, also covers loans that are in default). Can also rename this to "in progress",
-4. Completed (i.e. either fully paid back or written off)
 
-**loanOutcome** (pertains to _outcome_ of loan)
+# Terminology
 
-1. on time (not fully paid back yet)
-2. late 30, 60, 90
-3. fully paid back
-4. written off (default)
+## Persons
+
+1. Lender: lends to a loan
+2. Borrower: person who loan is disbursed to
+
+## Nouns
+
+1. Loan Shares: fractional ownership in a loan
+2. Funding Goal: this is same as `principalRequested` from the borrower's point of view
+3. Total Crowdfunded: this is the amount raised in the crowdfund
+4. Principal Requested: the loan amount the borrower is requesting for
+5. Principal Disbursed: the amount
+6. Donations: "unauthorized" native ERC-20 transfers to smart contract
+
+## Actions
+
+1. Fund: lenders fund a loan
+
+## Stages and Outcomes
+
+We need a set of (Mutually Exclusive, Collectively Exhaustive)[https://www.caseinterview.com/mece] stages and outcomes, that are used for our `require` checks.
+
+Some possible scenarios we will need to 'describe':
+
+**Scenario 1:**
+Crowdfund has ended, but `borrower` does not withdraw funds. If they do not `start` loan within a certain period of time (e.g. 48 hours), lenders should be able to `refund`.
+
+Stage: `crowdfund ended`
+Crowdfund Outcome: `no outcome yet` -> `crowdfund refunded`
+
+**Scenario 2:**
+Crowdfund has ended, and `borrower` decides they do not want the loan and wants to refund the money.
+
+Stage: `crowdfund ended`
+Crowdfund Outcome: `crowdfund refunded`
+
+**Scenario 3:**
+During crowdfund, `borrower` decides to pause the crowdfund. The `crowdloan`:`fund` should be suspended.
+
+Stage: `crowdfund started`
+Crowdfund Outcome: `no outcome yet` -> `crowdfund paused`
+
+### Stages
+
+These steps are sequential. `require` statements can use `<` of `<=` to test for stages
+
+1. crowdfund notStarted
+2. crowdfund started
+3. crowdfund ended (either early end by borrower, or hit goal)
+4. loan started and in repayment cycle (this can mean that it's in default)
+5. completed (i.e. either fully paid back or written off)
+
+### Crowdfund Outcomes (pertains to _outcome_ of crowdfund)
+
+1. no outcome yet (in progress, or pending acceptance)
+2. crowdfund paused (not implemented)
+3. crowdfund ended
+4. crowdfund refunded (i.e. borrower rejects the crowdfund, returns money)
+5. crowdfund accepted (i.e. borrower starts the loan)
+
+### Loan Outcomes (pertains to _outcome_ of loan)
+
+1. On time (not fully paid back yet)
+2. Late 30, 60, 90, 180 (number of days it's behind in loans)
+3. Fully paid back
+4. Written off (default)
