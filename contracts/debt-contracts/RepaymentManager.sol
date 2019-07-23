@@ -47,13 +47,9 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
         address _termsContract,
         address[] memory _controllers
     ) public payable initializer {
-        // address[] memory _controllers = new address[](1);
-        // _controllers[0] = _controller;
-
-        ControllerRole.initialize(_controllers);
-
         paymentToken = IERC20(_paymentToken);
         termsContract = ITermsContract(_termsContract);
+        ControllerRole.initialize(_controllers);
     }
 
     function() external payable {
@@ -117,14 +113,12 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      */
     function pay(uint256 amount) public onlyActiveLoan {
         require(amount > 0, "No amount set to pay");
-
         uint256 balance = paymentToken.balanceOf(address(this));
         paymentToken.transferFrom(msg.sender, address(this), amount);
         require(
             paymentToken.balanceOf(address(this)) >= balance.add(amount),
             "Were the tokens successfully sent?"
         );
-
         emit PaymentReceived(msg.sender, amount);
     }
 
@@ -194,7 +188,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     function _decreaseShares(address account, uint256 shares_) private {
         require(account != address(0), "Account must not be zero address");
         require(shares_ > 0, "Can not decrease by zero shares");
-        // require(_shares[account] >= 0, 'Account has zero shares');
+        require(_shares[account] >= 0, 'Account has zero shares');
 
         _totalShares = _totalShares.sub(shares_);
         uint256 newShares_ = _shares[account].sub(shares_);

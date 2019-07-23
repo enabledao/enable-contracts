@@ -1,5 +1,8 @@
 import {BN} from 'openzeppelin-test-helpers';
 
+const TOKEN_DECIMALS = new BN(18);
+const MAX_CROWDFUND = new BN(2000000);
+
 const loanStatuses = {
   NOT_STARTED: new BN(0),
   FUNDING_STARTED: new BN(1),
@@ -23,7 +26,14 @@ const loanParams = {
 const paymentTokenParams = {
   name: 'PaymentToken',
   symbol: 'PAY',
-  decimals: new BN(18)
+  decimals: TOKEN_DECIMALS
 };
 
-export {loanStatuses, crowdfundParams, loanParams, paymentTokenParams};
+export {
+  TOKEN_DECIMALS,
+  MAX_CROWDFUND,
+  loanStatuses,
+  crowdfundParams,
+  loanParams,
+  paymentTokenParams
+};

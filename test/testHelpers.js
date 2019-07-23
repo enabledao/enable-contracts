@@ -1,8 +1,29 @@
 const fs = require('fs');
-const {BN, constants, expectEvent, expectRevert} = require('openzeppelin-test-helpers');
+const {BN, expectEvent} = require('openzeppelin-test-helpers');
+const {encodeCall} = require('zos-lib');
+
+const {TOKEN_DECIMALS} = require('./testConstants');
 
 const App = artifacts.require('App');
-const {encodeCall} = require('zos-lib');
+
+/**
+ * Generates random BN that has 18 decimals
+ */
+const generateRandomPaddedBN = max => {
+  const random = new BN(Math.floor(Math.random() * Math.floor(max)));
+  const decimals = new BN(10).pow(TOKEN_DECIMALS);
+  const shifted = random.mul(decimals);
+  return shifted;
+};
+
+/**
+ * Generates random integer that is less than a BN. Used to create shares
+ */
+const generateRandomBN = max => {
+  assert(BN.isBN(max));
+  const divisor = new BN(Math.floor(Math.random() * 100));
+  return max.div(divisor);
+};
 
 /*
  *  Find zos config file name for specified network
@@ -55,8 +76,12 @@ async function appCreate(packageName, contractName, admin, data) {
   return createdEvent.args.proxy;
 }
 
-module.exports.getZosConfig = getZosConfig;
-module.exports.getZosNetworkConfig = getZosNetworkConfig;
-module.exports.appCreate = appCreate;
-module.exports.getAppAddress = getAppAddress;
-module.exports.encodeCall = encodeCall;
+export {
+  getZosConfig,
+  getZosNetworkConfig,
+  appCreate,
+  getAppAddress,
+  encodeCall,
+  generateRandomPaddedBN,
+  generateRandomBN
+};
