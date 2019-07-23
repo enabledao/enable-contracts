@@ -40,4 +40,5 @@ contract ITermsContract {
     function getPrincipal() external view returns (uint256);
     function getPrincipalToken() external view returns (address);
 
+    function getScheduledPayment(uint256) external view returns (uint256, uint256, uint256, uint256);
 }

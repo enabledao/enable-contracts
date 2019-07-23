@@ -38,6 +38,12 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
         _;
     }
 
+    modifier trackRepaymentStatus() {
+        _updateRepaymentStatus();
+        _;
+        _updateRepaymentStatus();
+    }
+
     /**
      * @dev Constructor
      */
@@ -113,7 +119,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @notice Send funds
      * @param amount amount of tokens to send.
      */
-    function pay(uint256 amount) public onlyActiveLoan {
+    function pay(uint256 amount) public onlyActiveLoan trackRepaymentStatus {
         require(amount > 0, "No amount set to pay");
 
         uint256 balance = _getPrincipalToken().balanceOf(address(this));
@@ -130,7 +136,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @dev Release one of the payee's proportional payment.
      * @param account Whose payments will be released.
      */
-    function release(address payable account) public onlyActiveLoan {
+    function release(address payable account) public onlyActiveLoan trackRepaymentStatus {
         require(_shares[account] > 0, "Account has zero shares");
 
         uint256 payment = releaseAllowance(account);
@@ -175,6 +181,30 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
 
     function _getPrincipalToken() internal view returns (IERC20 token) {
         return IERC20(termsContract.getPrincipalToken());
+    }
+
+    // @notice reconcile the loans funding status
+    function _updateRepaymentStatus() internal {
+        uint totalDue;
+        uint256 totalPaid = totalPaid();
+        uint256 principal = termsContract.getPrincipal();
+
+
+        (,,,,uint loanPeriod,,,) = termsContract.getLoanParams();
+        for (uint lp=0; lp < loanPeriod; lp++) {
+          (uint due,,,) = termsContract.getScheduledPayment(lp+1);
+          totalDue += due;
+        }
+
+        if (
+            totalPaid > 0 &&
+            totalPaid < totalDue &&
+            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE
+        ) {
+            termsContract.setLoanStatus(TermsContractLib.LoanStatus.REPAYMENT_CYCLE);
+        } else if (totalPaid >= totalDue) {
+            termsContract.setLoanStatus(TermsContractLib.LoanStatus.REPAYMENT_COMPLETE);
+        }
     }
 
     /**
