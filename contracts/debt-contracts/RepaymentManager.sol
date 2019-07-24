@@ -136,7 +136,13 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @dev Release one of the payee's proportional payment.
      * @param account Whose payments will be released.
      */
-    function release(address payable account) public onlyActiveLoan trackRepaymentStatus {
+    function release(address payable account) public trackRepaymentStatus {
+
+        require(
+            termsContract.getLoanStatus() > TermsContractLib.LoanStatus.FUNDING_COMPLETE,
+            "Action only allowed while loan is Active"
+        );
+
         require(_shares[account] > 0, "Account has zero shares");
 
         uint256 payment = releaseAllowance(account);
@@ -185,24 +191,22 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
 
     // @notice reconcile the loans funding status
     function _updateRepaymentStatus() internal {
-        uint totalDue;
-        uint256 totalPaid = totalPaid();
-        uint256 principal = termsContract.getPrincipal();
-
+        uint _totalDue;
+        uint256 _totalPaid = totalPaid();
 
         (,,,,uint loanPeriod,,,) = termsContract.getLoanParams();
         for (uint lp=0; lp < loanPeriod; lp++) {
-          (uint due,,,) = termsContract.getScheduledPayment(lp+1);
-          totalDue += due;
+          (,,,uint due) = termsContract.getScheduledPayment(lp+1);
+          _totalDue = _totalDue + due;
         }
 
         if (
-            totalPaid > 0 &&
-            totalPaid < totalDue &&
+            _totalPaid > 0 &&
+            _totalPaid < _totalDue &&
             termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE
         ) {
             termsContract.setLoanStatus(TermsContractLib.LoanStatus.REPAYMENT_CYCLE);
-        } else if (totalPaid >= totalDue) {
+        } else if (_totalPaid >= _totalDue) {
             termsContract.setLoanStatus(TermsContractLib.LoanStatus.REPAYMENT_COMPLETE);
         }
     }

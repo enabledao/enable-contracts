@@ -55,14 +55,16 @@ contract('RepaymentManager', accounts => {
     );
 
     termsContract = await TermsContract.new();
+    repaymentManager = await RepaymentManager.new();
+
+    controllers.push(repaymentManager.address);
+
     await termsContract.initialize(
       borrower,
       paymentToken.address,
       ...Object.values(loanParams),
       controllers
     );
-
-    repaymentManager = await RepaymentManager.new();
     await repaymentManager.initialize(termsContract.address, controllers);
   });
 

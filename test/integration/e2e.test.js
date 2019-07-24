@@ -31,7 +31,7 @@ import {BN, expectEvent, expectRevert, time} from 'openzeppelin-test-helpers';
 
 const {expect} = require('chai');
 
-const {appCreate, getAppAddress, encodeCall} = require('../testHelpers');
+const {appCreate, getAppAddress, encodeCall, revertEvm, snapShotEvm} = require('../testHelpers');
 const {crowdfundParams, loanParams, paymentTokenParams} = require('../testConstants');
 
 const CrowdloanFactory = artifacts.require('CrowdloanFactory');
@@ -254,17 +254,6 @@ contract('Enable Suite', accounts => {
         .mul(payment)
         .div(totalShares())
         .sub(previousRelease);
-    const expectedTimestampRepayment = async timestamp => {
-      let tranchTimestamp;
-      let totalDue = new BN(0);
-      while (tranchTimestamp < timestamp) {
-        const repayment = await termsContract.getExpectedRepaymentValue.call(timestamp);
-        tranchTimestamp = repayment[0];
-        if (tranchTimestamp < timestamp) {
-          totalDue = totalDue.add(repayment[3]);
-        }
-      }
-    };
     const expectedTranchRepayment = async tranch => (await termsContract.getScheduledPayment.call(new BN(tranch + 1)))[3];
     const serializePromise = promiseArray => promiseArray.reduce( (previousPromise, nextPromiseFn) => {
       return previousPromise.then(() => {
@@ -274,14 +263,17 @@ contract('Enable Suite', accounts => {
 
     const bulkTranchRepayment = async tranch => {
       let total = new BN(0);
-      await Promise.all(new Array(tranch+1).fill('').map(
-        async (empty,ind) => total.iadd(await expectedTranchRepayment(ind+1))
+      await Promise.all(new Array(tranch).fill('').map(
+        async (empty,ind) => total.iadd(await expectedTranchRepayment(ind))
       ));
       return total;
     };
 
+    //Take evm snapshot, to be reverted, so as not to distort other tests (time manipulation)
+    const snapShotId = await snapShotEvm();
+
     // Make bulk payment for BULKPERIOD
-    const bulkpayment = await bulkTranchRepayment(BULKPERIOD);
+    const bulkpayment = (await bulkTranchRepayment(BULKPERIOD+1)).sub(await expectedTranchRepayment(0));// +1 previously paid month
     await paymentToken.mint(borrower, bulkpayment);
     await paymentToken.approve(repaymentManager.address, bulkpayment, {from: borrower});
 
@@ -306,5 +298,41 @@ contract('Enable Suite', accounts => {
     expect(
       await termsContract.getLoanStatus.call()
     ).to.be.bignumber.equal(new BN(5)) //REPAYMENT_COMPLETE
+
+    const totalPaid = await repaymentManager.totalPaid.call();
+    expect( totalPaid).to.be.bignumber.equals(
+      await bulkTranchRepayment(loanParams.loanPeriod)
+    );
+
+    await Promise.all(
+      lenders.map(async lender => {
+        const balance = await paymentToken.balanceOf(lender.address);
+        const previousRelease = await repaymentManager.released.call(lender.address);
+        const expectedRelease = expectedRepayment(lender.shares, totalPaid, previousRelease);
+
+        expect(await repaymentManager.releaseAllowance.call(lender.address)).to.be.bignumber.equal(
+          expectedRelease
+        );
+
+        if (expectedRelease.gt(new BN(0))) {
+          const tx = await repaymentManager.release(lender.address, {from: lender.address});
+          expectEvent.inLogs(tx.logs, 'PaymentReleased', {
+            to: lender.address,
+            amount: expectedRelease
+          });
+        } else {
+          await expectRevert.unspecified(
+            repaymentManager.release(lender.address, {from: lender.address}),
+            'Account has zero release allowance'
+          );
+        }
+        expect(await paymentToken.balanceOf(lender.address)).to.be.bignumber.gte(
+          expectedRelease.add(balance)
+        );
+      })
+    );
+
+    //Revert EVm to snapshot
+    await revertEvm(snapShotId);
   });
 });

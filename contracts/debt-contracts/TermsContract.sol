@@ -118,8 +118,8 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         returns (uint256 due, uint256 principal, uint256 interest, uint256 total)
     {
         require(
-            tranche <= loanParams.loanPeriod,
-            "The loan period is shorter than requested tranche"
+            tranche > 0 && tranche <= loanParams.loanPeriod,
+            "The requested tranche is outside loan period"
         );
         interest = loanParams.interestPayment;
         if (tranche == loanParams.loanPeriod) {

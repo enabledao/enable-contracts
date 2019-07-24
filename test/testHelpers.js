@@ -55,8 +55,46 @@ async function appCreate(packageName, contractName, admin, data) {
   return createdEvent.args.proxy;
 }
 
-module.exports.getZosConfig = getZosConfig;
-module.exports.getZosNetworkConfig = getZosNetworkConfig;
-module.exports.appCreate = appCreate;
-module.exports.getAppAddress = getAppAddress;
-module.exports.encodeCall = encodeCall;
+async function snapShotEvm () {
+  const send = web3.currentProvider.sendAsync || web3.currentProvider.send;
+  return await new Promise((resolve, reject) => {
+   send({
+     jsonrpc: "2.0",
+     method: "evm_snapshot",
+     params: [],
+     id: new Date().getTime()
+   }, (err, res) => {
+     if (err) {
+       reject(err);
+     }
+     resolve(res.result);
+   });
+  });
+}
+
+async  function revertEvm (snapshotId) {
+  const send = web3.currentProvider.sendAsync || web3.currentProvider.send;
+  await new Promise((resolve, reject) => {
+   send({
+     jsonrpc: "2.0",
+     method: "evm_revert",
+     params: [snapshotId],
+     id: new Date().getTime()
+   }, (err, res) => {
+     if (err) {
+       reject(err);
+     }
+     resolve(res.result);
+   });
+  });
+}
+
+module.exports = {
+  appCreate,
+  encodeCall,
+  getAppAddress,
+  getZosConfig,
+  getZosNetworkConfig,
+  revertEvm,
+  snapShotEvm
+};
