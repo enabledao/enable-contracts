@@ -181,7 +181,8 @@ contract('Terms Contract', accounts => {
 
     context('starting a loan', async () => {
       let tx;
-      let loanStartTimestamp, loanStatus
+      let loanStartTimestamp;
+      let loanStatus;
       let loanPeriod;
       let loanEndTimestamp;
       let principal;
@@ -189,7 +190,13 @@ contract('Terms Contract', accounts => {
 
       beforeEach(async () => {
         tx = await instance.startLoan();
-        ({loanStatus, loanStartTimestamp, loanPeriod, principal, interestRate} = await instance.getLoanParams());
+        ({
+          loanStatus,
+          loanStartTimestamp,
+          loanPeriod,
+          principal,
+          interestRate
+        } = await instance.getLoanParams());
         loanEndTimestamp = await instance.getLoanEndTimestamp();
       });
 
@@ -227,9 +234,9 @@ contract('Terms Contract', accounts => {
         const results = await Promise.all(queries);
         results.map((payment, i) => {
           if (verbose)
-          console.log(
-            `Results  |  Timestamp : ${payment.due}  |  Principal : ${payment.principal}  |  Interest: ${payment.interest}  |  Total: ${payment.total}`
-          );
+            console.log(
+              `Results  |  Timestamp : ${payment.due}  |  Principal : ${payment.principal}  |  Interest: ${payment.interest}  |  Total: ${payment.total}`
+            );
           const actual = payment.due.toNumber();
           const cur = moment(new Date().getTime());
           const simulated = cur.add(i + 1, 'months').unix();
@@ -259,6 +266,5 @@ contract('Terms Contract', accounts => {
         }
       });
     });
-
   });
 });

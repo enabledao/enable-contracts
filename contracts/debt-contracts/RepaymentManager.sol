@@ -195,9 +195,9 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
         uint256 _totalPaid = totalPaid();
 
         (,,,,uint loanPeriod,,,) = termsContract.getLoanParams();
-        for (uint lp=0; lp < loanPeriod; lp++) {
-          (,,,uint due) = termsContract.getScheduledPayment(lp+1);
-          _totalDue = _totalDue + due;
+        for (uint lp = 0; lp < loanPeriod; lp++) {
+            (,,,uint due) = termsContract.getScheduledPayment(lp+1);
+            _totalDue = _totalDue + due;
         }
 
         if (

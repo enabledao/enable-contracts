@@ -55,37 +55,43 @@ async function appCreate(packageName, contractName, admin, data) {
   return createdEvent.args.proxy;
 }
 
-async function snapShotEvm () {
+async function snapShotEvm() {
   const send = web3.currentProvider.sendAsync || web3.currentProvider.send;
   return await new Promise((resolve, reject) => {
-   send({
-     jsonrpc: "2.0",
-     method: "evm_snapshot",
-     params: [],
-     id: new Date().getTime()
-   }, (err, res) => {
-     if (err) {
-       reject(err);
-     }
-     resolve(res.result);
-   });
+    send(
+      {
+        jsonrpc: '2.0',
+        method: 'evm_snapshot',
+        params: [],
+        id: new Date().getTime()
+      },
+      (err, res) => {
+        if (err) {
+          reject(err);
+        }
+        resolve(res.result);
+      }
+    );
   });
 }
 
-async  function revertEvm (snapshotId) {
+async function revertEvm(snapshotId) {
   const send = web3.currentProvider.sendAsync || web3.currentProvider.send;
   await new Promise((resolve, reject) => {
-   send({
-     jsonrpc: "2.0",
-     method: "evm_revert",
-     params: [snapshotId],
-     id: new Date().getTime()
-   }, (err, res) => {
-     if (err) {
-       reject(err);
-     }
-     resolve(res.result);
-   });
+    send(
+      {
+        jsonrpc: '2.0',
+        method: 'evm_revert',
+        params: [snapshotId],
+        id: new Date().getTime()
+      },
+      (err, res) => {
+        if (err) {
+          reject(err);
+        }
+        resolve(res.result);
+      }
+    );
   });
 }
 
