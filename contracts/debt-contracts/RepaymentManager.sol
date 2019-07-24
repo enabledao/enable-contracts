@@ -8,6 +8,13 @@ import "../interface/ITermsContract.sol";
 import "../access/ControllerRole.sol";
 import "./TermsContractLib.sol";
 
+/**
+ * @title RepaymentManager
+ * @dev This contract is inspired by OpenZeppelin's PaymentSplitter
+ *
+ * It follows a _pull payment_ model. Payments are not forwarded automatically, and lender will need to
+ * trigger the actual transfer by calling the {release} function
+ */
 contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     using SafeMath for uint256;
     using TermsContractLib for TermsContractLib.LoanStatus;
@@ -21,6 +28,8 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
 
     IERC20 public paymentToken;
     ITermsContract public termsContract;
+
+    event DebugLog(uint256 first, string message);
 
     modifier onlyActiveLoan() {
         require(
@@ -112,6 +121,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @param amount amount of tokens to send.
      */
     function pay(uint256 amount) public onlyActiveLoan {
+        emit DebugLog(amount, "start of pay");
         require(amount > 0, "No amount set to pay");
         uint256 balance = paymentToken.balanceOf(address(this));
         paymentToken.transferFrom(msg.sender, address(this), amount);
@@ -174,7 +184,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     function _increaseShares(address account, uint256 shares_) private {
         require(account != address(0), "Account must not be zero address");
         require(shares_ > 0, "Can not increase by zero shares");
-        require(_shares[account] >= 0, "Account has zero shares");
+        // require(_shares[account] >= 0, "Account has zero shares"); // DAN: this makes no sense
 
         _totalShares = _totalShares.add(shares_);
         uint256 newShares_ = _shares[account].add(shares_);
@@ -188,7 +198,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     function _decreaseShares(address account, uint256 shares_) private {
         require(account != address(0), "Account must not be zero address");
         require(shares_ > 0, "Can not decrease by zero shares");
-        require(_shares[account] >= 0, 'Account has zero shares');
+        require(_shares[account] > 0, "Account has zero shares");
 
         _totalShares = _totalShares.sub(shares_);
         uint256 newShares_ = _shares[account].sub(shares_);

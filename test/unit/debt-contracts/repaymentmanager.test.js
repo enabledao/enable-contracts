@@ -23,7 +23,7 @@ const {
   paymentTokenParams,
   MAX_CROWDFUND
 } = require('../../testConstants');
-const {generateRandomPaddedBN, generateRandomBN} = require('../../testHelpers');
+const {generateRandomPaddedBN, generateRandom} = require('../../testHelpers');
 
 const RepaymentManager = artifacts.require('RepaymentManager');
 const TermsContract = artifacts.require('TermsContract');
@@ -33,25 +33,31 @@ contract('RepaymentManager', accounts => {
   let paymentToken;
   let termsContract;
   let repaymentManager;
-  const deployer = accounts[1];
+
+  // TODO(Dan): Refactor roles into testHelper
+  const minter = accounts[1];
   const borrower = accounts[4];
   const controller = accounts[5];
+  const nonLender = accounts[9];
+  const nonBorrower = accounts[9];
   const nonControllers = [accounts[9]];
   const lenders = [
     {
       address: accounts[6],
-      shares: new BN(100)
+      shares: generateRandomPaddedBN(MAX_CROWDFUND)
     },
     {
       address: accounts[7],
-      shares: new BN(200)
+      shares: generateRandomPaddedBN(MAX_CROWDFUND)
     },
     {
       address: accounts[8],
-      shares: new BN(50)
+      shares: generateRandomPaddedBN(MAX_CROWDFUND)
     }
   ];
-  const nonLender = accounts[9];
+  const lender1 = lenders[0].address;
+  const lender2 = lenders[1].address;
+  const lender3 = lenders[2].address;
 
   beforeEach(async () => {
     paymentToken = await PaymentToken.new();
@@ -59,7 +65,7 @@ contract('RepaymentManager', accounts => {
       paymentTokenParams.name,
       paymentTokenParams.symbol,
       paymentTokenParams.decimals,
-      [deployer], // minters
+      [minter], // minters
       [] // pausers
     );
 
@@ -88,188 +94,241 @@ contract('RepaymentManager', accounts => {
     });
   });
 
-  context.only('crowdloan phase', async () => {
-    context('increase shares function', async () => {
-      // write test for where there is more than one lender. Lender 1 has no shares, lender 2
-      let tx;
-      let original;
-      let lender;
-      let increment;
+  describe('increaseShares', async () => {
+    let tx;
+    let original;
+    let lender;
+    let increment;
 
+    beforeEach(async () => {
+      [lender] = lenders;
+      increment = generateRandomPaddedBN(MAX_CROWDFUND);
+    });
+
+    context('validations', async () => {
+      it('should not allow non-controllers to add lender', async () => {
+        await expectRevert(
+          repaymentManager.increaseShares(lender.address, increment, {from: nonControllers[0]}),
+          'Permission denied'
+        );
+      });
+      it('should not allow shares to be increased if crowdfund is over', async () => {
+        await termsContract.setLoanStatus(loanStatuses.FUNDING_FAILED, {from: controller}); // FUNDING_FAILED
+        await expectRevert(
+          repaymentManager.increaseShares(lender.address, increment, {from: controller}),
+          'Action only allowed before loan funding failed'
+        );
+      });
+      xit('should not allow lender with zero address', async () => {});
+      xit('should not allow zero shares increment', async () => {});
+    });
+
+    context('functionality', async () => {
       beforeEach(async () => {
-        [lender] = lenders;
-        increment = generateRandomPaddedBN(MAX_CROWDFUND);
+        original = await repaymentManager.shares(lender.address);
+        tx = await repaymentManager.increaseShares(lender.address, increment, {
+          from: controller
+        });
       });
-
-      context('validations', async () => {
-        it('should not allow non-controllers to add lender', async () => {
-          await expectRevert(
-            repaymentManager.increaseShares(lender.address, increment, {from: nonControllers[0]}),
-            'Permission denied'
-          );
-        });
-        it('should not allow shares to be increased if crowdfund is over', async () => {
-          await termsContract.setLoanStatus(loanStatuses.FUNDING_FAILED, {from: controller}); // FUNDING_FAILED
-          await expectRevert(
-            repaymentManager.increaseShares(lender.address, increment, {from: controller}),
-            'Action only allowed before loan funding failed'
-          );
-        });
-        xit('should not allow lender with zero address', async () => {});
-        xit('should not allow zero shares increment', async () => {});
+      it('should increase the shares that lender has', async () => {
+        const increased = await repaymentManager.shares(lender.address);
+        expect(increased.sub(original)).to.be.bignumber.equal(increment);
       });
-
-      context('functionality', async () => {
-        beforeEach(async () => {
-          original = await repaymentManager.shares(lender.address);
-          tx = await repaymentManager.increaseShares(lender.address, increment, {
-            from: controller
-          });
+      it('should emit a PayeeAdded event and ShareIncreased event for new shareholders', async () => {
+        expectEvent.inLogs(tx.logs, 'PayeeAdded', {
+          account: lender.address
         });
-        it('should increase the shares that lender has', async () => {
-          const increased = await repaymentManager.shares(lender.address);
-          expect(increased.sub(original)).to.be.bignumber.equal(increment);
+        expectEvent.inLogs(tx.logs, 'ShareIncreased', {
+          account: lender.address,
+          sharesAdded: increment
         });
-        xit('should increase the totalShares', async () => {});
-        it('should emit a PayeeAdded event and ShareIncreased event for new shareholders', async () => {
-          expectEvent.inLogs(tx.logs, 'PayeeAdded', {
+      });
+      it('should emit a ShareIncreased event but not PayeeAdded event for existing shareholders', async () => {
+        const newIncrement = generateRandomPaddedBN(10);
+        const newTx = await repaymentManager.increaseShares(lender.address, newIncrement, {
+          from: controller
+        });
+        expectEvent.inLogs(newTx.logs, 'ShareIncreased', {
+          account: lender.address,
+          sharesAdded: newIncrement
+        });
+        try {
+          expectEvent.inLogs(newTx.logs, 'PayeeAdded', {
             account: lender.address
           });
-          expectEvent.inLogs(tx.logs, 'ShareIncreased', {
-            account: lender.address,
-            sharesAdded: increment
-          });
-        });
-        it('should emit a ShareIncreased event but not PayeeAdded event for existing shareholders', async () => {
-          const newIncrement = generateRandomPaddedBN(10);
-          const newTx = await repaymentManager.increaseShares(lender.address, newIncrement, {
-            from: controller
-          });
-          expectEvent.inLogs(newTx.logs, 'ShareIncreased', {
-            account: lender.address,
-            sharesAdded: newIncrement
-          });
-          try {
-            expectEvent.inLogs(newTx.logs, 'PayeeAdded', {
-              account: lender.address
-            });
-          } catch (err) {
-            expect(err.message).to.contain("There is no 'PayeeAdded'");
-          }
-        });
+        } catch (err) {
+          expect(err.message).to.contain("There is no 'PayeeAdded'");
+        }
+      });
+    });
+  });
+  describe('decreaseShares', async () => {
+    let tx;
+    let original;
+    let payee;
+    let decrement;
+
+    beforeEach(async () => {
+      [payee] = lenders;
+      original = generateRandomPaddedBN(MAX_CROWDFUND);
+      decrement = new BN(100);
+    });
+
+    context('validations', async () => {
+      xit('should not allow payee with zero shares to decrease shares', async () => {});
+      xit('should not allow payee with zero address', async () => {});
+      it('should not allow zero shares decrement', async () => {
+        await expectRevert(
+          repaymentManager.decreaseShares(payee.address, decrement, {from: controller}),
+          'Account has zero shares'
+        );
+      });
+      it('should not allow shares to be decreased if crowdfund is over', async () => {
+        await repaymentManager.increaseShares(payee.address, original, {from: controller});
+        await termsContract.setLoanStatus(loanStatuses.FUNDING_COMPLETE, {from: controller});
+        await expectRevert(
+          repaymentManager.decreaseShares(payee.address, decrement, {from: controller}),
+          'Action only allowed before loan funding is completed'
+        );
       });
     });
 
-    context('decrease shares function', async () => {
-      let payee;
-      let original;
-      let decrement;
-
+    context('functionality', async () => {
       beforeEach(async () => {
-        [payee] = lenders;
-        original = generateRandomPaddedBN(MAX_CROWDFUND);
-        decrement = new BN(100);
+        await repaymentManager.increaseShares(payee.address, original, {from: controller});
+        tx = await repaymentManager.decreaseShares(payee.address, decrement, {from: controller});
       });
-
-      context('validations', async () => {
-        xit('should not allow payee with zero shares to decrease shares', async () => {});
-        xit('should not allow payee with zero address', async () => {});
-        it('should not allow zero shares decrement', async () => {
-          // await repaymentManager.decreaseShares(payee.address, decrement, {from: controller});
-          await expectRevert(
-            repaymentManager.decreaseShares(payee.address, decrement, {from: controller}),
-            'Account has zero shares'
-          );
-        });
-        it('should not allow shares to be decreased if crowdfund is over', async () => {
-          await termsContract.setLoanStatus(loanStatuses.FUNDING_FAILED, {from: controller}); // FUNDING_FAILED
-          await expectRevert(
-            repaymentManager.increaseShares(payee.address, decrement, {from: controller}),
-            'Action only allowed before loan funding failed'
-          );
-
-          await repaymentManager.increaseShares(payee.address, original, {from: controller});
-          await expectRevert(
-            repaymentManager.decreaseShares(payee.address, decrement, {from: controller}),
-            'Action only allowed before loan funding is completed'
-          );
-        });
+      it('should decrease the shares that a payee has', async () => {
+        const decreased = await repaymentManager.shares(payee.address);
+        expect(original.sub(decreased)).to.be.bignumber.equal(decrement);
       });
-
-      context('functionality', async () => {
-        let tx;
-
-        beforeEach(async () => {
-          await repaymentManager.increaseShares(payee.address, original, {from: controller});
-          tx = await repaymentManager.decreaseShares(payee.address, decrement, {from: controller});
-        });
-        it('should decrease the shares that a payee has', async () => {
-          const decreased = await repaymentManager.shares(payee.address);
-          expect(original.sub(decreased)).to.be.bignumber.equal(decrement);
-        });
-        it('should emit a ShareDecreased event', async () => {
-          expectEvent.inLogs(tx.logs, 'ShareDecreased', {
-            account: payee.address,
-            sharesRemoved: decrement
-          });
+      it('should emit a ShareDecreased event', async () => {
+        expectEvent.inLogs(tx.logs, 'ShareDecreased', {
+          account: payee.address,
+          sharesRemoved: decrement
         });
       });
     });
   });
-
-  context('repayment cycle phase', async () => {
-    it('should successfully pay into the contract', async () => {
-      const paymentAmount = new BN(150);
-      const payers = [
-        {
-          address: accounts[0],
-          value: new BN(150)
-        },
-        {
-          address: accounts[1],
-          value: new BN(150)
-        }
+  describe('totalShares', async () => {
+    let original;
+    let lender;
+    beforeEach(async () => {
+      [lender] = lenders;
+      original = generateRandomPaddedBN(MAX_CROWDFUND);
+      await repaymentManager.increaseShares(lender.address, original, {from: controller});
+    });
+    it('increaseShares should increase the total number of shares', async () => {
+      const increment = generateRandomPaddedBN(MAX_CROWDFUND);
+      await repaymentManager.increaseShares(lender.address, increment, {from: controller});
+      const increased = await repaymentManager.totalShares();
+      expect(increased.sub(original)).to.be.bignumber.equal(increment);
+    });
+    it('decreaseShares should decrease the total number of shares', async () => {
+      const decrement = new BN(10);
+      await repaymentManager.decreaseShares(lender.address, decrement, {from: controller});
+      const decreased = await repaymentManager.totalShares();
+      expect(decreased.add(decrement)).to.be.bignumber.equal(original);
+    });
+  });
+  describe('shares', async () => {
+    xit('implicitly tested in increaseShares and decreaseShares tests');
+  });
+  describe('pay', async () => {
+    let payments;
+    beforeEach(async () => {
+      payments = [
+        {address: borrower, value: generateRandomPaddedBN(MAX_CROWDFUND)},
+        {address: lender1, value: generateRandomPaddedBN(MAX_CROWDFUND)}, // Test for strange edge case
+        {address: nonLender, value: generateRandomPaddedBN(MAX_CROWDFUND)}
       ];
-
-      await Promise.all(payers.map(payer => paymentToken.mint(payer.address, payer.value)));
-
-      await expectRevert.unspecified(
-        repaymentManager.pay(new BN(0), {
-          from: payers[0].address
-        }),
-        'No amount set to pay'
+      await Promise.all(
+        payments.map(({address, value}) => {
+          paymentToken.mint(address, value, {from: minter});
+        })
       );
-
-      await paymentToken.mint(accounts[3], new BN(100));
-      await paymentToken.approve(repaymentManager.address, new BN(100), {from: accounts[3]});
-      await expectRevert.unspecified(
-        repaymentManager.pay(new BN(100), {
-          from: accounts[3]
-        }),
-        'Action only allowed while loan is Active'
+      await Promise.all(
+        payments.map(({address, value}) => {
+          paymentToken.approve(repaymentManager.address, value, {from: address});
+        })
       );
-
-      await termsContract.setLoanStatus(3); // FUNDING_COMPLETE
-
-      for (let p = 0; p < payers.length; p++) {
-        const payer = payers[p];
-
-        await paymentToken.approve(repaymentManager.address, payer.value, {from: payer.address});
-
-        const tx = await repaymentManager.pay(payer.value, {from: payer.address});
-
+    });
+    context('validations', async () => {
+      it('should not allow zero pay amount ', async () => {
+        await termsContract.setLoanStatus(loanStatuses.REPAYMENT_CYCLE, {from: controller});
+        await expectRevert(
+          repaymentManager.pay(new BN(0), {from: borrower}),
+          'No amount set to pay'
+        );
+      });
+      it('should only allow repayment after crowdfund has started', async () => {
+        const {address, value} = payments[0];
+        await expectRevert(
+          repaymentManager.pay(value, {from: address}),
+          'Action only allowed while loan is Active'
+        );
+      });
+    });
+    context('functionality', async () => {
+      beforeEach(async () => {
+        await termsContract.setLoanStatus(loanStatuses.REPAYMENT_CYCLE, {from: controller});
+      });
+      it('should let any address pay into contract multiple times', async () => {
+        for (let i = 0; i < payments.length; i += 1) {
+          const original = await repaymentManager.totalPaid(); // eslint-disable-line no-await-in-loop
+          const {address, value} = payments[i];
+          await repaymentManager.pay(value, {from: address}); // eslint-disable-line no-await-in-loop
+          const after = await repaymentManager.totalPaid(); // eslint-disable-line no-await-in-loop
+          expect(after.sub(value)).to.be.bignumber.equals(original);
+        }
+        const final = await paymentToken.balanceOf.call(repaymentManager.address); // Removes dependency on totalPaid();
+        const expectedBalance = payments.reduce(
+          (total, payment) => total.add(payment.value),
+          new BN(0)
+        );
+        expect(final).to.be.bignumber.equal(expectedBalance);
+      });
+      it('should emit a PaymentReceived event', async () => {
+        const {address, value} = payments[0];
+        const tx = await repaymentManager.pay(value, {from: address});
         expectEvent.inLogs(tx.logs, 'PaymentReceived', {
-          from: payer.address,
-          amount: payer.value
+          from: address,
+          amount: value
         });
-      }
+      });
+    });
+    xit('should successfully pay into the contract', async () => {
+      await paymentToken.approve(repaymentManager.address, new BN(100), {from: accounts[3]});
 
       const repaymentManagerBalance = await paymentToken.balanceOf.call(repaymentManager.address);
       const expectedBalance = payers.reduce((a, b) => a.add(b.value), new BN(0));
       expect(repaymentManagerBalance).to.be.bignumber.equal(expectedBalance);
     });
+  });
+  describe('release', async () => {});
+  describe('totalReleased', async () => {});
+  describe('released', async () => {});
+  describe('releaseAllowance', async () => {}); // difficult
+  describe('totalPaid', async () => {}); // Needs both release and pay
+  describe('payee', async () => {});
 
-    it('should successfully release to lender', async () => {
+  context('repayment cycle phase', async () => {
+    context('release function for lenders', async () => {
+      beforeEach(async () => {});
+      context('validations', async () => {
+        xit('should not allow lender with 0 shares to withdraw', async () => {});
+        xit('should not allow lender with zero allowance to withdraw', async () => {});
+      });
+      context('functionality', async () => {
+        xit('should allow lender to withdraw the correct percentage of payment', async () => {});
+        xit('should withdraw correct percentage of multiple payments', async () => {});
+        xit('should have a smaller releaseAllowance if previous withdrawal was made', async () => {});
+      });
+    });
+
+    context('releaseAllowance for lenders', async () => {});
+
+    xit('should successfully release to lender', async () => {
       const paymentAmount = new BN(350);
       const totalShares = () => lenders.reduce((a, b) => a.add(b.shares), new BN(0));
       const expectedRepayment = (shares, payment) => shares.mul(payment).divRound(totalShares());

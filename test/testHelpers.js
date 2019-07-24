@@ -16,10 +16,14 @@ const generateRandomPaddedBN = max => {
   return shifted;
 };
 
+const generateRandom = max => {
+  return Math.floor(Math.random() * Math.floor(max));
+};
+
 /**
  * Generates random integer that is less than a BN. Used to create shares
  */
-const generateRandomBN = max => {
+const getPercentageOfBN = max => {
   assert(BN.isBN(max));
   const divisor = new BN(Math.floor(Math.random() * 100));
   return max.div(divisor);
@@ -82,6 +86,6 @@ export {
   appCreate,
   getAppAddress,
   encodeCall,
-  generateRandomPaddedBN,
-  generateRandomBN
+  generateRandom,
+  generateRandomPaddedBN
 };
