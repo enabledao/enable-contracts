@@ -210,7 +210,7 @@ contract('Crowdloan', accounts => {
         await expectRevert.unspecified(
           crowdloan.refund(contributor.value, {from: contributor.address})
         );
-        const current = await crowdloan.getTotalCrowdfunded();
+        const current = await repaymentManager.totalShares();
         expect(current).to.be.a.bignumber.that.equals(partialAmount);
       });
 
@@ -219,7 +219,7 @@ contract('Crowdloan', accounts => {
           crowdloan.refund(new BN(0), {from: contributor.address}),
           'Can not decrease by zero shares'
         );
-        const current = await crowdloan.getTotalCrowdfunded();
+        const current = await repaymentManager.totalShares();
         expect(current).to.be.a.bignumber.that.equals(partialAmount);
       });
     });
@@ -250,7 +250,7 @@ contract('Crowdloan', accounts => {
       });
 
       it('should decrease totalCrowdfunded', async () => {
-        const totalRemainder = await crowdloan.getTotalCrowdfunded();
+        const totalRemainder = await repaymentManager.totalShares();
         expect(totalRemainder).to.be.bignumber.equal(remainder);
       });
     });
@@ -280,7 +280,7 @@ contract('Crowdloan', accounts => {
         crowdloan.fund(contributor.value, {from: contributor.address});
 
         // console.log(contributor)
-        // const current = await crowdloan.getTotalCrowdfunded();
+        // const current = await repaymentManager.totalShares();
         // console.log(`Just funded: ${current.toNumber()}`);
         expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(
           loanStatuses.FUNDING_COMPLETE
@@ -395,7 +395,7 @@ contract('Crowdloan', accounts => {
       });
 
       it('should let borrower start a loan with a partial fundraise', async () => {
-        const totalCrowdfunded = await crowdloan.getTotalCrowdfunded();
+        const totalCrowdfunded = await repaymentManager.totalShares();
         expect(totalCrowdfunded).to.be.bignumber.equal(partialFundraise);
         await crowdloan.methods['withdraw(uint256)'](totalCrowdfunded, {from: borrower});
         const params = await termsContract.getLoanParams();
