@@ -218,7 +218,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
             (uint256 due, , , uint256 amount) = getScheduledPayment(i + 1);
             if (due < timestamp) {
-                total += amount;
+                total = total.add(amount);
             }
         }
     }
@@ -243,7 +243,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         } else {
             principalPayment = 0;
         }
-        totalPayment = interestPayment + principalPayment;
+        totalPayment = interestPayment.add(principalPayment);
     }
 
     /**
