@@ -119,8 +119,8 @@ contract('Enable Suite', accounts => {
     );
 
     const loanCreated = expectEvent.inLogs(tx.logs, 'LoanCreated', {
-      borrower
-      // amount: new BN(loanParams.pricipal)
+      borrower,
+      amount: new BN(loanParams.principalRequested)
     });
 
     expect(loanCreated.args.amount).to.be.bignumber.equal(new BN(loanParams.principal));

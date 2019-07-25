@@ -43,6 +43,7 @@ contract('Crowdloan', accounts => {
     termsContract = await TermsContract.new();
     repaymentManager = await RepaymentManager.new();
     crowdloan = await Crowdloan.new();
+
     await crowdloan.initialize(
       termsContract.address,
       repaymentManager.address,
@@ -53,7 +54,7 @@ contract('Crowdloan', accounts => {
       borrower,
       paymentToken.address,
       ...Object.values(loanParams),
-      controllers.concat([crowdloan.address])
+      controllers.concat([crowdloan.address, repaymentManager.address])
     );
 
     await repaymentManager.initialize(
