@@ -77,22 +77,20 @@ contract('RepaymentManager', accounts => {
     );
 
     termsContract = await TermsContract.new();
+    repaymentManager = await RepaymentManager.new();
+
     await termsContract.initialize(borrower, paymentToken.address, ...Object.values(loanParams), [
+      controller,
+      repaymentManager.address
+    ]);
+    await repaymentManager.initialize(termsContract.address, [
       controller
     ]);
-
-    repaymentManager = await RepaymentManager.new();
-    await repaymentManager.initialize(paymentToken.address, termsContract.address, [controller]);
   });
 
   context('should deploy correctly', async () => {
     it('RepaymentManager should deploy successfully', async () => {
       assert.exists(repaymentManager.address, 'repaymentManager was not successfully deployed');
-    });
-
-    it('RepaymentManager should have PaymentToken address initialized', async () => {
-      const result = await repaymentManager.paymentToken.call();
-      expect(result).to.be.equal(paymentToken.address);
     });
 
     it('RepaymentManager should have TermsContract address initialized', async () => {

@@ -230,8 +230,8 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         returns (uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
     {
         require(
-            period <= loanParams.loanPeriod,
-            "The loan period is shorter than requested period"
+            period > 0 && period <= loanParams.loanPeriod,
+            "The requested period is outside loan period"
         );
         interestPayment = _calcMonthlyInterest(principal, loanParams.interestRate);
         /** Principal is only paid during the last period */
