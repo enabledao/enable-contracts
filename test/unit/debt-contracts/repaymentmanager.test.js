@@ -33,7 +33,7 @@ const RepaymentManager = artifacts.require('RepaymentManager');
 const TermsContract = artifacts.require('TermsContract');
 const PaymentToken = artifacts.require('StandaloneERC20');
 
-const verbose = true;
+const verbose = false;
 const tolerance = new BN(10); // in wei
 
 contract('RepaymentManager', accounts => {
@@ -388,7 +388,6 @@ contract('RepaymentManager', accounts => {
       // Send external (native ERC20) transfer
       const externalPayment = generateRandomPaddedBN(100);
       await paymentToken.mint(borrower, externalPayment, {from: minter});
-      // await paymentToken.approve(repaymentManager.address, externalPayment, {from: borrower});
       await paymentToken.transfer(repaymentManager.address, externalPayment, {from: borrower});
       const total = totalRepayments.add(externalPayment);
 
@@ -526,8 +525,45 @@ contract('RepaymentManager', accounts => {
       });
     });
   });
-  describe('totalReleased', async () => {});
-  describe('released', async () => {});
-  describe('totalPaid', async () => {}); // Needs both release and pay
-
+  describe('totalReleased', async () => {
+    it('already implicitly tested in `release` function');
+  });
+  describe('released', async () => {
+    it('already implicitly tested in `release` function');
+  });
+  describe('totalPaid', async () => {
+    // Mission critical function because `releaseAllowance` depends on totalPaid()
+    let totalPaidBefore;
+    let randomPayment;
+    beforeEach(async () => {
+      await Promise.all(
+        lenders.map(({address, shares}) => {
+          return repaymentManager.increaseShares(address, shares, {from: controller});
+        })
+      );
+      await termsContract.setLoanStatus(loanStatuses.REPAYMENT_CYCLE, {from: controller});
+      totalPaidBefore = await repaymentManager.totalPaid();
+      randomPayment = generateRandomPaddedBN(MAX_CROWDFUND);
+      await paymentToken.mint(borrower, randomPayment, {from: minter});
+      await paymentToken.approve(repaymentManager.address, randomPayment, {from: borrower});
+    });
+    it('should increase totalPaid by correct amount', async () => {
+      await repaymentManager.pay(randomPayment, {from: borrower});
+      const totalPaidAfter = await repaymentManager.totalPaid();
+      expect(totalPaidAfter.sub(totalPaidBefore)).to.be.a.bignumber.equals(randomPayment);
+    });
+    it('should account for native ERC20 transfers', async () => {
+      await paymentToken.transfer(repaymentManager.address, randomPayment, {from: borrower});
+      const totalPaidAfter = await repaymentManager.totalPaid();
+      expect(totalPaidAfter.sub(totalPaidBefore)).to.be.a.bignumber.equals(randomPayment);
+    });
+    it('should not change with withdrawals', async () => {
+      await repaymentManager.pay(randomPayment, {from: borrower});
+      const [{address}] = lenders;
+      const before = await repaymentManager.totalPaid();
+      await repaymentManager.release(address, {from: address});
+      const after = await repaymentManager.totalPaid();
+      expect(before).to.be.a.bignumber.equals(after);
+    });
+  });
 });
