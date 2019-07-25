@@ -160,6 +160,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         );
         require(msg.sender == termsContract.borrower(), "Withdrawal only allowed for Borrower");
         uint256 contractBalance = _getPrincipalToken().balanceOf(address(this));
+        require(amount <= contractBalance, "Amount exceeds available balance");
         if (termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE) {
             termsContract.startRepaymentCycle(contractBalance);
         }
