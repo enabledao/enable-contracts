@@ -33,6 +33,8 @@ const RepaymentManager = artifacts.require('RepaymentManager');
 const TermsContract = artifacts.require('TermsContract');
 const PaymentToken = artifacts.require('StandaloneERC20');
 
+const verbose = true;
+
 contract('RepaymentManager', accounts => {
   let paymentToken;
   let termsContract;
@@ -306,7 +308,10 @@ contract('RepaymentManager', accounts => {
   });
 
   /** TODO(Dan): This is more of an e2e test */
-  describe('releaseAllowance', async () => {
+  describe.only('releaseAllowance', async () => {
+    let repayments;
+    let totalShares;
+    let totalRepayments;
     beforeEach(async () => {
       /** Create random share allocation among lenders */
       await Promise.all(
@@ -314,33 +319,98 @@ contract('RepaymentManager', accounts => {
           return repaymentManager.increaseShares(address, shares, {from: controller});
         })
       );
-      const totalShares = lenders.reduce((total, lender) => total.add(lender.shares), new BN(0));
-      console.log(`Shares: ${await repaymentManager.shares(lender1)}`);
-      console.log(`Total Shares: ${totalShares}`);
+      totalShares = lenders.reduce((total, lender) => total.add(lender.shares), new BN(0));
 
-      /** Create simulated repayment by borrower to repaymentManager */
+      /** Create simulated repaymentby borrower to repaymentManager */
       await termsContract.setLoanStatus(loanStatuses.REPAYMENT_CYCLE, {from: controller});
-      const simulatedRepayment = getRandomPercentageOfBN(totalShares);
-      console.log(`Simulated Repayment: ${simulatedRepayment}`);
-      await paymentToken.mint(borrower, simulatedRepayment, {from: minter});
-      console.log('tokens minted');
-      paymentToken.approve(repaymentManager.address, simulatedRepayment, {from: borrower});
-      await repaymentManager.pay(simulatedRepayment, {from: borrower});
-
-      // fund the account from multiple payments
-      // have lenders with different types of shares
+      repayments = [
+        getRandomPercentageOfBN(totalShares),
+        getRandomPercentageOfBN(totalShares),
+        getRandomPercentageOfBN(totalShares)
+      ];
+      totalRepayments = repayments.reduce((total, repayment) => total.add(repayment), new BN(0));
+      if (verbose) {
+        console.log(`Shares: ${await repaymentManager.shares(lender1)}`);
+        console.log(`Total Shares: ${totalShares}`);
+        console.log('totalRepayments: ', totalRepayments);
+      }
+      await paymentToken.mint(borrower, totalRepayments, {from: minter});
+      await paymentToken.approve(repaymentManager.address, totalRepayments, {from: borrower});
     });
     it('should calculate correct releaseAllowance for lender after 1 repayment', async () => {
-      return true;
+      await repaymentManager.pay(repayments[0], {from: borrower});
+      const allowance = await repaymentManager.releaseAllowance.call(lenders[0].address);
+      const releaseAllowances = await Promise.all(
+        lenders.map(lender => repaymentManager.releaseAllowance(lender.address))
+      );
+      releaseAllowances.map((releaseAllowance, i) => {
+        const expected = repayments[0]
+          .mul(lenders[i].shares)
+          .div(totalShares)
+          .sub(new BN(0)); // No other withdrawals
+        if (verbose) {
+          console.log(`releaseAllowance: ${releaseAllowance}  |  expected: ${expected}`);
+        }
+        expect(releaseAllowance).to.be.bignumber.equals(expected);
+      });
     });
-    it('should calculate correct releaseAllowance for lender after multiple repayments', async () => {});
-    it('should calculate correct releaseAllowance for lender after multiple repayments including unauthorized transfers', async () => {});
-    it('should calculate correct releaseAllowance for lender after another lender has made withdrawal', async () => {});
 
+    it('should calculate correct releaseAllowance for lender after multiple repayments', async () => {
+      await Promise.all(
+        repayments.map(repayment => {
+          repaymentManager.pay(repayment, {from: borrower});
+        })
+      );
+      const releaseAllowances = await Promise.all(
+        lenders.map(lender => repaymentManager.releaseAllowance(lender.address))
+      );
+      releaseAllowances.map((releaseAllowance, i) => {
+        const expected = totalRepayments
+          .mul(lenders[i].shares)
+          .div(totalShares)
+          .sub(new BN(0)); // No other withdrawals
+        if (verbose) {
+          console.log(`releaseAllowance: ${releaseAllowance}  |  expected: ${expected}`);
+        }
+        expect(releaseAllowance).to.be.bignumber.equals(expected);
+      });
+    });
 
-    xit('should withdraw correct percentage of multiple payments', async () => {});
-    xit('should have a smaller releaseAllowance if previous withdrawal was made', async () => {});
-  }); // difficult
+    /** Important edge case if borrower makes repayment and doesn't use `repay` */
+    it('should calculate correct releaseAllowance for lender after multiple repayments including external (i.e. native ERC20) transfers', async () => {
+      await Promise.all(
+        repayments.map(repayment => {
+          repaymentManager.pay(repayment, {from: borrower});
+        })
+      );
+
+      // Send external (native ERC20) transfer
+      const externalPayment = generateRandomPaddedBN(100);
+      await paymentToken.mint(borrower, externalPayment, {from: minter});
+      // await paymentToken.approve(repaymentManager.address, externalPayment, {from: borrower});
+      await paymentToken.transfer(repaymentManager.address, externalPayment, {from: borrower});
+      const total = totalRepayments.add(externalPayment);
+
+      // Calculate release allowances
+      const releaseAllowances = await Promise.all(
+        lenders.map(lender => repaymentManager.releaseAllowance(lender.address))
+      );
+      releaseAllowances.map((releaseAllowance, i) => {
+        const expected = total
+          .mul(lenders[i].shares)
+          .div(totalShares)
+          .sub(new BN(0)); // No other withdrawals
+        if (verbose) {
+          console.log(`releaseAllowance: ${releaseAllowance}  |  expected: ${expected}`);
+        }
+        expect(releaseAllowance).to.be.bignumber.equals(expected);
+      });
+    });
+    it('should calculate correct releaseAllowance for lender after multiple withdrawals', async () => {});
+
+    it('should calculate correct releaseAllowance for lender after another lender has made withdrawal (i.e. no change)', async () => {});
+    it('should calculate correct releaseAllowance for lender after multiple other lenders have made withdrawals (i.e. no change)', async () => {});
+  });
   describe('release', async () => {
     beforeEach(async () => {
       // fund the repaymentManager
