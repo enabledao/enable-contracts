@@ -308,8 +308,6 @@ contract('RepaymentManager', accounts => {
     });
   });
 
-  describe('released', async () => {});
-  describe('totalReleased', async () => {});
   /** TODO(Dan): This is more of an e2e test */
   describe('releaseAllowance', async () => {
     let repayments;
@@ -462,82 +460,74 @@ contract('RepaymentManager', accounts => {
       await repaymentManager.pay(totalShares, {from: borrower});
     });
     context('validations', async () => {
-      xit('should not allow lender with 0 shares to withdraw', async () => {});
-      xit('should not allow lender with zero allowance to withdraw', async () => {});
+      it('should not allow release if notActiveLoan', async () => {
+        await termsContract.setLoanStatus(loanStatuses.FUNDING_STARTED, {from: controller});
+        await expectRevert(
+          repaymentManager.release(nonLender, {from: nonLender}),
+          'Action only allowed while loan is Active'
+        );
+      });
+      it('should not allow lender with 0 shares to withdraw', async () => {
+        await expectRevert(
+          repaymentManager.release(nonLender, {from: nonLender}),
+          'Account has zero shares'
+        );
+      });
+      it('should not allow lender with zero allowance to withdraw', async () => {
+        const {address} = lenders[0];
+        await repaymentManager.release(address, {from: address});
+        await expectRevert(
+          repaymentManager.release(address, {from: address}),
+          'Account has zero release allowance'
+        );
+      });
     });
-    context('functionality', async () => {});
-  });
+    context('functionality', async () => {
+      let tx;
+      let address;
+      let releaseAllowance;
+      let lenderBalanceBefore;
+      let releasedBefore;
+      let totalReleasedBefore;
 
+      beforeEach(async () => {
+        [{address}] = lenders;
+        lenderBalanceBefore = await paymentToken.balanceOf(address);
+        releasedBefore = await repaymentManager.released(address);
+        totalReleasedBefore = await repaymentManager.totalReleased();
+        releaseAllowance = await repaymentManager.releaseAllowance(address);
+        tx = await repaymentManager.release(address, {from: address});
+      });
+      it('should transfer releaseAllowance to account', async () => {
+        const lenderBalanceAfter = await paymentToken.balanceOf(address);
+        expect(lenderBalanceAfter.sub(lenderBalanceBefore)).to.be.bignumber.equals(
+          releaseAllowance
+        );
+      });
+      it('should have a 0 releaseAllowance after', async () => {
+        const releaseAllowanceAfter = await repaymentManager.releaseAllowance(address);
+        expect(releaseAllowanceAfter).to.be.a.bignumber.equals(new BN(0));
+      });
+      it('should increase releasedAfter to account', async () => {
+        const releasedAfter = await repaymentManager.released(address);
+        expect(releasedAfter.sub(releasedBefore)).to.be.a.bignumber.equals(releaseAllowance);
+      });
+      it('should increase totalReleased by repaymentManager', async () => {
+        const totalReleasedAfter = await repaymentManager.totalReleased();
+        expect(totalReleasedAfter.sub(totalReleasedBefore)).to.be.a.bignumber.equals(
+          releaseAllowance
+        );
+      });
+      it('should generate a PaymentReleased event', async () => {
+        expectEvent.inLogs(tx.logs, 'PaymentReleased', {
+          to: address,
+          amount: releaseAllowance
+        });
+      });
+    });
+  });
+  describe('totalReleased', async () => {});
+  describe('released', async () => {});
   describe('totalPaid', async () => {}); // Needs both release and pay
-  describe('payee', async () => {});
 
-  context('repayment cycle phase', async () => {
-    xit('should successfully release to lender', async () => {
-      const paymentAmount = new BN(350);
-      const totalShares = () => lenders.reduce((a, b) => a.add(b.shares), new BN(0));
-      const expectedRepayment = (shares, payment) => shares.mul(payment).divRound(totalShares());
-
-      await paymentToken.mint(borrower, paymentAmount);
-
-      await Promise.all(
-        lenders.map(lender =>
-          repaymentManager.increaseShares(lender.address, lender.shares, {from: controller})
-        )
-      );
-
-      await expectRevert.unspecified(
-        repaymentManager.release(lenders[0].address, {
-          from: lenders[0].address
-        }),
-        'Action only allowed while loan is Active'
-      );
-
-      await paymentToken.approve(repaymentManager.address, paymentAmount, {from: borrower});
-
-      await termsContract.setLoanStatus(3); // FUNDING_COMPLETE
-
-      await repaymentManager.pay(paymentAmount, {from: borrower});
-
-      await expectRevert.unspecified(
-        repaymentManager.release(accounts[4], {
-          from: lenders[0].address
-        }),
-        'Account has zero shares'
-      );
-
-      await Promise.all(
-        lenders.map(async (lender, idx) => {
-          const expectedRelease = expectedRepayment(lender.shares, paymentAmount);
-
-          expect(
-            await repaymentManager.releaseAllowance.call(lender.address)
-          ).to.be.bignumber.equal(expectedRelease);
-
-          const tx = await repaymentManager.release(
-            lender.address,
-            {from: idx % 2 === 0 ? lender.address : accounts[idx + 4]} // Alternate between lender address and alternate address as tx sender
-          );
-
-          expectEvent.inLogs(tx.logs, 'PaymentReleased', {
-            to: lender.address
-          });
-
-          expect(await repaymentManager.released.call(lender.address)).to.be.bignumber.equal(
-            expectedRelease
-          );
-
-          expect(await paymentToken.balanceOf.call(lender.address)).to.be.bignumber.equal(
-            expectedRelease
-          );
-        })
-      );
-
-      const totalReleased = await repaymentManager.totalReleased.call();
-      const expectedReleased = lenders.reduce(
-        (a, b) => a.add(expectedRepayment(b.shares, paymentAmount)),
-        new BN(0)
-      );
-      expect(totalReleased).to.be.bignumber.equal(expectedReleased);
-    });
-  });
 });

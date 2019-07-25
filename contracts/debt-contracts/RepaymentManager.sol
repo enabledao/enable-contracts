@@ -111,6 +111,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
 
     /**
      * @return the address of a payee.
+     * TODO(Dan): Remove?
      */
     function payee(uint256 index) public view returns (address) {
         return _payees[index];
@@ -121,7 +122,6 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @param amount amount of tokens to send.
      */
     function pay(uint256 amount) public onlyActiveLoan {
-        // emit DebugLog(amount, "start of pay");
         require(amount > 0, "No amount set to pay");
         uint256 balance = paymentToken.balanceOf(address(this));
         paymentToken.transferFrom(msg.sender, address(this), amount);
