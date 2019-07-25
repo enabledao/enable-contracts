@@ -24,12 +24,9 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
 
     mapping(address => uint256) private _shares;
     mapping(address => uint256) private _released;
-    address[] private _payees;
 
     IERC20 public paymentToken;
     ITermsContract public termsContract;
-
-    event DebugLog(uint256 first, string message);
 
     modifier onlyActiveLoan() {
         require(
@@ -107,14 +104,6 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     function releaseAllowance(address account) public view returns (uint256) {
         uint256 totalReceived = totalPaid();
         return totalReceived.mul(_shares[account]).div(_totalShares).sub(_released[account]);
-    }
-
-    /**
-     * @return the address of a payee.
-     * TODO(Dan): Remove?
-     */
-    function payee(uint256 index) public view returns (address) {
-        return _payees[index];
     }
 
     /**
@@ -216,7 +205,6 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
         require(shares_ > 0, "Can not add Payee with zero shares");
         require(_shares[account] == 0, "Account already has shares, use increaseShares");
 
-        _payees.push(account);
         _shares[account] = shares_;
         _totalShares = _totalShares.add(shares_);
         emit PayeeAdded(account);
