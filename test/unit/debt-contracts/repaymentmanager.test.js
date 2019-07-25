@@ -34,6 +34,7 @@ const TermsContract = artifacts.require('TermsContract');
 const PaymentToken = artifacts.require('StandaloneERC20');
 
 const verbose = true;
+const tolerance = new BN(10); // in wei
 
 contract('RepaymentManager', accounts => {
   let paymentToken;
@@ -307,8 +308,10 @@ contract('RepaymentManager', accounts => {
     });
   });
 
+  describe('released', async () => {});
+  describe('totalReleased', async () => {});
   /** TODO(Dan): This is more of an e2e test */
-  describe.only('releaseAllowance', async () => {
+  describe('releaseAllowance', async () => {
     let repayments;
     let totalShares;
     let totalRepayments;
@@ -324,6 +327,9 @@ contract('RepaymentManager', accounts => {
       /** Create simulated repaymentby borrower to repaymentManager */
       await termsContract.setLoanStatus(loanStatuses.REPAYMENT_CYCLE, {from: controller});
       repayments = [
+        getRandomPercentageOfBN(totalShares),
+        getRandomPercentageOfBN(totalShares),
+        getRandomPercentageOfBN(totalShares),
         getRandomPercentageOfBN(totalShares),
         getRandomPercentageOfBN(totalShares),
         getRandomPercentageOfBN(totalShares)
@@ -354,7 +360,6 @@ contract('RepaymentManager', accounts => {
         expect(releaseAllowance).to.be.bignumber.equals(expected);
       });
     });
-
     it('should calculate correct releaseAllowance for lender after multiple repayments', async () => {
       await Promise.all(
         repayments.map(repayment => {
@@ -375,7 +380,6 @@ contract('RepaymentManager', accounts => {
         expect(releaseAllowance).to.be.bignumber.equals(expected);
       });
     });
-
     /** Important edge case if borrower makes repayment and doesn't use `repay` */
     it('should calculate correct releaseAllowance for lender after multiple repayments including external (i.e. native ERC20) transfers', async () => {
       await Promise.all(
@@ -383,7 +387,6 @@ contract('RepaymentManager', accounts => {
           repaymentManager.pay(repayment, {from: borrower});
         })
       );
-
       // Send external (native ERC20) transfer
       const externalPayment = generateRandomPaddedBN(100);
       await paymentToken.mint(borrower, externalPayment, {from: minter});
@@ -406,14 +409,57 @@ contract('RepaymentManager', accounts => {
         expect(releaseAllowance).to.be.bignumber.equals(expected);
       });
     });
-    it('should calculate correct releaseAllowance for lender after multiple withdrawals', async () => {});
 
     it('should calculate correct releaseAllowance for lender after another lender has made withdrawal (i.e. no change)', async () => {});
     it('should calculate correct releaseAllowance for lender after multiple other lenders have made withdrawals (i.e. no change)', async () => {});
+    it('should calculate correct releaseAllowance for lender after multiple withdrawals by lender', async () => {
+      /* eslint-disable */ // TODO(Dan): Clean up the no-await-in-loop and no-func-in-loop problems below
+      for (let i = 0; i < repayments.length; i += 1) {
+        if (verbose) console.log(`repayment cycle: ${i}`);
+        await repaymentManager.pay(repayments[i], {from: borrower});
+
+        // Check releaseAllowances
+        const releaseAllowances = await Promise.all(
+          lenders.map(lender => repaymentManager.releaseAllowance(lender.address))
+        );
+        releaseAllowances.map(async (releaseAllowance, j) => {
+          await repaymentManager.totalReleased();
+          const expected = repayments[i]
+            .mul(lenders[j].shares)
+            .div(totalShares)
+            .sub(new BN(0)); // No other withdrawals
+          if (verbose) {
+            console.log(
+              `lender: ${j}  |  releaseAllowance: ${releaseAllowance}  |  expected: ${expected}`
+            );
+          }
+          expect(releaseAllowance).to.be.bignumber.greaterThan(expected.sub(tolerance));
+          expect(releaseAllowance).to.be.bignumber.lessThan(expected.add(tolerance));
+        });
+
+        await Promise.all(lenders.map(lender => repaymentManager.release(lender.address)));
+        const balance = await paymentToken.balanceOf(repaymentManager.address);
+        if (verbose) console.log('Balance after repayment cycle: ' + balance);
+        expect(balance).to.be.bignumber.lessThan(tolerance);
+      }
+      /* eslint-enable */
+    });
   });
   describe('release', async () => {
     beforeEach(async () => {
-      // fund the repaymentManager
+      /** Create random share allocation among lenders */
+      await Promise.all(
+        lenders.map(({address, shares}) => {
+          return repaymentManager.increaseShares(address, shares, {from: controller});
+        })
+      );
+      const totalShares = lenders.reduce((total, lender) => total.add(lender.shares), new BN(0));
+
+      /** Create simulated repaymentby borrower to repaymentManager */
+      await termsContract.setLoanStatus(loanStatuses.REPAYMENT_CYCLE, {from: controller});
+      await paymentToken.mint(borrower, totalShares, {from: minter});
+      await paymentToken.approve(repaymentManager.address, totalShares, {from: borrower});
+      await repaymentManager.pay(totalShares, {from: borrower});
     });
     context('validations', async () => {
       xit('should not allow lender with 0 shares to withdraw', async () => {});
@@ -421,8 +467,6 @@ contract('RepaymentManager', accounts => {
     });
     context('functionality', async () => {});
   });
-  describe('totalReleased', async () => {});
-  describe('released', async () => {});
 
   describe('totalPaid', async () => {}); // Needs both release and pay
   describe('payee', async () => {});
