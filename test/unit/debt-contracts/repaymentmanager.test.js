@@ -275,13 +275,12 @@ contract('RepaymentManager', accounts => {
           'Action only allowed while loan is Active'
         );
       });
-      xit('should only allow pay if payer has more than amount in balance', async () => {});
+      xit('should only allow pay if payer has at least amount in balance', async () => {});
     });
     context('functionality', async () => {
       beforeEach(async () => {
         await termsContract.setLoanStatus(loanStatuses.REPAYMENT_CYCLE, {from: controller});
       });
-      xit('should approve the ');
       it('should let any address pay into contract multiple times', async () => {
         for (let i = 0; i < payments.length; i += 1) {
           const original = await repaymentManager.totalPaid(); // eslint-disable-line no-await-in-loop
