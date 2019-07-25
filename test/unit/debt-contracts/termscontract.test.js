@@ -261,8 +261,8 @@ contract('Terms Contract', accounts => {
           );
         });
 
-        it('should emit a loanStatusUpdated event', async () => {
-          expectEvent.inLogs(tx.logs, 'loanStatusUpdated', {
+        it('should emit a LoanStatusUpdated event', async () => {
+          expectEvent.inLogs(tx.logs, 'LoanStatusUpdated', {
             status: loanStatuses.REPAYMENT_CYCLE
           });
         });

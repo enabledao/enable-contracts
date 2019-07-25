@@ -50,6 +50,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         return (crowdfundParams.crowdfundStart.add(crowdfundParams.crowdfundLength));
     }
 
+    /** TODO(Dan): Refactor while implementing Donation capability */
     function getTotalCrowdfunded() public view returns (uint256 total) {
         /** Note: this may return more than principalRequested because of native ERC20 transfers */
         total = _getPrincipalToken().balanceOf(address(this));

@@ -5,7 +5,7 @@ import "../debt-contracts/TermsContractLib.sol";
 contract ITermsContract {
     using TermsContractLib for TermsContractLib.LoanStatus;
 
-    event loanStatusUpdated(TermsContractLib.LoanStatus status);
+    event LoanStatusUpdated(TermsContractLib.LoanStatus status);
 
     function borrower() external view returns (address);
 

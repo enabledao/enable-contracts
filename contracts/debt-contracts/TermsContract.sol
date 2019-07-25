@@ -261,7 +261,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     function _setLoanStatus(TermsContractLib.LoanStatus _loanStatus) internal {
         if (loanParams.loanStatus != _loanStatus) {
             loanParams.loanStatus = _loanStatus;
-            emit loanStatusUpdated(_loanStatus);
+            emit LoanStatusUpdated(_loanStatus);
         }
     }
 
