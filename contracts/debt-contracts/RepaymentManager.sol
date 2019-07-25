@@ -121,7 +121,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @param amount amount of tokens to send.
      */
     function pay(uint256 amount) public onlyActiveLoan {
-        emit DebugLog(amount, "start of pay");
+        // emit DebugLog(amount, "start of pay");
         require(amount > 0, "No amount set to pay");
         uint256 balance = paymentToken.balanceOf(address(this));
         paymentToken.transferFrom(msg.sender, address(this), amount);

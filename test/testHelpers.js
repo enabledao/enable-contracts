@@ -2,7 +2,7 @@ const fs = require('fs');
 const {BN, expectEvent} = require('openzeppelin-test-helpers');
 const {encodeCall} = require('zos-lib');
 
-const {TOKEN_DECIMALS} = require('./testConstants');
+const {DECIMAL_SHIFT} = require('./testConstants');
 
 const App = artifacts.require('App');
 
@@ -11,22 +11,22 @@ const App = artifacts.require('App');
  */
 const generateRandomPaddedBN = max => {
   const random = new BN(Math.floor(Math.random() * Math.floor(max)));
-  const decimals = new BN(10).pow(TOKEN_DECIMALS);
-  const shifted = random.mul(decimals);
+  const shifted = random.mul(DECIMAL_SHIFT);
   return shifted;
 };
 
-const generateRandom = max => {
-  return Math.floor(Math.random() * Math.floor(max));
+const generateRandomBN = max => {
+  return new BN(Math.floor(Math.random() * Math.floor(max)));
 };
 
 /**
  * Generates random integer that is less than a BN. Used to create shares
  */
-const getPercentageOfBN = max => {
+const getRandomPercentageOfBN = max => {
   assert(BN.isBN(max));
-  const divisor = new BN(Math.floor(Math.random() * 100));
-  return max.div(divisor);
+  const unshifted = max.div(DECIMAL_SHIFT);
+  const random = generateRandomBN(unshifted.toNumber());
+  return random.mul(DECIMAL_SHIFT);
 };
 
 /*
@@ -86,6 +86,7 @@ export {
   appCreate,
   getAppAddress,
   encodeCall,
-  generateRandom,
-  generateRandomPaddedBN
+  generateRandomBN,
+  generateRandomPaddedBN,
+  getRandomPercentageOfBN
 };

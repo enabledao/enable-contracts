@@ -1,6 +1,7 @@
 import {BN} from 'openzeppelin-test-helpers';
 
 const TOKEN_DECIMALS = new BN(18);
+const DECIMAL_SHIFT = new BN(10).pow(TOKEN_DECIMALS);
 const MAX_CROWDFUND = new BN(2000000);
 
 const loanStatuses = {
@@ -31,6 +32,7 @@ const paymentTokenParams = {
 
 export {
   TOKEN_DECIMALS,
+  DECIMAL_SHIFT,
   MAX_CROWDFUND,
   loanStatuses,
   crowdfundParams,
