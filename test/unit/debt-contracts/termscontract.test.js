@@ -235,13 +235,6 @@ contract('Terms Contract', accounts => {
           loanEndTimestamp = await instance.getLoanEndTimestamp();
         });
 
-        it('should emit an event for loanStart', async () => {
-          expectEvent.inLogs(tx.logs, 'RepaymentCycleStarted', {
-            loanStartTimestamp,
-            principalDisbursed
-          });
-        });
-
         it('should write the loanStartTimestamp', async () => {
           const now = Math.floor(new Date().getTime() / 1000);
           expect(loanStartTimestamp.toNumber()).to.be.within(
@@ -266,6 +259,12 @@ contract('Terms Contract', accounts => {
             end + threshold,
             'loanEndTimestamp is more than 1000 seconds from correct end date'
           );
+        });
+
+        it('should emit a loanStatusUpdated event', async () => {
+          expectEvent.inLogs(tx.logs, 'loanStatusUpdated', {
+            status: loanStatuses.REPAYMENT_CYCLE
+          });
         });
 
         it('should return the correct principalDisbursed', async () => {

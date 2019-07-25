@@ -18,8 +18,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
 
     address private _borrower;
 
-    event RepaymentCycleStarted(uint256 loanStartTimestamp, uint256 principalDisbursed);
-
     modifier onlyBeforeRepaymentCycle() {
         require(
             loanParams.loanStatus < TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
@@ -191,8 +189,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         startTimestamp = now;
         loanParams.principalDisbursed = principalDisbursed;
         loanParams.loanStartTimestamp = startTimestamp;
-        loanParams.loanStatus = TermsContractLib.LoanStatus.REPAYMENT_CYCLE;
-        emit RepaymentCycleStarted(startTimestamp, principalDisbursed);
+        _setLoanStatus(TermsContractLib.LoanStatus.REPAYMENT_CYCLE);
     }
 
     /**
