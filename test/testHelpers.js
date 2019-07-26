@@ -2,7 +2,7 @@ const fs = require('fs');
 const {BN, expectEvent} = require('openzeppelin-test-helpers');
 const {encodeCall} = require('zos-lib');
 
-const {DECIMAL_SHIFT} = require('./testConstants');
+const {DECIMAL_SHIFT, MAX_CROWDFUND} = require('./testConstants');
 
 const App = artifacts.require('App');
 
@@ -27,6 +27,43 @@ const getRandomPercentageOfBN = max => {
   const unshifted = max.div(DECIMAL_SHIFT);
   const random = generateRandomBN(unshifted.toNumber());
   return random.mul(DECIMAL_SHIFT);
+};
+
+/**
+ * Generates random test scenario
+ */
+const generateLoanScenario = accounts => {
+  // Generate sample lenders allocation
+  const loanPeriod = 6; // TODO(Dan): Randomize
+  const lenders = [
+    // TODO(Dan): Randomize length
+    {
+      address: accounts[6],
+      shares: generateRandomPaddedBN(MAX_CROWDFUND.div(new BN(3)))
+    },
+    {
+      address: accounts[7],
+      shares: generateRandomPaddedBN(MAX_CROWDFUND).div(new BN(3))
+    },
+    {
+      address: accounts[8],
+      shares: generateRandomPaddedBN(MAX_CROWDFUND).div(new BN(3))
+    }
+  ];
+  const loanParams = {
+    principalRequested: lenders.reduce((total, lender) => total.add(lender.shares), new BN(0)),
+    loanPeriod, // TODO(Dan): Randomize
+    interestRate: 50 // TODO(Dan): Randomize
+  };
+  const repayments = [];
+  for (let i = 0; i < loanPeriod; i++) {
+    repayments.push(principalRequested.div(new BN(loanPeriod)));
+  }
+  return {
+    lenders,
+    loanParams,
+    repayments
+  };
 };
 
 /*
@@ -123,6 +160,7 @@ async function revertEvm(snapshotId) {
 module.exports = {
   appCreate,
   encodeCall,
+  generateLoanScenario,
   generateRandomBN,
   generateRandomPaddedBN,
   getAppAddress,

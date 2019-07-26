@@ -83,9 +83,7 @@ contract('RepaymentManager', accounts => {
       controller,
       repaymentManager.address
     ]);
-    await repaymentManager.initialize(termsContract.address, [
-      controller
-    ]);
+    await repaymentManager.initialize(termsContract.address, [controller]);
   });
 
   context('should deploy correctly', async () => {
@@ -243,9 +241,11 @@ contract('RepaymentManager', accounts => {
     let payments;
     beforeEach(async () => {
       payments = [
-        {address: borrower, value: generateRandomPaddedBN(MAX_CROWDFUND)},
-        {address: lender1, value: generateRandomPaddedBN(MAX_CROWDFUND)}, // Test for strange edge case
-        {address: nonLender, value: generateRandomPaddedBN(MAX_CROWDFUND)}
+        // TODO(Dan): Come up with better test structure to generate actual loanParams, lenderShares, repayments
+        // TODO(Dan): This .div(new BN(5)) is a hacky workaround, must be replaced!
+        {address: borrower, value: generateRandomPaddedBN(MAX_CROWDFUND.div(new BN(5)))},
+        {address: lender1, value: generateRandomPaddedBN(MAX_CROWDFUND.div(new BN(5)))}, // Test for strange edge case
+        {address: nonLender, value: generateRandomPaddedBN(MAX_CROWDFUND.div(new BN(5)))}
       ];
       await Promise.all(
         payments.map(({address, value}) => {
@@ -287,7 +287,7 @@ contract('RepaymentManager', accounts => {
           const after = await repaymentManager.totalPaid(); // eslint-disable-line no-await-in-loop
           expect(after.sub(value)).to.be.bignumber.equals(original);
         }
-        const final = await paymentToken.balanceOf.call(repaymentManager.address); // Removes dependency on totalPaid();
+        const final = await paymentToken.balanceOf(repaymentManager.address); // Removes dependency on totalPaid();
         const expectedBalance = payments.reduce(
           (total, payment) => total.add(payment.value),
           new BN(0)
