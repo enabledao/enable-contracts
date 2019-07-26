@@ -1,7 +1,5 @@
 import {BN} from 'openzeppelin-test-helpers';
 
-const {generateRandomPaddedBN} = require('./testHelpers');
-
 const TOKEN_DECIMALS = new BN(18);
 const DECIMAL_SHIFT = new BN(10).pow(TOKEN_DECIMALS);
 const MAX_CROWDFUND = new BN(2000000);

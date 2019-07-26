@@ -6,19 +6,20 @@ const {DECIMAL_SHIFT, MAX_CROWDFUND} = require('./testConstants');
 
 const App = artifacts.require('App');
 
+const generateRandomBN = (max, min) => {
+  max = max.toNumber ? max.toNumber() : max;
+  min = min && min.toNumber ? min.toNumber() : min;
+  return new BN(Math.floor(Math.random() * Math.floor(max))).add(new BN(min ? min : 0));
+};
+
 /**
  * Generates random BN that has 18 decimals
  */
-const generateRandomPaddedBN = max => {
-  const random = new BN(Math.floor(Math.random() * Math.floor(max)));
+const generateRandomPaddedBN = (max, min) => {
+  const random = generateRandomBN(max, min);
   const shifted = random.mul(DECIMAL_SHIFT);
   return shifted;
 };
-
-const generateRandomBN = max => {
-  return new BN(Math.floor(Math.random() * Math.floor(max)));
-};
-
 /**
  * Generates random integer that is less than a BN. Used to create shares
  */
@@ -36,20 +37,21 @@ const generateLoanScenario = accounts => {
   // Generate sample lenders allocation
   // TODO(Dan): Use Dirichlet distribution? https://stackoverflow.com/questions/18659858/generating-a-list-of-random-numbers-summing-to-1
 
+  const split_MAX_CROWDFUND = MAX_CROWDFUND.div(new BN(3));
   const loanPeriod = 6; // TODO(Dan): Randomize
   const lenders = [
     // TODO(Dan): Randomize number of lenders, find way to generate randomShares
     {
       address: accounts[6],
-      shares: generateRandomPaddedBN(MAX_CROWDFUND.div(new BN(3)))
+      shares: generateRandomPaddedBN(split_MAX_CROWDFUND)
     },
     {
       address: accounts[7],
-      shares: generateRandomPaddedBN(MAX_CROWDFUND).div(new BN(3))
+      shares: generateRandomPaddedBN(split_MAX_CROWDFUND)
     },
     {
       address: accounts[8],
-      shares: generateRandomPaddedBN(MAX_CROWDFUND).div(new BN(3))
+      shares: generateRandomPaddedBN(split_MAX_CROWDFUND)
     }
   ];
   const loanParams = {

@@ -1,4 +1,4 @@
-import {BN, constants, expectEvent, expectRevert, time} from 'openzeppelin-test-helpers';
+import {BN, constants, time, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
 
 const {expect} = require('chai');
 const moment = require('moment');
@@ -10,10 +10,10 @@ const TermsContract = artifacts.require('TermsContract');
 
 const verbose = false;
 
-contract('Terms Contract', accounts => {
+contract.only('Terms Contract', accounts => {
   let instance;
   let instanceParams;
-  const threshold = 100; // Testing offset for timestamps in seconds
+  const threshold = 15; // Testing offset for timestamps in seconds
   const admin = accounts[1]; // TODO(Dan): Clarify with tspoff on what `admin` is
   const borrower = accounts[5];
   const controller = accounts[6];
@@ -245,8 +245,6 @@ contract('Terms Contract', accounts => {
         });
 
         it('should write the loanStartTimestamp', async () => {
-          console.log(now);
-          console.log(loanStartTimestamp);
           expect(loanStartTimestamp.toNumber()).to.be.within(
             now - threshold,
             now + threshold,
@@ -312,7 +310,7 @@ contract('Terms Contract', accounts => {
         it('should get the correct expectedRepaymentTotal for a given timestamp', async () => {
           const tranche = interestPayment(principalDisbursed, interestRate);
 
-          for (let i = 0; i < loanPeriod.toNumber(); i += 1) {
+          for (let i = 0; i < loanPeriod.toNumber(); i++) {
             const estimated =
               i < loanPeriod.toNumber() - 1
                 ? new BN(i + 1).mul(tranche)
@@ -320,7 +318,7 @@ contract('Terms Contract', accounts => {
 
             const cur = moment.unix(now);
             const future = cur.add(i + 1, 'months').unix();
-            const amount = await instance.getExpectedRepaymentValue(future + threshold);
+            const amount = await instance.getExpectedRepaymentValue(future + threshold);  // eslint-disable-line no-await-in-loop
             expect(amount).to.be.bignumber.that.equals(estimated);
           }
         });
