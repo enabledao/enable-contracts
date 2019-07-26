@@ -1,4 +1,4 @@
-import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
+import {BN, constants, expectEvent, expectRevert, time} from 'openzeppelin-test-helpers';
 
 const {expect} = require('chai');
 const moment = require('moment');
@@ -225,9 +225,13 @@ contract('Terms Contract', accounts => {
       let principalRequested;
       let interestRate;
       let principalDisbursed;
+      let now;
 
       context('functionality', async () => {
         beforeEach(async () => {
+          await time.advanceBlock();
+          now = (await time.latest()).toNumber();
+
           tx = await instance.startRepaymentCycle(partialFundraise, {from: controller});
           ({
             loanStatus,
@@ -241,7 +245,8 @@ contract('Terms Contract', accounts => {
         });
 
         it('should write the loanStartTimestamp', async () => {
-          const now = Math.floor(new Date().getTime() / 1000);
+          console.log(now);
+          console.log(loanStartTimestamp);
           expect(loanStartTimestamp.toNumber()).to.be.within(
             now - threshold,
             now + threshold,
@@ -257,7 +262,7 @@ contract('Terms Contract', accounts => {
         });
 
         it('should create a correct loanEndTimestamp', async () => {
-          const cur = moment(new Date().getTime());
+          const cur = moment.unix(now);
           const end = cur.add(loanPeriod.toNumber(), 'months').unix();
           expect(loanEndTimestamp.toNumber()).to.be.within(
             end - threshold,
@@ -313,7 +318,7 @@ contract('Terms Contract', accounts => {
                 ? new BN(i + 1).mul(tranche)
                 : new BN(i + 1).mul(tranche).add(principalDisbursed);
 
-            const cur = moment(new Date().getTime());
+            const cur = moment.unix(now);
             const future = cur.add(i + 1, 'months').unix();
             const amount = await instance.getExpectedRepaymentValue(future + threshold);
             expect(amount).to.be.bignumber.that.equals(estimated);

@@ -14,6 +14,7 @@
 // Invalid user can't withdraw after loan end
 
 import {BN, expectEvent, expectRevert, time} from 'openzeppelin-test-helpers';
+import {repaymentStatuses} from '../../testConstants';
 
 const {expect} = require('chai');
 const moment = require('moment');
@@ -551,8 +552,9 @@ contract('RepaymentManager', accounts => {
       expect(before).to.be.a.bignumber.equals(after);
     });
   });
-  describe.only('getRepaymentStatus', async () => {
+  describe('getRepaymentStatus', async () => {
     let loanStartTimestamp;
+    let start;
     let oneMonth;
     let afterLoanPeriod;
 
@@ -560,48 +562,76 @@ contract('RepaymentManager', accounts => {
       await termsContract.startRepaymentCycle(loanParams.principalRequested, {from: controller});
       const params = await termsContract.getLoanParams();
       ({loanStartTimestamp} = params);
-
-      const start = moment.unix(loanStartTimestamp);
-      oneMonth = start
-        .clone()
-        .add(1, 'months')
-        .unix();
-      afterLoanPeriod = start
-        .clone()
-        .add(loanParams.loanPeriod, 'months')
-        .unix();
-      console.log(oneMonth);
-      console.log(afterLoanPeriod);
+      start = moment.unix(loanStartTimestamp);
     });
     context('after 1 month', async () => {
+      let expected;
+
       beforeEach(async () => {
-        const expected = await termsContract.getExpectedRepaymentValue(oneMonth);
-        const result = await termsContract.getScheduledPayment(1);
-        console.log(
-          `Results  |  Timestamp : ${result.dueTimestamp}  |  Principal : ${result.principalPayment}  |  Interest: ${result.interestPayment}  |  totalPayment: ${result.totalPayment}`
-        );
-        console.log('after 1 month');
-        console.log(expected);
+        // Set time
+        oneMonth = start
+          .clone()
+          .add(1, 'months')
+          .unix();
+        await time.increaseTo(oneMonth);
+
+        // Get expected repayment values
+        expected = await termsContract.getExpectedRepaymentValue(oneMonth);
+        if (verbose) {
+          console.log(`Expected: ${expected}`);
+          const result = await termsContract.getScheduledPayment(1);
+          console.log(
+            `Results  |  Timestamp : ${result.dueTimestamp}  |  Principal : ${result.principalPayment}  |  Interest: ${result.interestPayment}  |  totalPayment: ${result.totalPayment}`
+          );
+        }
+
+        // Create money for borrower
         await paymentToken.mint(borrower, expected, {from: minter});
         await paymentToken.approve(repaymentManager.address, expected, {from: borrower});
       });
       // Don't make enough payment
       it('should return DEFAULT if insufficient payment', async () => {
-        return true;
+        const insufficient = expected.sub(new BN(100));
+        await repaymentManager.pay(insufficient, {from: borrower});
+        const status = await repaymentManager.getRepaymentStatus();
+        if (verbose) console.log(`Repayment Status: ${status}`);
+        expect(status).to.be.bignumber.equals(repaymentStatuses.DEFAULT);
       });
-      it('should return ON_TIME if sufficient payment');
+      it('should return ON_TIME if sufficient payment', async () => {
+        await repaymentManager.pay(expected, {from: borrower});
+        const status = await repaymentManager.getRepaymentStatus();
+        if (verbose) console.log(`Repayment Status: ${status}`);
+        expect(status).to.be.bignumber.equals(repaymentStatuses.ON_TIME);
+      });
     });
-    context('after loan period', async () => {
+    context('one month after loan period', async () => {
+      let expected;
       beforeEach(async () => {
-        const expected = await termsContract.getExpectedRepaymentValue(afterLoanPeriod);
-        console.log(expected);
+        afterLoanPeriod = start
+          .clone()
+          .add(loanParams.loanPeriod + 1, 'months')
+          .unix();
+        await time.increaseTo(afterLoanPeriod);
+
+        expected = await termsContract.getExpectedRepaymentValue(afterLoanPeriod);
+        if (verbose) console.log(`Expected: ${expected}`);
+
         await paymentToken.mint(borrower, expected, {from: minter});
         await paymentToken.approve(repaymentManager.address, expected, {from: borrower});
       });
       it('should return ON_TIME if loan is fully paid off', async () => {
-        return true;
+        const insufficient = expected.sub(new BN(100));
+        await repaymentManager.pay(insufficient, {from: borrower});
+        const status = await repaymentManager.getRepaymentStatus();
+        if (verbose) console.log(`Repayment Status: ${status}`);
+        expect(status).to.be.bignumber.equals(repaymentStatuses.DEFAULT);
       });
-      it('should return DEFAULT if loan is not fully paid off', async () => {});
+      it('should return DEFAULT if loan is not fully paid off', async () => {
+        await repaymentManager.pay(expected, {from: borrower});
+        const status = await repaymentManager.getRepaymentStatus();
+        if (verbose) console.log(`Repayment Status: ${status}`);
+        expect(status).to.be.bignumber.equals(repaymentStatuses.ON_TIME);
+      });
     });
   });
 });
