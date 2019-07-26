@@ -139,7 +139,7 @@ contract('RepaymentManager', accounts => {
         });
       });
       it('should emit a ShareIncreased event but not PayeeAdded event for existing shareholders', async () => {
-        const newIncrement = generateRandomPaddedBN(10);
+        const newIncrement = generateRandomPaddedBN(10, 1);
         const newTx = await repaymentManager.increaseShares(lender.address, newIncrement, {
           from: controller
         });
@@ -449,7 +449,7 @@ contract('RepaymentManager', accounts => {
         expect(await termsContract.getLoanStatus.call()).to.be.bignumber.equal(loanStatuses.FUNDING_STARTED);
         await expectRevert(
           repaymentManager.release(lenders[0].address, {from: lenders[0].address}),
-          'Requires loanStatus to be during RepaymentCycle' // TODO(Dan): Should be changed to onlyActiveLoan
+          'Action only allowed while loan is Active' // TODO(Dan): Should be changed to onlyActiveLoan
         );
       });
       it('should not allow lender with 0 shares to withdraw', async () => {

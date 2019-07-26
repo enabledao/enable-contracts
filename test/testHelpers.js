@@ -6,21 +6,20 @@ const {DECIMAL_SHIFT, MAX_CROWDFUND} = require('./testConstants');
 
 const App = artifacts.require('App');
 
+const generateRandomBN = (max, min) => {
+  max = max.toNumber ? max.toNumber() : max;
+  min = min && min.toNumber ? min.toNumber() : min;
+  return new BN(Math.floor(Math.random() * Math.floor(max))).add(new BN(min ? min : 0));
+};
+
 /**
  * Generates random BN that has 18 decimals
  */
-const generateRandomPaddedBN = max => {
-  max = max.toNumber ? max.toNumber() : max;
-  const random = new BN(Math.floor(Math.random() * Math.floor(max)));
+const generateRandomPaddedBN = (max, min) => {
+  const random = generateRandomBN(max, min);
   const shifted = random.mul(DECIMAL_SHIFT);
   return shifted;
 };
-
-const generateRandomBN = max => {
-  max = max.toNumber ? max.toNumber() : max;
-  return new BN(Math.floor(Math.random() * Math.floor(max)));
-};
-
 /**
  * Generates random integer that is less than a BN. Used to create shares
  */

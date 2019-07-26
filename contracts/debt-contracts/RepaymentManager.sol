@@ -122,6 +122,10 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @param amount amount of tokens to send.
      */
     function pay(uint256 amount) public onlyActiveLoan trackRepaymentStatus {
+        require(
+            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_COMPLETE,
+            "Action only allowed before Repayment complete"
+        );
         require(amount > 0, "No amount set to pay");
 
         uint256 balance = _getPrincipalToken().balanceOf(address(this));
@@ -137,12 +141,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @dev Release one of the payee's proportional payment.
      * @param account Whose payments will be released.
      */
-    function release(address payable account) public trackRepaymentStatus {
-        require(
-            termsContract.getLoanStatus() > TermsContractLib.LoanStatus.FUNDING_COMPLETE,
-            "Action only allowed while loan is Active"
-        );
-
+    function release(address payable account) onlyActiveLoan public trackRepaymentStatus {
         require(_shares[account] > 0, "Account has zero shares");
 
         uint256 payment = releaseAllowance(account);
@@ -220,7 +219,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
             termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE
         ) {
             termsContract.setLoanStatus(TermsContractLib.LoanStatus.REPAYMENT_CYCLE);
-        } else if (_totalPaid >= _totalDue) {
+        } else if (_totalDue > 0 && _totalPaid >= _totalDue) {
             termsContract.setLoanStatus(TermsContractLib.LoanStatus.REPAYMENT_COMPLETE);
         }
     }
