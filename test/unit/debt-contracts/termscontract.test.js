@@ -105,6 +105,11 @@ contract('Terms Contract', accounts => {
       assert.exists(instance.address, 'instance was not successfully deployed');
     });
 
+    it('should have valid PaymentToken address initialized', async () => {
+      const result = await instance.getPrincipalToken.call();
+      expect(result).to.be.equal(params.principalToken);
+    });
+
     it('should record loan params in storage', async () => {
       Object.keys(params).forEach(key => {
         const value = instanceParams[key];
@@ -176,7 +181,8 @@ contract('Terms Contract', accounts => {
 
     context('starting a loan', async () => {
       let tx;
-      let loanStartTimestamp, loanStatus
+      let loanStartTimestamp;
+      let loanStatus;
       let loanPeriod;
       let loanEndTimestamp;
       let principal;
@@ -184,7 +190,13 @@ contract('Terms Contract', accounts => {
 
       beforeEach(async () => {
         tx = await instance.startLoan();
-        ({loanStatus, loanStartTimestamp, loanPeriod, principal, interestRate} = await instance.getLoanParams());
+        ({
+          loanStatus,
+          loanStartTimestamp,
+          loanPeriod,
+          principal,
+          interestRate
+        } = await instance.getLoanParams());
         loanEndTimestamp = await instance.getLoanEndTimestamp();
       });
 
@@ -222,9 +234,9 @@ contract('Terms Contract', accounts => {
         const results = await Promise.all(queries);
         results.map((payment, i) => {
           if (verbose)
-          console.log(
-            `Results  |  Timestamp : ${payment.due}  |  Principal : ${payment.principal}  |  Interest: ${payment.interest}  |  Total: ${payment.total}`
-          );
+            console.log(
+              `Results  |  Timestamp : ${payment.due}  |  Principal : ${payment.principal}  |  Interest: ${payment.interest}  |  Total: ${payment.total}`
+            );
           const actual = payment.due.toNumber();
           const cur = moment(new Date().getTime());
           const simulated = cur.add(i + 1, 'months').unix();
@@ -254,6 +266,5 @@ contract('Terms Contract', accounts => {
         }
       });
     });
-
   });
 });

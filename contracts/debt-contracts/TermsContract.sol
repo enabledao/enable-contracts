@@ -118,8 +118,8 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         returns (uint256 due, uint256 principal, uint256 interest, uint256 total)
     {
         require(
-            tranche <= loanParams.loanPeriod,
-            "The loan period is shorter than requested tranche"
+            tranche > 0 && tranche <= loanParams.loanPeriod,
+            "The requested tranche is outside loan period"
         );
         interest = loanParams.interestPayment;
         if (tranche == loanParams.loanPeriod) {
@@ -147,7 +147,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             startTimestamp
         );
         loanParams.loanStartTimestamp = startTimestamp;
-        loanParams.loanStatus = TermsContractLib.LoanStatus.REPAYMENT_CYCLE;
+        _setLoanStatus(TermsContractLib.LoanStatus.REPAYMENT_CYCLE);
     }
 
     /** PMT function to calculate periodic interest rate
@@ -177,10 +177,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         }
         return total;
     }
-
-    // function getValueRepaidToDate() external view returns (uint256) {
-    //     return 1;
-    // }
 
     // @notice set the present state of the Loan;
     // increase present state of the loan
