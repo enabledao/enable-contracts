@@ -186,7 +186,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
      * @dev Overloaded function. `now` will be the block's timestamp as reported by the miner
      */
     function getExpectedRepaymentValue() public view returns (uint256 total) {
-        return getExpectedRepaymentValue(now);
+        total = getExpectedRepaymentValue(now);
     }
 
     /**
@@ -243,7 +243,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     /**
      * @dev internal method to set the loanStatus of the loan
      */
-    function _setLoanStatus(TermsContractLib.LoanStatus _loanStatus) internal {
+    function _setLoanStatus(TermsContractLib.LoanStatus _loanStatus) private {
         if (loanParams.loanStatus != _loanStatus) {
             loanParams.loanStatus = _loanStatus;
             emit LoanStatusUpdated(_loanStatus);

@@ -10,7 +10,7 @@ const TermsContract = artifacts.require('TermsContract');
 
 const verbose = false;
 
-contract.only('Terms Contract', accounts => {
+contract('Terms Contract', accounts => {
   let instance;
   let instanceParams;
   const threshold = 15; // Testing offset for timestamps in seconds
@@ -318,7 +318,7 @@ contract.only('Terms Contract', accounts => {
 
             const cur = moment.unix(now);
             const future = cur.add(i + 1, 'months').unix();
-            const amount = await instance.getExpectedRepaymentValue(future + threshold);  // eslint-disable-line no-await-in-loop
+            const amount = await instance.getExpectedRepaymentValue(future + threshold); // eslint-disable-line no-await-in-loop
             expect(amount).to.be.bignumber.that.equals(estimated);
           }
         });

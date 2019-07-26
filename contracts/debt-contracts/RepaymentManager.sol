@@ -119,10 +119,6 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @param amount amount of tokens to send.
      */
     function pay(uint256 amount) public onlyActiveLoan trackRepaymentStatus {
-        require(
-            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_COMPLETE,
-            "Action only allowed before Repayment complete"
-        );
         require(amount > 0, "No amount set to pay");
 
         uint256 balance = _getPrincipalToken().balanceOf(address(this));
@@ -187,8 +183,8 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
       */
     function getRepaymentStatus() public view returns (RepaymentStatus) {
         uint256 expectedRepaymentValue = termsContract.getExpectedRepaymentValue();
-        uint256 totalPaid = totalPaid();
-        if (totalPaid < expectedRepaymentValue) {
+        uint256 paid = totalPaid();
+        if (paid < expectedRepaymentValue) {
             return RepaymentStatus.DEFAULT;
         } else {
             return RepaymentStatus.ON_TIME;
