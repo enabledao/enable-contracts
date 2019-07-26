@@ -241,12 +241,16 @@ contract('RepaymentManager', accounts => {
   });
   describe('pay', async () => {
     let payments;
+    let ALLOWED_MAX = new BN(Number(loanParams.principalRequested)/10**18);
+    ALLOWED_MAX = ALLOWED_MAX.div(new BN(3))
+
     beforeEach(async () => {
       payments = [
-        {address: borrower, value: generateRandomPaddedBN(MAX_CROWDFUND)},
-        {address: lender1, value: generateRandomPaddedBN(MAX_CROWDFUND)}, // Test for strange edge case
-        {address: nonLender, value: generateRandomPaddedBN(MAX_CROWDFUND)}
+        {address: borrower, value: generateRandomPaddedBN(ALLOWED_MAX)},
+        {address: lender1, value: generateRandomPaddedBN(ALLOWED_MAX)}, // Test for strange edge case
+        {address: nonLender, value: generateRandomPaddedBN(ALLOWED_MAX)}
       ];
+
       await Promise.all(
         payments.map(({address, value}) => {
           paymentToken.mint(address, value, {from: minter});

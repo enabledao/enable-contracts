@@ -10,12 +10,14 @@ const App = artifacts.require('App');
  * Generates random BN that has 18 decimals
  */
 const generateRandomPaddedBN = max => {
+  max = max.toNumber ? max.toNumber() : max;
   const random = new BN(Math.floor(Math.random() * Math.floor(max)));
   const shifted = random.mul(DECIMAL_SHIFT);
   return shifted;
 };
 
 const generateRandomBN = max => {
+  max = max.toNumber ? max.toNumber() : max;
   return new BN(Math.floor(Math.random() * Math.floor(max)));
 };
 
