@@ -148,7 +148,9 @@ contract('Enable Suite', accounts => {
     await expectEvent.inTransaction(tx.tx, TermsContract, 'LoanStatusUpdated', {
       status: new BN(loanStatuses.FUNDING_STARTED) // FUNDING_STARTED
     });
-    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(loanStatuses.FUNDING_STARTED)); // FUNDING_STARTED
+    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(
+      new BN(loanStatuses.FUNDING_STARTED)
+    ); // FUNDING_STARTED
   });
 
   it('should successfully fund crowdloan', async () => {
@@ -168,14 +170,15 @@ contract('Enable Suite', accounts => {
     expect(await paymentToken.balanceOf.call(crowdloan.address)).to.be.bignumber.equal(
       new BN(loanParams.principalRequested)
     );
-    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(loanStatuses.FUNDING_COMPLETE)); // FUNDING_COMPLETE
+    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(
+      new BN(loanStatuses.FUNDING_COMPLETE)
+    ); // FUNDING_COMPLETE
   });
 
   it('should successfully withdraw', async () => {
     const test = new BN(1);
     const balance = await paymentToken.balanceOf(borrower);
-
-    const tx = await crowdloan.withdraw(test, {from: borrower});
+    const tx = await crowdloan.methods['withdraw(uint256)'](test, {from: borrower});
 
     expectEvent.inLogs(tx.logs, 'ReleaseFunds', {
       borrower,
@@ -183,17 +186,19 @@ contract('Enable Suite', accounts => {
     });
 
     expect(await paymentToken.balanceOf(borrower)).to.be.bignumber.equal(test.add(balance));
-    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(loanStatuses.REPAYMENT_CYCLE)); // REPAYMENT_CYCLE
+    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(
+      new BN(loanStatuses.REPAYMENT_CYCLE)
+    ); // REPAYMENT_CYCLE
 
     const leftover = await paymentToken.balanceOf(crowdloan.address);
-    await crowdloan.withdraw(leftover, {from: borrower});
+    await crowdloan.methods['withdraw(uint256)'](leftover, {from: borrower});
 
     expect(await paymentToken.balanceOf(borrower)).to.be.bignumber.gte(
       new BN(loanParams.principalRequested).add(balance)
     );
   });
 
-  it.skip('should successfully pay RepaymentManager from borrower', async () => {
+  it('should successfully pay RepaymentManager from borrower', async () => {
     const monthPayment = await expectedTranchRepayment(0);
 
     await paymentToken.mint(borrower, monthPayment);
@@ -247,7 +252,7 @@ contract('Enable Suite', accounts => {
       })
     );
   });
-  it.skip('should successfully complete loan repayment', async () => {
+  it('should successfully complete loan repayment', async () => {
     const MONTH = 86400 * 30; // seconds in a month: 30 days
     const BULKPERIOD = 2;
 
@@ -302,7 +307,9 @@ contract('Enable Suite', accounts => {
     );
 
     await serializePromise(monthCycles);
-    expect(await termsContract.getLoanStatus.call()).to.be.bignumber.equal(new BN(loanStatuses.REPAYMENT_COMPLETE)); // REPAYMENT_COMPLETE
+    expect(await termsContract.getLoanStatus.call()).to.be.bignumber.equal(
+      new BN(loanStatuses.REPAYMENT_COMPLETE)
+    ); // REPAYMENT_COMPLETE
 
     const totalPaid = await repaymentManager.totalPaid.call();
     expect(totalPaid).to.be.bignumber.equals(await bulkTranchRepayment(loanParams.loanPeriod));

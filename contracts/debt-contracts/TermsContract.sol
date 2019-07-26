@@ -249,5 +249,4 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             emit LoanStatusUpdated(_loanStatus);
         }
     }
-
 }
