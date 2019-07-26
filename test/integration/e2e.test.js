@@ -148,7 +148,7 @@ contract('Enable Suite', accounts => {
     await expectEvent.inTransaction(tx.tx, TermsContract, 'LoanStatusUpdated', {
       status: new BN(loanStatuses.FUNDING_STARTED) // FUNDING_STARTED
     });
-    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(1)); // FUNDING_STARTED
+    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(loanStatuses.FUNDING_STARTED)); // FUNDING_STARTED
   });
 
   it('should successfully fund crowdloan', async () => {
@@ -168,7 +168,7 @@ contract('Enable Suite', accounts => {
     expect(await paymentToken.balanceOf.call(crowdloan.address)).to.be.bignumber.equal(
       new BN(loanParams.principalRequested)
     );
-    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(3)); // FUNDING_STARTED
+    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(loanStatuses.FUNDING_COMPLETE)); // FUNDING_COMPLETE
   });
 
   it('should successfully withdraw', async () => {
@@ -183,7 +183,7 @@ contract('Enable Suite', accounts => {
     });
 
     expect(await paymentToken.balanceOf(borrower)).to.be.bignumber.equal(test.add(balance));
-    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(4)); // REPAYMENT_CYCLE
+    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(loanStatuses.REPAYMENT_CYCLE)); // REPAYMENT_CYCLE
 
     const leftover = await paymentToken.balanceOf(crowdloan.address);
     await crowdloan.withdraw(leftover, {from: borrower});
@@ -302,7 +302,7 @@ contract('Enable Suite', accounts => {
     );
 
     await serializePromise(monthCycles);
-    expect(await termsContract.getLoanStatus.call()).to.be.bignumber.equal(new BN(5)); // REPAYMENT_COMPLETE
+    expect(await termsContract.getLoanStatus.call()).to.be.bignumber.equal(new BN(loanStatuses.REPAYMENT_COMPLETE)); // REPAYMENT_COMPLETE
 
     const totalPaid = await repaymentManager.totalPaid.call();
     expect(totalPaid).to.be.bignumber.equals(await bulkTranchRepayment(loanParams.loanPeriod));
