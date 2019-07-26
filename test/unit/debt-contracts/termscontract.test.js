@@ -1,4 +1,4 @@
-import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
+import {BN, constants, time, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
 
 const {expect} = require('chai');
 const moment = require('moment');
@@ -13,7 +13,7 @@ const verbose = false;
 contract('Terms Contract', accounts => {
   let instance;
   let instanceParams;
-  const threshold = 100; // Testing offset for timestamps in seconds
+  const threshold = 15; // Testing offset for timestamps in seconds
   const admin = accounts[1]; // TODO(Dan): Clarify with tspoff on what `admin` is
   const borrower = accounts[5];
   const controller = accounts[6];
@@ -26,6 +26,10 @@ contract('Terms Contract', accounts => {
     loanPeriod: new BN(12),
     interestRate: new BN(50)
   };
+
+  const currentBlockTime = async (unixTime) => {
+    return (await time.latest()) * (unixTime ? 1 : 1000);
+  }
 
   const reassign = (original, param, value) => {
     return Object.assign({}, original, {[param]: value});
@@ -241,7 +245,7 @@ contract('Terms Contract', accounts => {
         });
 
         it('should write the loanStartTimestamp', async () => {
-          const now = Math.floor(new Date().getTime() / 1000);
+          const now = Math.floor(await currentBlockTime(true));
           expect(loanStartTimestamp.toNumber()).to.be.within(
             now - threshold,
             now + threshold,
@@ -257,7 +261,7 @@ contract('Terms Contract', accounts => {
         });
 
         it('should create a correct loanEndTimestamp', async () => {
-          const cur = moment(new Date().getTime());
+          const cur = moment(await currentBlockTime());
           const end = cur.add(loanPeriod.toNumber(), 'months').unix();
           expect(loanEndTimestamp.toNumber()).to.be.within(
             end - threshold,
@@ -307,13 +311,14 @@ contract('Terms Contract', accounts => {
         it('should get the correct expectedRepaymentTotal for a given timestamp', async () => {
           const tranche = interestPayment(principalDisbursed, interestRate);
 
-          for (let i = 0; i < loanPeriod.toNumber(); i += 1) {
+          for (let i = 0; i < loanPeriod.toNumber(); i++) {
             const estimated =
               i < loanPeriod.toNumber() - 1
                 ? new BN(i + 1).mul(tranche)
                 : new BN(i + 1).mul(tranche).add(principalDisbursed);
 
             const cur = moment(new Date().getTime());
+            const cur = moment(await currentBlockTime());
             const future = cur.add(i + 1, 'months').unix();
             const amount = await instance.getExpectedRepaymentValue(future + threshold);
             expect(amount).to.be.bignumber.that.equals(estimated);
