@@ -17,13 +17,9 @@ import {BN, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
 
 const {expect} = require('chai');
 
+const {loanStatuses, paymentTokenParams, MAX_CROWDFUND} = require('../../testConstants');
 const {
-  loanParams,
-  loanStatuses,
-  paymentTokenParams,
-  MAX_CROWDFUND
-} = require('../../testConstants');
-const {
+  generateLoanScenario,
   generateRandomPaddedBN,
   generateRandomBN,
   getRandomPercentageOfBN
@@ -41,6 +37,13 @@ contract('RepaymentManager', accounts => {
   let termsContract;
   let repaymentManager;
 
+  let lenders;
+  let lender1;
+  let lender2;
+  let lender3;
+  let loanParams;
+  let repayments;
+
   // TODO(Dan): Refactor roles into testHelper
   const minter = accounts[1];
   const borrower = accounts[4];
@@ -48,23 +51,6 @@ contract('RepaymentManager', accounts => {
   const nonLender = accounts[9];
   const nonBorrower = accounts[9];
   const nonControllers = [accounts[9]];
-  const lenders = [
-    {
-      address: accounts[6],
-      shares: generateRandomPaddedBN(MAX_CROWDFUND)
-    },
-    {
-      address: accounts[7],
-      shares: generateRandomPaddedBN(MAX_CROWDFUND)
-    },
-    {
-      address: accounts[8],
-      shares: generateRandomPaddedBN(MAX_CROWDFUND)
-    }
-  ];
-  const lender1 = lenders[0].address;
-  const lender2 = lenders[1].address;
-  const lender3 = lenders[2].address;
 
   beforeEach(async () => {
     paymentToken = await PaymentToken.new();
@@ -76,6 +62,12 @@ contract('RepaymentManager', accounts => {
       [] // pausers
     );
 
+    // TODO(Dan): Make better generateLoanScenario
+    ({lenders, loanParams, repayments} = generateLoanScenario(accounts));
+    lender1 = lenders[0].address;
+    lender2 = lenders[1].address;
+    lender3 = lenders[2].address;
+
     termsContract = await TermsContract.new();
     repaymentManager = await RepaymentManager.new();
 
@@ -83,9 +75,7 @@ contract('RepaymentManager', accounts => {
       controller,
       repaymentManager.address
     ]);
-    await repaymentManager.initialize(termsContract.address, [
-      controller
-    ]);
+    await repaymentManager.initialize(termsContract.address, [controller]);
   });
 
   context('should deploy correctly', async () => {
@@ -240,24 +230,20 @@ contract('RepaymentManager', accounts => {
     xit('implicitly tested in increaseShares and decreaseShares tests');
   });
   describe('pay', async () => {
-    let payments;
-    let ALLOWED_MAX = new BN(Number(loanParams.principalRequested)/10**18);
-    ALLOWED_MAX = ALLOWED_MAX.div(new BN(3))
-
     beforeEach(async () => {
-      payments = [
-        {address: borrower, value: generateRandomPaddedBN(ALLOWED_MAX)},
-        {address: lender1, value: generateRandomPaddedBN(ALLOWED_MAX)}, // Test for strange edge case
-        {address: nonLender, value: generateRandomPaddedBN(ALLOWED_MAX)}
+      repayments = [
+        {address: borrower, value: repayments[0]},
+        {address: lender1, value: repayments[1]}, // Test for strange edge case
+        {address: nonLender, value: repayments[2]}
       ];
 
       await Promise.all(
-        payments.map(({address, value}) => {
+        repayments.map(({address, value}) => {
           paymentToken.mint(address, value, {from: minter});
         })
       );
       await Promise.all(
-        payments.map(({address, value}) => {
+        repayments.map(({address, value}) => {
           paymentToken.approve(repaymentManager.address, value, {from: address});
         })
       );
@@ -271,7 +257,7 @@ contract('RepaymentManager', accounts => {
         );
       });
       it('should only allow repayment after crowdfund has started', async () => {
-        const {address, value} = payments[0];
+        const {address, value} = repayments[0];
         await expectRevert(
           repaymentManager.pay(value, {from: address}),
           'Action only allowed while loan is Active'
@@ -284,22 +270,29 @@ contract('RepaymentManager', accounts => {
         await termsContract.setLoanStatus(loanStatuses.REPAYMENT_CYCLE, {from: controller});
       });
       it('should let any address pay into contract multiple times', async () => {
-        for (let i = 0; i < payments.length; i += 1) {
+        for (let i = 0; i < repayments.length; i += 1) {
           const original = await repaymentManager.totalPaid(); // eslint-disable-line no-await-in-loop
-          const {address, value} = payments[i];
+          const {address, value} = repayments[i];
+          const status = await termsContract.getLoanStatus(); // eslint-disable-line no-await-in-loop
+          const principal = await termsContract.getPrincipalDisbursed(); // eslint-disable-line no-await-in-loop
+          if (verbose)
+            console.log(
+              `Repayment: ${i}  |  original: ${original}  |  paid: ${value}  |  currentLoanStatus: ${status}  |  principalDisbursed: ${principal}`
+            );
+
           await repaymentManager.pay(value, {from: address}); // eslint-disable-line no-await-in-loop
           const after = await repaymentManager.totalPaid(); // eslint-disable-line no-await-in-loop
           expect(after.sub(value)).to.be.bignumber.equals(original);
         }
-        const final = await paymentToken.balanceOf.call(repaymentManager.address); // Removes dependency on totalPaid();
-        const expectedBalance = payments.reduce(
+        const final = await paymentToken.balanceOf(repaymentManager.address); // Removes dependency on totalPaid();
+        const expectedBalance = repayments.reduce(
           (total, payment) => total.add(payment.value),
           new BN(0)
         );
         expect(final).to.be.bignumber.equal(expectedBalance);
       });
       it('should emit a PaymentReceived event', async () => {
-        const {address, value} = payments[0];
+        const {address, value} = repayments[0];
         const tx = await repaymentManager.pay(value, {from: address});
         expectEvent.inLogs(tx.logs, 'PaymentReceived', {
           from: address,
@@ -311,7 +304,6 @@ contract('RepaymentManager', accounts => {
 
   /** TODO(Dan): This is more of an e2e test */
   describe('releaseAllowance', async () => {
-    let repayments;
     let totalShares;
     let totalRepayments;
     beforeEach(async () => {
@@ -325,14 +317,6 @@ contract('RepaymentManager', accounts => {
 
       /** Create simulated repaymentby borrower to repaymentManager */
       await termsContract.setLoanStatus(loanStatuses.REPAYMENT_CYCLE, {from: controller});
-      repayments = [
-        getRandomPercentageOfBN(totalShares),
-        getRandomPercentageOfBN(totalShares),
-        getRandomPercentageOfBN(totalShares),
-        getRandomPercentageOfBN(totalShares),
-        getRandomPercentageOfBN(totalShares),
-        getRandomPercentageOfBN(totalShares)
-      ];
       totalRepayments = repayments.reduce((total, repayment) => total.add(repayment), new BN(0));
       if (verbose) {
         console.log(`Shares: ${await repaymentManager.shares(lender1)}`);
@@ -464,7 +448,7 @@ contract('RepaymentManager', accounts => {
         await termsContract.setLoanStatus(loanStatuses.FUNDING_STARTED, {from: controller});
         await expectRevert(
           repaymentManager.release(nonLender, {from: nonLender}),
-          'Action only allowed while loan is Active'
+          'Requires loanStatus to be during RepaymentCycle' // TODO(Dan): Should be changed to onlyActiveLoan
         );
       });
       it('should not allow lender with 0 shares to withdraw', async () => {
@@ -566,5 +550,8 @@ contract('RepaymentManager', accounts => {
       const after = await repaymentManager.totalPaid();
       expect(before).to.be.a.bignumber.equals(after);
     });
+  });
+  describe('getRepaymentStatus', async () => {
+    // Todo (need to do time shifting)
   });
 });

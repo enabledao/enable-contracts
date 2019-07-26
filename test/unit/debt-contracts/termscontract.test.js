@@ -317,7 +317,6 @@ contract('Terms Contract', accounts => {
                 ? new BN(i + 1).mul(tranche)
                 : new BN(i + 1).mul(tranche).add(principalDisbursed);
 
-            const cur = moment(new Date().getTime());
             const cur = moment(await currentBlockTime());
             const future = cur.add(i + 1, 'months').unix();
             const amount = await instance.getExpectedRepaymentValue(future + threshold);

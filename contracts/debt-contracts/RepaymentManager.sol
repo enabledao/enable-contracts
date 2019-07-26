@@ -27,10 +27,14 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
 
     ITermsContract public termsContract;
 
+    enum RepaymentStatus {
+        ON_TIME,
+        DEFAULT
+    }
+
     modifier onlyActiveLoan() {
         require(
-            termsContract.getLoanStatus() == TermsContractLib.LoanStatus.FUNDING_COMPLETE ||
-                termsContract.getLoanStatus() == TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
+            termsContract.getLoanStatus() >= TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
             "Action only allowed while loan is Active"
         );
         _;
@@ -134,7 +138,6 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @param account Whose payments will be released.
      */
     function release(address payable account) public trackRepaymentStatus {
-
         require(
             termsContract.getLoanStatus() > TermsContractLib.LoanStatus.FUNDING_COMPLETE,
             "Action only allowed while loan is Active"
@@ -182,18 +185,32 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
         _decreaseShares(account, shares_);
     }
 
+    /**
+      * Simple repayment status of loan
+      * NOTE: In future, we will be adding more statuses, e.g. late 30, 60, 90, written-off etc
+      */
+    function getRepaymentStatus() public view returns (RepaymentStatus) {
+        uint256 expectedRepaymentValue = termsContract.getExpectedRepaymentValue();
+        uint256 totalPaid = totalPaid();
+        if (totalPaid < expectedRepaymentValue) {
+            return RepaymentStatus.DEFAULT;
+        } else {
+            return RepaymentStatus.ON_TIME;
+        }
+    }
+
     function _getPrincipalToken() internal view returns (IERC20 token) {
         return IERC20(termsContract.getPrincipalToken());
     }
 
     // @notice reconcile the loans funding status
     function _updateRepaymentStatus() internal {
-        uint _totalDue;
+        uint256 _totalDue;
         uint256 _totalPaid = totalPaid();
 
-        (,,,,uint loanPeriod,,,) = termsContract.getLoanParams();
-        for (uint lp = 0; lp < loanPeriod; lp++) {
-            (,,,uint due) = termsContract.getScheduledPayment(lp+1);
+        (, , , , uint256 loanPeriod, , , ) = termsContract.getLoanParams();
+        for (uint256 lp = 0; lp < loanPeriod; lp++) {
+            (, , , uint256 due) = termsContract.getScheduledPayment(lp + 1);
             _totalDue = _totalDue + due;
         }
 
