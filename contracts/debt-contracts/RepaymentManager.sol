@@ -27,10 +27,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
 
     ITermsContract public termsContract;
 
-    enum RepaymentStatus {
-        ON_TIME,
-        DEFAULT
-    }
+    enum RepaymentStatus {ON_TIME, DEFAULT}
 
     modifier onlyActiveLoan() {
         require(
@@ -141,7 +138,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @dev Release one of the payee's proportional payment.
      * @param account Whose payments will be released.
      */
-    function release(address payable account) onlyActiveLoan public trackRepaymentStatus {
+    function release(address payable account) public onlyActiveLoan trackRepaymentStatus {
         require(_shares[account] > 0, "Account has zero shares");
 
         uint256 payment = releaseAllowance(account);

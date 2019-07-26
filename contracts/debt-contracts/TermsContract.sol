@@ -186,7 +186,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
      * @dev Overloaded function. `now` will be the block's timestamp as reported by the miner
      */
     function getExpectedRepaymentValue() public view returns (uint256 total) {
-        return  getExpectedRepaymentValue(now);
+        return getExpectedRepaymentValue(now);
     }
 
     /**
@@ -195,11 +195,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
      * @param timestamp uint256
      * @return uint256 total number of currencyTokens expected to be repaid
      */
-    function getExpectedRepaymentValue(uint256 timestamp)
-        public
-        view
-        returns (uint256 total)
-    {
+    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256 total) {
         total = 0;
         for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
             (uint256 due, , , uint256 amount) = getScheduledPayment(i + 1);
