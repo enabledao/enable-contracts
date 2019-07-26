@@ -13,9 +13,10 @@
 // Invalid user can't withdraw during repayment
 // Invalid user can't withdraw after loan end
 
-import {BN, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
+import {BN, expectEvent, expectRevert, time} from 'openzeppelin-test-helpers';
 
 const {expect} = require('chai');
+const moment = require('moment');
 
 const {loanStatuses, paymentTokenParams, MAX_CROWDFUND} = require('../../testConstants');
 const {
@@ -550,7 +551,57 @@ contract('RepaymentManager', accounts => {
       expect(before).to.be.a.bignumber.equals(after);
     });
   });
-  describe('getRepaymentStatus', async () => {
-    // Todo (need to do time shifting)
+  describe.only('getRepaymentStatus', async () => {
+    let loanStartTimestamp;
+    let oneMonth;
+    let afterLoanPeriod;
+
+    beforeEach(async () => {
+      await termsContract.startRepaymentCycle(loanParams.principalRequested, {from: controller});
+      const params = await termsContract.getLoanParams();
+      ({loanStartTimestamp} = params);
+
+      const start = moment.unix(loanStartTimestamp);
+      oneMonth = start
+        .clone()
+        .add(1, 'months')
+        .unix();
+      afterLoanPeriod = start
+        .clone()
+        .add(loanParams.loanPeriod, 'months')
+        .unix();
+      console.log(oneMonth);
+      console.log(afterLoanPeriod);
+    });
+    context('after 1 month', async () => {
+      beforeEach(async () => {
+        const expected = await termsContract.getExpectedRepaymentValue(oneMonth);
+        const result = await termsContract.getScheduledPayment(1);
+        console.log(
+          `Results  |  Timestamp : ${result.dueTimestamp}  |  Principal : ${result.principalPayment}  |  Interest: ${result.interestPayment}  |  totalPayment: ${result.totalPayment}`
+        );
+        console.log('after 1 month');
+        console.log(expected);
+        await paymentToken.mint(borrower, expected, {from: minter});
+        await paymentToken.approve(repaymentManager.address, expected, {from: borrower});
+      });
+      // Don't make enough payment
+      it('should return DEFAULT if insufficient payment', async () => {
+        return true;
+      });
+      it('should return ON_TIME if sufficient payment');
+    });
+    context('after loan period', async () => {
+      beforeEach(async () => {
+        const expected = await termsContract.getExpectedRepaymentValue(afterLoanPeriod);
+        console.log(expected);
+        await paymentToken.mint(borrower, expected, {from: minter});
+        await paymentToken.approve(repaymentManager.address, expected, {from: borrower});
+      });
+      it('should return ON_TIME if loan is fully paid off', async () => {
+        return true;
+      });
+      it('should return DEFAULT if loan is not fully paid off', async () => {});
+    });
   });
 });

@@ -27,10 +27,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
 
     ITermsContract public termsContract;
 
-    enum RepaymentStatus {
-        ON_TIME,
-        DEFAULT
-    }
+    enum RepaymentStatus {ON_TIME, DEFAULT}
 
     modifier onlyActiveLoan() {
         require(

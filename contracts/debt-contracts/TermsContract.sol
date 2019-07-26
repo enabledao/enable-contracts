@@ -214,7 +214,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         total = 0;
         for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
             (uint256 due, , , uint256 amount) = getScheduledPayment(i + 1);
-            if (due < timestamp) {
+            if (due <= timestamp) {
                 total = total.add(amount);
             }
         }
