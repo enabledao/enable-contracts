@@ -319,8 +319,8 @@ contract('Terms Contract', accounts => {
 
             const cur = moment(await currentBlockTime());
             const future = cur.add(i + 1, 'months').unix();
-            const amount = await instance.getExpectedRepaymentValue(future + threshold);
-            expect(amount).to.be.bignumber.that.equals(estimated);
+            const amount = await instance.contract.methods['getExpectedRepaymentValue'](future + threshold).call();
+            expect(new BN(amount)).to.be.bignumber.that.equals(estimated);
           }
         });
       });

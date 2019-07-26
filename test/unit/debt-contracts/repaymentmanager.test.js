@@ -446,8 +446,9 @@ contract('RepaymentManager', accounts => {
     context('validations', async () => {
       it('should not allow release if notActiveLoan', async () => {
         await termsContract.setLoanStatus(loanStatuses.FUNDING_STARTED, {from: controller});
+        expect(await termsContract.getLoanStatus.call()).to.be.bignumber.equal(loanStatuses.FUNDING_STARTED);
         await expectRevert(
-          repaymentManager.release(nonLender, {from: nonLender}),
+          repaymentManager.release(lenders[0].address, {from: lenders[0].address}),
           'Requires loanStatus to be during RepaymentCycle' // TODO(Dan): Should be changed to onlyActiveLoan
         );
       });

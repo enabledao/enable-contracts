@@ -26,14 +26,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         _;
     }
 
-    modifier onlyDuringRepaymentCycle() {
-        require(
-            loanParams.loanStatus >= TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
-            "Requires loanStatus to be during RepaymentCycle"
-        );
-        _;
-    }
-
     function initialize(
         address borrower_,
         address _principalTokenAddr,
@@ -139,7 +131,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     function getRequestedScheduledPayment(uint256 period)
         public
         view
-        onlyBeforeRepaymentCycle
         returns (uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
     {
         (principalPayment, interestPayment, totalPayment) = _calcScheduledPayment(
@@ -155,7 +146,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     function getScheduledPayment(uint256 period)
         public
         view
-        onlyDuringRepaymentCycle
         returns (
             uint256 dueTimestamp,
             uint256 principalPayment,
@@ -196,7 +186,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
      * @dev Overloaded function. `now` will be the block's timestamp as reported by the miner
      */
     function getExpectedRepaymentValue() public view returns (uint256 total) {
-        total = getExpectedRepaymentValue(now);
+        return  getExpectedRepaymentValue(now);
     }
 
     /**
@@ -208,7 +198,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     function getExpectedRepaymentValue(uint256 timestamp)
         public
         view
-        onlyDuringRepaymentCycle
         returns (uint256 total)
     {
         total = 0;

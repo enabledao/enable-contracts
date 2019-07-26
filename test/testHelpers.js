@@ -38,20 +38,21 @@ const generateLoanScenario = accounts => {
   // Generate sample lenders allocation
   // TODO(Dan): Use Dirichlet distribution? https://stackoverflow.com/questions/18659858/generating-a-list-of-random-numbers-summing-to-1
 
+  const split_MAX_CROWDFUND = MAX_CROWDFUND.div(new BN(3));
   const loanPeriod = 6; // TODO(Dan): Randomize
   const lenders = [
     // TODO(Dan): Randomize number of lenders, find way to generate randomShares
     {
       address: accounts[6],
-      shares: generateRandomPaddedBN(MAX_CROWDFUND.div(new BN(3)))
+      shares: generateRandomPaddedBN(split_MAX_CROWDFUND)
     },
     {
       address: accounts[7],
-      shares: generateRandomPaddedBN(MAX_CROWDFUND).div(new BN(3))
+      shares: generateRandomPaddedBN(split_MAX_CROWDFUND)
     },
     {
       address: accounts[8],
-      shares: generateRandomPaddedBN(MAX_CROWDFUND).div(new BN(3))
+      shares: generateRandomPaddedBN(split_MAX_CROWDFUND)
     }
   ];
   const loanParams = {
