@@ -26,24 +26,6 @@ const loanParams = {
   interestRate: 50
 };
 
-const generateTestScenario = accounts => {
-  // Generate sample lenders allocation
-  const lenders = [
-    {
-      address: accounts[6],
-      shares: generateRandomPaddedBN(MAX_CROWDFUND)
-    },
-    {
-      address: accounts[7],
-      shares: generateRandomPaddedBN(MAX_CROWDFUND)
-    },
-    {
-      address: accounts[8],
-      shares: generateRandomPaddedBN(MAX_CROWDFUND)
-    }
-  ];
-};
-
 const paymentTokenParams = {
   name: 'PaymentToken',
   symbol: 'PAY',
@@ -57,6 +39,5 @@ export {
   loanStatuses,
   crowdfundParams,
   loanParams,
-  generateTestScenario
   paymentTokenParams
 };

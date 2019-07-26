@@ -34,9 +34,11 @@ const getRandomPercentageOfBN = max => {
  */
 const generateLoanScenario = accounts => {
   // Generate sample lenders allocation
+  // TODO(Dan): Use Dirichlet distribution? https://stackoverflow.com/questions/18659858/generating-a-list-of-random-numbers-summing-to-1
+
   const loanPeriod = 6; // TODO(Dan): Randomize
   const lenders = [
-    // TODO(Dan): Randomize length
+    // TODO(Dan): Randomize number of lenders, find way to generate randomShares
     {
       address: accounts[6],
       shares: generateRandomPaddedBN(MAX_CROWDFUND.div(new BN(3)))
@@ -56,8 +58,8 @@ const generateLoanScenario = accounts => {
     interestRate: 50 // TODO(Dan): Randomize
   };
   const repayments = [];
-  for (let i = 0; i < loanPeriod; i++) {
-    repayments.push(principalRequested.div(new BN(loanPeriod)));
+  for (let i = 0; i < loanPeriod; i += 1) {
+    repayments.push(loanParams.principalRequested.div(new BN(loanPeriod))); // TODO(Dan): Needs better one that factors interest payments etc
   }
   return {
     lenders,

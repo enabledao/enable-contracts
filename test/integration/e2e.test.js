@@ -40,7 +40,7 @@ const Crowdloan = artifacts.require('Crowdloan');
 const RepaymentManager = artifacts.require('RepaymentManager');
 const PaymentToken = artifacts.require('StandaloneERC20');
 
-contract('Enable Suite', accounts => {
+contract.skip('Enable Suite', accounts => {
   let crowdloanFactory;
   let paymentToken;
   let crowdloan;
