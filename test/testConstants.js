@@ -15,6 +15,11 @@ const loanStatuses = {
   REPAYMENT_COMPLETE: new BN(5)
 };
 
+const repaymentStatuses = {
+  ON_TIME: new BN(0),
+  DEFAULT: new BN(1)
+};
+
 const crowdfundParams = {
   crowdfundLength: 600,
   crowdfundStart: 0
@@ -37,6 +42,7 @@ export {
   DECIMAL_SHIFT,
   MAX_CROWDFUND,
   loanStatuses,
+  repaymentStatuses,
   crowdfundParams,
   loanParams,
   paymentTokenParams

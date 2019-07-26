@@ -550,4 +550,7 @@ contract('RepaymentManager', accounts => {
       expect(before).to.be.a.bignumber.equals(after);
     });
   });
+  describe('getRepaymentStatus', async () => {
+    // Todo (need to do time shifting)
+  });
 });

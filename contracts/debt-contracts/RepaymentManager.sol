@@ -27,6 +27,11 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
 
     ITermsContract public termsContract;
 
+    enum RepaymentStatus {
+        ON_TIME,
+        DEFAULT
+    }
+
     modifier onlyActiveLoan() {
         require(
             termsContract.getLoanStatus() >= TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
@@ -178,6 +183,20 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
         beforeLoanFunded
     {
         _decreaseShares(account, shares_);
+    }
+
+    /**
+      * Simple repayment status of loan
+      * NOTE: In future, we will be adding more statuses, e.g. late 30, 60, 90, written-off etc
+      */
+    function getRepaymentStatus() public view returns (RepaymentStatus) {
+        uint256 expectedRepaymentValue = termsContract.getExpectedRepaymentValue();
+        uint256 totalPaid = totalPaid();
+        if (totalPaid < expectedRepaymentValue) {
+            return RepaymentStatus.DEFAULT;
+        } else {
+            return RepaymentStatus.ON_TIME;
+        }
     }
 
     function _getPrincipalToken() internal view returns (IERC20 token) {
