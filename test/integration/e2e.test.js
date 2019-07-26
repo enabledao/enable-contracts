@@ -171,7 +171,7 @@ contract('Enable Suite', accounts => {
     expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(loanStatuses.FUNDING_COMPLETE)); // FUNDING_COMPLETE
   });
 
-  it('should successfully withdraw', async () => {
+  it.skip('should successfully withdraw', async () => {
     const test = new BN(1);
     const balance = await paymentToken.balanceOf(borrower);
 
@@ -193,7 +193,7 @@ contract('Enable Suite', accounts => {
     );
   });
 
-  it('should successfully pay RepaymentManager from borrower', async () => {
+  it.skip('should successfully pay RepaymentManager from borrower', async () => {
     const monthPayment = await expectedTranchRepayment(0);
 
     await paymentToken.mint(borrower, monthPayment);
@@ -247,7 +247,7 @@ contract('Enable Suite', accounts => {
       })
     );
   });
-  it('should successfully complete loan repayment', async () => {
+  it.skip('should successfully complete loan repayment', async () => {
     const MONTH = 86400 * 30; // seconds in a month: 30 days
     const BULKPERIOD = 2;
 
