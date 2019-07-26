@@ -171,7 +171,7 @@ contract('Enable Suite', accounts => {
     expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(loanStatuses.FUNDING_COMPLETE)); // FUNDING_COMPLETE
   });
 
-  it.skip('should successfully withdraw', async () => {
+  it('should successfully withdraw', async () => {
     const test = new BN(1);
     const balance = await paymentToken.balanceOf(borrower);
 
