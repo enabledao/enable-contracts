@@ -318,7 +318,7 @@ contract('Terms Contract', accounts => {
 
             const cur = moment.unix(now);
             const future = cur.add(i + 1, 'months').unix();
-            const amount = await instance.getExpectedRepaymentValue(future + threshold); // eslint-disable-line no-await-in-loop
+            const amount = await instance.methods['getExpectedRepaymentValue(uint256)'].call(future + threshold); // eslint-disable-line no-await-in-loop
             expect(amount).to.be.bignumber.that.equals(estimated);
           }
         });

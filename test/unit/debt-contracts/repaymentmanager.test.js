@@ -578,10 +578,10 @@ contract('RepaymentManager', accounts => {
         await time.increaseTo(oneMonth);
 
         // Get expected repayment values
-        expected = await termsContract.getExpectedRepaymentValue(oneMonth);
+        expected = await termsContract.methods['getExpectedRepaymentValue(uint256)'].call(oneMonth);
         if (verbose) {
           console.log(`Expected: ${expected}`);
-          const result = await termsContract.getScheduledPayment(1);
+          const result = await termsContract.getScheduledPayment.call(1);
           console.log(
             `Results  |  Timestamp : ${result.dueTimestamp}  |  Principal : ${result.principalPayment}  |  Interest: ${result.interestPayment}  |  totalPayment: ${result.totalPayment}`
           );
@@ -595,13 +595,13 @@ contract('RepaymentManager', accounts => {
       it('should return DEFAULT if insufficient payment', async () => {
         const insufficient = expected.sub(new BN(100));
         await repaymentManager.pay(insufficient, {from: borrower});
-        const status = await repaymentManager.getRepaymentStatus();
+        const status = await repaymentManager.getRepaymentStatus.call();
         if (verbose) console.log(`Repayment Status: ${status}`);
         expect(status).to.be.bignumber.equals(repaymentStatuses.DEFAULT);
       });
       it('should return ON_TIME if sufficient payment', async () => {
         await repaymentManager.pay(expected, {from: borrower});
-        const status = await repaymentManager.getRepaymentStatus();
+        const status = await repaymentManager.getRepaymentStatus.call();
         if (verbose) console.log(`Repayment Status: ${status}`);
         expect(status).to.be.bignumber.equals(repaymentStatuses.ON_TIME);
       });
@@ -615,7 +615,7 @@ contract('RepaymentManager', accounts => {
           .unix();
         await time.increaseTo(afterLoanPeriod);
 
-        expected = await termsContract.getExpectedRepaymentValue(afterLoanPeriod);
+        expected = await termsContract.methods['getExpectedRepaymentValue(uint256)'].call(afterLoanPeriod);
         if (verbose) console.log(`Expected: ${expected}`);
 
         await paymentToken.mint(borrower, expected, {from: minter});

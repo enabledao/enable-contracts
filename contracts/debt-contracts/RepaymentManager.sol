@@ -119,6 +119,11 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @param amount amount of tokens to send.
      */
     function pay(uint256 amount) public onlyActiveLoan trackRepaymentStatus {
+        // TODO Uncomment after late fees implemented
+        // require(
+        //     termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_COMPLETE,
+        //     "Action only allowed before Repayment complete"
+        // );
         require(amount > 0, "No amount set to pay");
 
         uint256 balance = _getPrincipalToken().balanceOf(address(this));
