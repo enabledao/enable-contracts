@@ -1,4 +1,4 @@
-import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
+import {BN, constants, time, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
 
 const {expect} = require('chai');
 const moment = require('moment');
@@ -13,7 +13,7 @@ const verbose = false;
 contract('Terms Contract', accounts => {
   let instance;
   let instanceParams;
-  const threshold = 100; // Testing offset for timestamps in seconds
+  const threshold = 15; // Testing offset for timestamps in seconds
   const admin = accounts[1]; // TODO(Dan): Clarify with tspoff on what `admin` is
   const borrower = accounts[5];
   const controller = accounts[6];
@@ -111,6 +111,11 @@ contract('Terms Contract', accounts => {
     context('should store correct requested loanParams', async () => {
       it('should deploy successfully', async () => {
         assert.exists(instance.address, 'instance was not successfully deployed');
+      });
+
+      it('should have valid PaymentToken address initialized', async () => {
+        const result = await instance.getPrincipalToken.call();
+        expect(result).to.be.equal(params.principalToken);
       });
 
       it('should record loan params in storage', async () => {
@@ -220,9 +225,13 @@ contract('Terms Contract', accounts => {
       let principalRequested;
       let interestRate;
       let principalDisbursed;
+      let now;
 
       context('functionality', async () => {
         beforeEach(async () => {
+          await time.advanceBlock();
+          now = (await time.latest()).toNumber();
+
           tx = await instance.startRepaymentCycle(partialFundraise, {from: controller});
           ({
             loanStatus,
@@ -236,7 +245,6 @@ contract('Terms Contract', accounts => {
         });
 
         it('should write the loanStartTimestamp', async () => {
-          const now = Math.floor(new Date().getTime() / 1000);
           expect(loanStartTimestamp.toNumber()).to.be.within(
             now - threshold,
             now + threshold,
@@ -252,7 +260,7 @@ contract('Terms Contract', accounts => {
         });
 
         it('should create a correct loanEndTimestamp', async () => {
-          const cur = moment(new Date().getTime());
+          const cur = moment.unix(now);
           const end = cur.add(loanPeriod.toNumber(), 'months').unix();
           expect(loanEndTimestamp.toNumber()).to.be.within(
             end - threshold,
@@ -302,15 +310,15 @@ contract('Terms Contract', accounts => {
         it('should get the correct expectedRepaymentTotal for a given timestamp', async () => {
           const tranche = interestPayment(principalDisbursed, interestRate);
 
-          for (let i = 0; i < loanPeriod.toNumber(); i += 1) {
+          for (let i = 0; i < loanPeriod.toNumber(); i++) {
             const estimated =
               i < loanPeriod.toNumber() - 1
                 ? new BN(i + 1).mul(tranche)
                 : new BN(i + 1).mul(tranche).add(principalDisbursed);
 
-            const cur = moment(new Date().getTime());
+            const cur = moment.unix(now);
             const future = cur.add(i + 1, 'months').unix();
-            const amount = await instance.getExpectedRepaymentValue(future + threshold);
+            const amount = await instance.methods['getExpectedRepaymentValue(uint256)'].call(future + threshold); // eslint-disable-line no-await-in-loop
             expect(amount).to.be.bignumber.that.equals(estimated);
           }
         });

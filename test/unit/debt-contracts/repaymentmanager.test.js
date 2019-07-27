@@ -13,17 +13,15 @@
 // Invalid user can't withdraw during repayment
 // Invalid user can't withdraw after loan end
 
-import {BN, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
+import {BN, expectEvent, expectRevert, time} from 'openzeppelin-test-helpers';
+import {repaymentStatuses} from '../../testConstants';
 
 const {expect} = require('chai');
+const moment = require('moment');
 
+const {loanStatuses, paymentTokenParams, MAX_CROWDFUND} = require('../../testConstants');
 const {
-  loanParams,
-  loanStatuses,
-  paymentTokenParams,
-  MAX_CROWDFUND
-} = require('../../testConstants');
-const {
+  generateLoanScenario,
   generateRandomPaddedBN,
   generateRandomBN,
   getRandomPercentageOfBN
@@ -41,6 +39,13 @@ contract('RepaymentManager', accounts => {
   let termsContract;
   let repaymentManager;
 
+  let lenders;
+  let lender1;
+  let lender2;
+  let lender3;
+  let loanParams;
+  let repayments;
+
   // TODO(Dan): Refactor roles into testHelper
   const minter = accounts[1];
   const borrower = accounts[4];
@@ -48,23 +53,6 @@ contract('RepaymentManager', accounts => {
   const nonLender = accounts[9];
   const nonBorrower = accounts[9];
   const nonControllers = [accounts[9]];
-  const lenders = [
-    {
-      address: accounts[6],
-      shares: generateRandomPaddedBN(MAX_CROWDFUND)
-    },
-    {
-      address: accounts[7],
-      shares: generateRandomPaddedBN(MAX_CROWDFUND)
-    },
-    {
-      address: accounts[8],
-      shares: generateRandomPaddedBN(MAX_CROWDFUND)
-    }
-  ];
-  const lender1 = lenders[0].address;
-  const lender2 = lenders[1].address;
-  const lender3 = lenders[2].address;
 
   beforeEach(async () => {
     paymentToken = await PaymentToken.new();
@@ -76,23 +64,25 @@ contract('RepaymentManager', accounts => {
       [] // pausers
     );
 
-    termsContract = await TermsContract.new();
-    await termsContract.initialize(borrower, paymentToken.address, ...Object.values(loanParams), [
-      controller
-    ]);
+    // TODO(Dan): Make better generateLoanScenario
+    ({lenders, loanParams, repayments} = generateLoanScenario(accounts));
+    lender1 = lenders[0].address;
+    lender2 = lenders[1].address;
+    lender3 = lenders[2].address;
 
+    termsContract = await TermsContract.new();
     repaymentManager = await RepaymentManager.new();
-    await repaymentManager.initialize(paymentToken.address, termsContract.address, [controller]);
+
+    await termsContract.initialize(borrower, paymentToken.address, ...Object.values(loanParams), [
+      controller,
+      repaymentManager.address
+    ]);
+    await repaymentManager.initialize(termsContract.address, [controller]);
   });
 
   context('should deploy correctly', async () => {
     it('RepaymentManager should deploy successfully', async () => {
       assert.exists(repaymentManager.address, 'repaymentManager was not successfully deployed');
-    });
-
-    it('RepaymentManager should have PaymentToken address initialized', async () => {
-      const result = await repaymentManager.paymentToken.call();
-      expect(result).to.be.equal(paymentToken.address);
     });
 
     it('RepaymentManager should have TermsContract address initialized', async () => {
@@ -151,7 +141,7 @@ contract('RepaymentManager', accounts => {
         });
       });
       it('should emit a ShareIncreased event but not PayeeAdded event for existing shareholders', async () => {
-        const newIncrement = generateRandomPaddedBN(10);
+        const newIncrement = generateRandomPaddedBN(10, 1);
         const newTx = await repaymentManager.increaseShares(lender.address, newIncrement, {
           from: controller
         });
@@ -242,20 +232,20 @@ contract('RepaymentManager', accounts => {
     xit('implicitly tested in increaseShares and decreaseShares tests');
   });
   describe('pay', async () => {
-    let payments;
     beforeEach(async () => {
-      payments = [
-        {address: borrower, value: generateRandomPaddedBN(MAX_CROWDFUND)},
-        {address: lender1, value: generateRandomPaddedBN(MAX_CROWDFUND)}, // Test for strange edge case
-        {address: nonLender, value: generateRandomPaddedBN(MAX_CROWDFUND)}
+      repayments = [
+        {address: borrower, value: repayments[0]},
+        {address: lender1, value: repayments[1]}, // Test for strange edge case
+        {address: nonLender, value: repayments[2]}
       ];
+
       await Promise.all(
-        payments.map(({address, value}) => {
+        repayments.map(({address, value}) => {
           paymentToken.mint(address, value, {from: minter});
         })
       );
       await Promise.all(
-        payments.map(({address, value}) => {
+        repayments.map(({address, value}) => {
           paymentToken.approve(repaymentManager.address, value, {from: address});
         })
       );
@@ -269,7 +259,7 @@ contract('RepaymentManager', accounts => {
         );
       });
       it('should only allow repayment after crowdfund has started', async () => {
-        const {address, value} = payments[0];
+        const {address, value} = repayments[0];
         await expectRevert(
           repaymentManager.pay(value, {from: address}),
           'Action only allowed while loan is Active'
@@ -282,22 +272,29 @@ contract('RepaymentManager', accounts => {
         await termsContract.setLoanStatus(loanStatuses.REPAYMENT_CYCLE, {from: controller});
       });
       it('should let any address pay into contract multiple times', async () => {
-        for (let i = 0; i < payments.length; i += 1) {
+        for (let i = 0; i < repayments.length; i += 1) {
           const original = await repaymentManager.totalPaid(); // eslint-disable-line no-await-in-loop
-          const {address, value} = payments[i];
+          const {address, value} = repayments[i];
+          const status = await termsContract.getLoanStatus(); // eslint-disable-line no-await-in-loop
+          const principal = await termsContract.getPrincipalDisbursed(); // eslint-disable-line no-await-in-loop
+          if (verbose)
+            console.log(
+              `Repayment: ${i}  |  original: ${original}  |  paid: ${value}  |  currentLoanStatus: ${status}  |  principalDisbursed: ${principal}`
+            );
+
           await repaymentManager.pay(value, {from: address}); // eslint-disable-line no-await-in-loop
           const after = await repaymentManager.totalPaid(); // eslint-disable-line no-await-in-loop
           expect(after.sub(value)).to.be.bignumber.equals(original);
         }
-        const final = await paymentToken.balanceOf.call(repaymentManager.address); // Removes dependency on totalPaid();
-        const expectedBalance = payments.reduce(
+        const final = await paymentToken.balanceOf(repaymentManager.address); // Removes dependency on totalPaid();
+        const expectedBalance = repayments.reduce(
           (total, payment) => total.add(payment.value),
           new BN(0)
         );
         expect(final).to.be.bignumber.equal(expectedBalance);
       });
       it('should emit a PaymentReceived event', async () => {
-        const {address, value} = payments[0];
+        const {address, value} = repayments[0];
         const tx = await repaymentManager.pay(value, {from: address});
         expectEvent.inLogs(tx.logs, 'PaymentReceived', {
           from: address,
@@ -309,7 +306,6 @@ contract('RepaymentManager', accounts => {
 
   /** TODO(Dan): This is more of an e2e test */
   describe('releaseAllowance', async () => {
-    let repayments;
     let totalShares;
     let totalRepayments;
     beforeEach(async () => {
@@ -323,14 +319,6 @@ contract('RepaymentManager', accounts => {
 
       /** Create simulated repaymentby borrower to repaymentManager */
       await termsContract.setLoanStatus(loanStatuses.REPAYMENT_CYCLE, {from: controller});
-      repayments = [
-        getRandomPercentageOfBN(totalShares),
-        getRandomPercentageOfBN(totalShares),
-        getRandomPercentageOfBN(totalShares),
-        getRandomPercentageOfBN(totalShares),
-        getRandomPercentageOfBN(totalShares),
-        getRandomPercentageOfBN(totalShares)
-      ];
       totalRepayments = repayments.reduce((total, repayment) => total.add(repayment), new BN(0));
       if (verbose) {
         console.log(`Shares: ${await repaymentManager.shares(lender1)}`);
@@ -460,9 +448,10 @@ contract('RepaymentManager', accounts => {
     context('validations', async () => {
       it('should not allow release if notActiveLoan', async () => {
         await termsContract.setLoanStatus(loanStatuses.FUNDING_STARTED, {from: controller});
+        expect(await termsContract.getLoanStatus.call()).to.be.bignumber.equal(loanStatuses.FUNDING_STARTED);
         await expectRevert(
-          repaymentManager.release(nonLender, {from: nonLender}),
-          'Action only allowed while loan is Active'
+          repaymentManager.release(lenders[0].address, {from: lenders[0].address}),
+          'Action only allowed while loan is Active' // TODO(Dan): Should be changed to onlyActiveLoan
         );
       });
       it('should not allow lender with 0 shares to withdraw', async () => {
@@ -563,6 +552,88 @@ contract('RepaymentManager', accounts => {
       await repaymentManager.release(address, {from: address});
       const after = await repaymentManager.totalPaid();
       expect(before).to.be.a.bignumber.equals(after);
+    });
+  });
+  describe('getRepaymentStatus', async () => {
+    let loanStartTimestamp;
+    let start;
+    let oneMonth;
+    let afterLoanPeriod;
+
+    beforeEach(async () => {
+      await termsContract.startRepaymentCycle(loanParams.principalRequested, {from: controller});
+      const params = await termsContract.getLoanParams();
+      ({loanStartTimestamp} = params);
+      start = moment.unix(loanStartTimestamp);
+    });
+    context('after 1 month', async () => {
+      let expected;
+
+      beforeEach(async () => {
+        // Set time
+        oneMonth = start
+          .clone()
+          .add(1, 'months')
+          .unix();
+        await time.increaseTo(oneMonth);
+
+        // Get expected repayment values
+        expected = await termsContract.methods['getExpectedRepaymentValue(uint256)'].call(oneMonth);
+        if (verbose) {
+          console.log(`Expected: ${expected}`);
+          const result = await termsContract.getScheduledPayment.call(1);
+          console.log(
+            `Results  |  Timestamp : ${result.dueTimestamp}  |  Principal : ${result.principalPayment}  |  Interest: ${result.interestPayment}  |  totalPayment: ${result.totalPayment}`
+          );
+        }
+
+        // Create money for borrower
+        await paymentToken.mint(borrower, expected, {from: minter});
+        await paymentToken.approve(repaymentManager.address, expected, {from: borrower});
+      });
+      // Don't make enough payment
+      it('should return DEFAULT if insufficient payment', async () => {
+        const insufficient = expected.sub(new BN(100));
+        await repaymentManager.pay(insufficient, {from: borrower});
+        const status = await repaymentManager.getRepaymentStatus.call();
+        if (verbose) console.log(`Repayment Status: ${status}`);
+        expect(status).to.be.bignumber.equals(repaymentStatuses.DEFAULT);
+      });
+      it('should return ON_TIME if sufficient payment', async () => {
+        await repaymentManager.pay(expected, {from: borrower});
+        const status = await repaymentManager.getRepaymentStatus.call();
+        if (verbose) console.log(`Repayment Status: ${status}`);
+        expect(status).to.be.bignumber.equals(repaymentStatuses.ON_TIME);
+      });
+    });
+    context('one month after loan period', async () => {
+      let expected;
+      beforeEach(async () => {
+        afterLoanPeriod = start
+          .clone()
+          .add(loanParams.loanPeriod + 1, 'months')
+          .unix();
+        await time.increaseTo(afterLoanPeriod);
+
+        expected = await termsContract.methods['getExpectedRepaymentValue(uint256)'].call(afterLoanPeriod);
+        if (verbose) console.log(`Expected: ${expected}`);
+
+        await paymentToken.mint(borrower, expected, {from: minter});
+        await paymentToken.approve(repaymentManager.address, expected, {from: borrower});
+      });
+      it('should return ON_TIME if loan is fully paid off', async () => {
+        const insufficient = expected.sub(new BN(100));
+        await repaymentManager.pay(insufficient, {from: borrower});
+        const status = await repaymentManager.getRepaymentStatus();
+        if (verbose) console.log(`Repayment Status: ${status}`);
+        expect(status).to.be.bignumber.equals(repaymentStatuses.DEFAULT);
+      });
+      it('should return DEFAULT if loan is not fully paid off', async () => {
+        await repaymentManager.pay(expected, {from: borrower});
+        const status = await repaymentManager.getRepaymentStatus();
+        if (verbose) console.log(`Repayment Status: ${status}`);
+        expect(status).to.be.bignumber.equals(repaymentStatuses.ON_TIME);
+      });
     });
   });
 });

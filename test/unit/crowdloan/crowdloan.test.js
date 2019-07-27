@@ -43,6 +43,7 @@ contract('Crowdloan', accounts => {
     termsContract = await TermsContract.new();
     repaymentManager = await RepaymentManager.new();
     crowdloan = await Crowdloan.new();
+
     await crowdloan.initialize(
       termsContract.address,
       repaymentManager.address,
@@ -53,11 +54,10 @@ contract('Crowdloan', accounts => {
       borrower,
       paymentToken.address,
       ...Object.values(loanParams),
-      controllers.concat([crowdloan.address])
+      controllers.concat([crowdloan.address, repaymentManager.address])
     );
 
     await repaymentManager.initialize(
-      paymentToken.address,
       termsContract.address,
       controllers.concat([crowdloan.address])
     );
@@ -88,11 +88,11 @@ contract('Crowdloan', accounts => {
 
     const tx = await crowdloan.startCrowdfund({from: borrower});
 
-    // await expectEvent.inTransaction(tx.receipt.transactionHash, 'LoanStatusUpdated',{
-    //   status: new BN(1) //FUNDING_STARTED
-    // });
+    await expectEvent.inTransaction(tx.receipt.transactionHash, TermsContract, 'LoanStatusUpdated', {
+      status: loanStatuses.FUNDING_STARTED // FUNDING_STARTED
+    });
 
-    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(1)); // FUNDING_STARTED
+    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(loanStatuses.FUNDING_STARTED); // FUNDING_STARTED
 
     await expectRevert.unspecified(
       crowdloan.startCrowdfund({from: borrower}),

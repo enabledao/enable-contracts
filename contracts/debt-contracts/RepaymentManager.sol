@@ -25,13 +25,13 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     mapping(address => uint256) private _shares;
     mapping(address => uint256) private _released;
 
-    IERC20 public paymentToken;
     ITermsContract public termsContract;
+
+    enum RepaymentStatus {ON_TIME, DEFAULT}
 
     modifier onlyActiveLoan() {
         require(
-            termsContract.getLoanStatus() == TermsContractLib.LoanStatus.FUNDING_COMPLETE ||
-                termsContract.getLoanStatus() == TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
+            termsContract.getLoanStatus() >= TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
             "Action only allowed while loan is Active"
         );
         _;
@@ -45,15 +45,23 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
         _;
     }
 
+    modifier trackRepaymentStatus() {
+        _updateRepaymentStatus();
+        _;
+        _updateRepaymentStatus();
+    }
+
     /**
      * @dev Constructor
      */
-    function initialize(
-        address _paymentToken,
-        address _termsContract,
-        address[] memory _controllers
-    ) public payable initializer {
-        paymentToken = IERC20(_paymentToken);
+    function initialize(address _termsContract, address[] memory _controllers)
+        public
+        payable
+        initializer
+    {
+        // address[] memory _controllers = new address[](1);
+        // _controllers[0] = _controller;
+
         termsContract = ITermsContract(_termsContract);
         ControllerRole.initialize(_controllers);
     }
@@ -66,7 +74,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @return the total amount paid to contract.
      */
     function totalPaid() public view returns (uint256) {
-        uint256 balance = paymentToken.balanceOf(address(this));
+        uint256 balance = _getPrincipalToken().balanceOf(address(this));
         return balance.add(_totalReleased);
     }
 
@@ -110,12 +118,18 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @notice Send funds
      * @param amount amount of tokens to send.
      */
-    function pay(uint256 amount) public onlyActiveLoan {
+    function pay(uint256 amount) public onlyActiveLoan trackRepaymentStatus {
+        // TODO Uncomment after late fees implemented
+        // require(
+        //     termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_COMPLETE,
+        //     "Action only allowed before Repayment complete"
+        // );
         require(amount > 0, "No amount set to pay");
-        uint256 balance = paymentToken.balanceOf(address(this));
-        paymentToken.transferFrom(msg.sender, address(this), amount);
+
+        uint256 balance = _getPrincipalToken().balanceOf(address(this));
+        _getPrincipalToken().transferFrom(msg.sender, address(this), amount);
         require(
-            paymentToken.balanceOf(address(this)) >= balance.add(amount),
+            _getPrincipalToken().balanceOf(address(this)) >= balance.add(amount),
             "Were the tokens successfully sent?"
         );
         emit PaymentReceived(msg.sender, amount);
@@ -125,7 +139,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @dev Release one of the payee's proportional payment.
      * @param account Whose payments will be released.
      */
-    function release(address payable account) public onlyActiveLoan {
+    function release(address payable account) public onlyActiveLoan trackRepaymentStatus {
         require(_shares[account] > 0, "Account has zero shares");
 
         uint256 payment = releaseAllowance(account);
@@ -134,7 +148,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
         _released[account] = _released[account].add(payment);
         _totalReleased = _totalReleased.add(payment);
 
-        paymentToken.transfer(account, payment);
+        _getPrincipalToken().transfer(account, payment);
         emit PaymentReleased(account, payment);
     }
 
@@ -167,6 +181,47 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     {
         _decreaseShares(account, shares_);
     }
+
+    /**
+      * Simple repayment status of loan
+      * NOTE: In future, we will be adding more statuses, e.g. late 30, 60, 90, written-off etc
+      */
+    function getRepaymentStatus() public view returns (RepaymentStatus) {
+        uint256 expectedRepaymentValue = termsContract.getExpectedRepaymentValue();
+        uint256 paid = totalPaid();
+        if (paid < expectedRepaymentValue) {
+            return RepaymentStatus.DEFAULT;
+        } else {
+            return RepaymentStatus.ON_TIME;
+        }
+    }
+
+    function _getPrincipalToken() internal view returns (IERC20 token) {
+        return IERC20(termsContract.getPrincipalToken());
+    }
+
+    // @notice reconcile the loans funding status
+    function _updateRepaymentStatus() internal {
+        uint256 _totalDue;
+        uint256 _totalPaid = totalPaid();
+
+        (, , , , uint256 loanPeriod, , , ) = termsContract.getLoanParams();
+        for (uint256 lp = 0; lp < loanPeriod; lp++) {
+            (, , , uint256 due) = termsContract.getScheduledPayment(lp + 1);
+            _totalDue = _totalDue + due;
+        }
+
+        if (
+            _totalPaid > 0 &&
+            _totalPaid < _totalDue &&
+            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE
+        ) {
+            termsContract.setLoanStatus(TermsContractLib.LoanStatus.REPAYMENT_CYCLE);
+        } else if (_totalDue > 0 && _totalPaid >= _totalDue) {
+            termsContract.setLoanStatus(TermsContractLib.LoanStatus.REPAYMENT_COMPLETE);
+        }
+    }
+
     /**
      * @dev Increase shares of an existing payee.
      */

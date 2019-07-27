@@ -26,14 +26,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         _;
     }
 
-    modifier onlyDuringRepaymentCycle() {
-        require(
-            loanParams.loanStatus >= TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
-            "Requires loanStatus to be during RepaymentCycle"
-        );
-        _;
-    }
-
     function initialize(
         address borrower_,
         address _principalTokenAddr,
@@ -139,7 +131,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     function getRequestedScheduledPayment(uint256 period)
         public
         view
-        onlyBeforeRepaymentCycle
         returns (uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
     {
         (principalPayment, interestPayment, totalPayment) = _calcScheduledPayment(
@@ -155,7 +146,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     function getScheduledPayment(uint256 period)
         public
         view
-        onlyDuringRepaymentCycle
         returns (
             uint256 dueTimestamp,
             uint256 principalPayment,
@@ -205,16 +195,11 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
      * @param timestamp uint256
      * @return uint256 total number of currencyTokens expected to be repaid
      */
-    function getExpectedRepaymentValue(uint256 timestamp)
-        public
-        view
-        onlyDuringRepaymentCycle
-        returns (uint256 total)
-    {
+    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256 total) {
         total = 0;
         for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
             (uint256 due, , , uint256 amount) = getScheduledPayment(i + 1);
-            if (due < timestamp) {
+            if (due <= timestamp) {
                 total = total.add(amount);
             }
         }
@@ -230,8 +215,8 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         returns (uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
     {
         require(
-            period <= loanParams.loanPeriod,
-            "The loan period is shorter than requested period"
+            period > 0 && period <= loanParams.loanPeriod,
+            "The requested period is outside loan period"
         );
         interestPayment = _calcMonthlyInterest(principal, loanParams.interestRate);
         /** Principal is only paid during the last period */
@@ -258,11 +243,10 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     /**
      * @dev internal method to set the loanStatus of the loan
      */
-    function _setLoanStatus(TermsContractLib.LoanStatus _loanStatus) internal {
+    function _setLoanStatus(TermsContractLib.LoanStatus _loanStatus) private {
         if (loanParams.loanStatus != _loanStatus) {
             loanParams.loanStatus = _loanStatus;
             emit LoanStatusUpdated(_loanStatus);
         }
     }
-
 }
