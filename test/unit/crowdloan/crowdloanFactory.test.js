@@ -3,6 +3,7 @@ import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helper
 const {expect} = require('chai');
 
 const {appCreate, getAppAddress, encodeCall} = require('../../testHelpers');
+const {crowdfundParams, loanParams, paymentTokenParams} = require('../../testConstants');
 
 const CrowdloanFactory = artifacts.require('CrowdloanFactory');
 const TermsContract = artifacts.require('TermsContract');
@@ -120,22 +121,6 @@ async function crowdloanFactoryUnitTests(
 }
 
 contract('CrowdloanFactory', async accounts => {
-  const crowdfundParams = {
-    crowdfundLength: new BN(10),
-    crowdfundStart: new BN(10)
-  };
-
-  const loanParams = {
-    principal: web3.utils.toWei('60000', 'ether'), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
-    loanPeriod: new BN(6),
-    interestRate: new BN(50)
-  };
-
-  const paymentTokenParams = {
-    name: 'PaymentToken',
-    symbol: 'PAY',
-    decimals: new BN(18)
-  };
 
   await crowdloanFactoryUnitTests(accounts, crowdfundParams, loanParams, paymentTokenParams);
 });
