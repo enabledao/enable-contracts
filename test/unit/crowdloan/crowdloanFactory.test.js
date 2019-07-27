@@ -55,7 +55,7 @@ async function crowdloanFactoryUnitTests(
     beforeEach(async () => {
       deployTx = await crowdloanFactory.deploy(
         crowdloanFactory.address,
-        loanParams.principal,
+        loanParams.principalRequested,
         loanParams.loanPeriod,
         loanParams.interestRate,
         crowdfundParams.crowdfundLength,
@@ -96,8 +96,8 @@ async function crowdloanFactoryUnitTests(
       });
 
       it('should initialize terms contract correctly on successful deploy', async () => {
-        expect(await termsContract.getPrincipal()).to.be.bignumber.equal(
-          new BN(loanParams.principal)
+        expect(await termsContract.getPrincipalRequested()).to.be.bignumber.equal(
+          new BN(loanParams.principalRequested)
         );
       });
 
@@ -105,12 +105,12 @@ async function crowdloanFactoryUnitTests(
         const result = await crowdloan.getCrowdfundParams();
 
         const params = {
-          crowdfundStart: result[0],
-          crowdfundLength: result[1]
+          crowdfundLength: result[0],
+          crowdfundStart: result[1]
         };
 
-        expect(params.crowdfundStart).to.be.bignumber.equal(crowdfundParams.crowdfundStart);
-        expect(params.crowdfundLength).to.be.bignumber.equal(crowdfundParams.crowdfundLength);
+        expect(params.crowdfundStart).to.be.bignumber.equal(new BN(crowdfundParams.crowdfundStart));
+        expect(params.crowdfundLength).to.be.bignumber.equal(new BN(crowdfundParams.crowdfundLength));
       });
 
       it('should initialize repayment manager correctly on successful deploy', async () => {
