@@ -1,8 +1,74 @@
 const fs = require('fs');
-const {BN, constants, expectEvent, expectRevert} = require('openzeppelin-test-helpers');
+const {BN, expectEvent} = require('openzeppelin-test-helpers');
+const {encodeCall} = require('zos-lib');
+
+const {DECIMAL_SHIFT, MAX_CROWDFUND} = require('./testConstants');
 
 const App = artifacts.require('App');
-const {encodeCall} = require('zos-lib');
+
+const generateRandomBN = (max, min) => {
+  max = max.toNumber ? max.toNumber() : max;
+  min = min && min.toNumber ? min.toNumber() : min;
+  return new BN(Math.floor(Math.random() * Math.floor(max))).add(new BN(min ? min : 0));
+};
+
+/**
+ * Generates random BN that has 18 decimals
+ */
+const generateRandomPaddedBN = (max, min) => {
+  const random = generateRandomBN(max, min);
+  const shifted = random.mul(DECIMAL_SHIFT);
+  return shifted;
+};
+/**
+ * Generates random integer that is less than a BN. Used to create shares
+ */
+const getRandomPercentageOfBN = max => {
+  assert(BN.isBN(max));
+  const unshifted = max.div(DECIMAL_SHIFT);
+  const random = generateRandomBN(unshifted.toNumber());
+  return random.mul(DECIMAL_SHIFT);
+};
+
+/**
+ * Generates random test scenario
+ */
+const generateLoanScenario = accounts => {
+  // Generate sample lenders allocation
+  // TODO(Dan): Use Dirichlet distribution? https://stackoverflow.com/questions/18659858/generating-a-list-of-random-numbers-summing-to-1
+
+  const split_MAX_CROWDFUND = MAX_CROWDFUND.div(new BN(3));
+  const loanPeriod = 6; // TODO(Dan): Randomize
+  const lenders = [
+    // TODO(Dan): Randomize number of lenders, find way to generate randomShares
+    {
+      address: accounts[6],
+      shares: generateRandomPaddedBN(split_MAX_CROWDFUND)
+    },
+    {
+      address: accounts[7],
+      shares: generateRandomPaddedBN(split_MAX_CROWDFUND)
+    },
+    {
+      address: accounts[8],
+      shares: generateRandomPaddedBN(split_MAX_CROWDFUND)
+    }
+  ];
+  const loanParams = {
+    principalRequested: lenders.reduce((total, lender) => total.add(lender.shares), new BN(0)),
+    loanPeriod, // TODO(Dan): Randomize
+    interestRate: 50 // TODO(Dan): Randomize
+  };
+  const repayments = [];
+  for (let i = 0; i < loanPeriod; i += 1) {
+    repayments.push(loanParams.principalRequested.div(new BN(loanPeriod))); // TODO(Dan): Needs better one that factors interest payments etc
+  }
+  return {
+    lenders,
+    loanParams,
+    repayments
+  };
+};
 
 /*
  *  Find zos config file name for specified network
@@ -98,7 +164,11 @@ async function revertEvm(snapshotId) {
 module.exports = {
   appCreate,
   encodeCall,
+  generateLoanScenario,
+  generateRandomBN,
+  generateRandomPaddedBN,
   getAppAddress,
+  getRandomPercentageOfBN,
   getZosConfig,
   getZosNetworkConfig,
   revertEvm,
