@@ -1,9 +1,8 @@
-const path = require('path');
 require('dotenv').config();
 require('@babel/register');
 require('@babel/polyfill');
 
-const mnemonic = process.env.MNENOMIC;
+const mnemonic = process.env.MNEMONIC;
 const HDWalletProvider = require('truffle-hdwallet-provider');
 // Create your own key for Production environments (https://infura.io/)
 const INFURA_ID = 'd6760e62b67f4937ba1ea2691046f06d';
@@ -47,7 +46,7 @@ module.exports = {
     rinkeby: {
       provider: () =>
         new HDWalletProvider(
-          process.env.MNENOMIC,
+          process.env.MNEMONIC,
           `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`
         ),
       network_id: 4,
@@ -58,7 +57,7 @@ module.exports = {
     main: {
       provider: () =>
         new HDWalletProvider(
-          process.env.MNENOMIC,
+          process.env.MNEMONIC,
           `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`
         ),
       network_id: 1,

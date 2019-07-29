@@ -3,7 +3,7 @@ const HDWalletProvider = require('truffle-hdwallet-provider');
 
 const App = artifacts.require('App');
 
-const ENABLE_CREDIT_PACKAGE = "enable-credit"
+const ENABLE_CREDIT_PACKAGE = 'enable-credit';
 
 /*
  *  Get zos config info for specified networkId.
@@ -18,7 +18,7 @@ function getAppAddress() {
   return zosNetworkConfig.app.address;
 }
 
-function getNetworkNode () {
+function getNetworkNode() {
   switch (activeNetwork()) {
     case 'ropsten':
       return `https://ropsten.infura.io/v3/`;
@@ -37,7 +37,7 @@ function getNetworkNode () {
 
 function provider() {
   return new HDWalletProvider(
-    process.env.MNENOMIC,
+    process.env.MNEMONIC,
     `${getNetworkNode()}${process.env.INFURA_API_KEY}`
   );
 }
@@ -47,33 +47,25 @@ function activeNetwork () {
   console.log(networkIndex)
   if (networkIndex < 2) {
     return 'mainnet';
-  } else {
+  } 
     return process.argv[networkIndex + 1];
-  }
+  
 }
-
 
 async function appCreate(packageName, contractName, admin, data) {
   const appAddress = getAppAddress;
-  console.log(appAddress)
+  console.log(appAddress);
 
   App.setProvider(provider());
   const app = await App.at(appAddress);
 
-  console.log(app)
+  console.log(app);
   // const tx = await app.create(packageName, contractName, admin, data);
   // const createdEvent = expectEvent.inLogs(tx.logs, 'ProxyCreated');
   // return createdEvent.args.proxy;
 }
 
 (async () => {
-
-
-  console.log(activeNetwork())
-  console.log(
-    await appCreate (
-      ENABLE_CREDIT_PACKAGE
-    )
-  );
-
-})()
+  console.log(activeNetwork());
+  console.log(await appCreate(ENABLE_CREDIT_PACKAGE));
+})();
