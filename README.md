@@ -42,7 +42,7 @@ We use [ZeppelinOS](https://docs.zeppelinos.org/docs/start.html) to develop, dep
 
 1. Run `npm install` to install all zeppelinOS related dependencies
 2. Run `ganache-cli` (or `ganache-cli --deterministic`) to run a local blockchain
-3. Create your own `.env` file based on `.env.sample`. These are the `process.env` variables that will be used for deployment / application.
+3. Create your own `.env` file based on `.env.sample`. These are the `process.env` variables that will be used for deployment / application. As of Aug 2019 this is the Infura API key and mnemonic"
 
 ### Deploy to ganache `development` network
 
