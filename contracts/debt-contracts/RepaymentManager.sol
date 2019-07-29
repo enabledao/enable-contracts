@@ -137,7 +137,6 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @param account Whose payments will be released.
      */
     function release(address payable account) public trackRepaymentStatus {
-
         require(
             termsContract.getLoanStatus() > TermsContractLib.LoanStatus.FUNDING_COMPLETE,
             "Action only allowed while loan is Active"
@@ -191,12 +190,12 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
 
     // @notice reconcile the loans funding status
     function _updateRepaymentStatus() internal {
-        uint _totalDue;
+        uint256 _totalDue;
         uint256 _totalPaid = totalPaid();
 
-        (,,,,uint loanPeriod,,,) = termsContract.getLoanParams();
-        for (uint lp = 0; lp < loanPeriod; lp++) {
-            (,,,uint due) = termsContract.getScheduledPayment(lp+1);
+        (, , , , uint256 loanPeriod, , , ) = termsContract.getLoanParams();
+        for (uint256 lp = 0; lp < loanPeriod; lp++) {
+            (, , , uint256 due) = termsContract.getScheduledPayment(lp + 1);
             _totalDue = _totalDue + due;
         }
 
