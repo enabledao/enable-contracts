@@ -8,6 +8,13 @@ import "../interface/ITermsContract.sol";
 import "../access/ControllerRole.sol";
 import "./TermsContractLib.sol";
 
+/**
+ * @title RepaymentManager
+ * @dev This contract is inspired by OpenZeppelin's PaymentSplitter
+ *
+ * It follows a _pull payment_ model. Payments are not forwarded automatically, and lender will need to
+ * trigger the actual transfer by calling the {release} function
+ */
 contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     using SafeMath for uint256;
     using TermsContractLib for TermsContractLib.LoanStatus;
@@ -17,14 +24,14 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
 
     mapping(address => uint256) private _shares;
     mapping(address => uint256) private _released;
-    address[] private _payees;
 
     ITermsContract public termsContract;
 
+    enum RepaymentStatus {ON_TIME, DEFAULT}
+
     modifier onlyActiveLoan() {
         require(
-            termsContract.getLoanStatus() == TermsContractLib.LoanStatus.FUNDING_COMPLETE ||
-                termsContract.getLoanStatus() == TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
+            termsContract.getLoanStatus() >= TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
             "Action only allowed while loan is Active"
         );
         _;
@@ -55,9 +62,8 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
         // address[] memory _controllers = new address[](1);
         // _controllers[0] = _controller;
 
-        ControllerRole.initialize(_controllers);
-
         termsContract = ITermsContract(_termsContract);
+        ControllerRole.initialize(_controllers);
     }
 
     function() external payable {
@@ -109,17 +115,15 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     }
 
     /**
-     * @return the address of a payee.
-     */
-    function payee(uint256 index) public view returns (address) {
-        return _payees[index];
-    }
-
-    /**
      * @notice Send funds
      * @param amount amount of tokens to send.
      */
     function pay(uint256 amount) public onlyActiveLoan trackRepaymentStatus {
+        // TODO Uncomment after late fees implemented
+        // require(
+        //     termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_COMPLETE,
+        //     "Action only allowed before Repayment complete"
+        // );
         require(amount > 0, "No amount set to pay");
 
         uint256 balance = _getPrincipalToken().balanceOf(address(this));
@@ -128,7 +132,6 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
             _getPrincipalToken().balanceOf(address(this)) >= balance.add(amount),
             "Were the tokens successfully sent?"
         );
-
         emit PaymentReceived(msg.sender, amount);
     }
 
@@ -136,12 +139,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
      * @dev Release one of the payee's proportional payment.
      * @param account Whose payments will be released.
      */
-    function release(address payable account) public trackRepaymentStatus {
-        require(
-            termsContract.getLoanStatus() > TermsContractLib.LoanStatus.FUNDING_COMPLETE,
-            "Action only allowed while loan is Active"
-        );
-
+    function release(address payable account) public onlyActiveLoan trackRepaymentStatus {
         require(_shares[account] > 0, "Account has zero shares");
 
         uint256 payment = releaseAllowance(account);
@@ -184,6 +182,20 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
         _decreaseShares(account, shares_);
     }
 
+    /**
+      * Simple repayment status of loan
+      * NOTE: In future, we will be adding more statuses, e.g. late 30, 60, 90, written-off etc
+      */
+    function getRepaymentStatus() public view returns (RepaymentStatus) {
+        uint256 expectedRepaymentValue = termsContract.getExpectedRepaymentValue();
+        uint256 paid = totalPaid();
+        if (paid < expectedRepaymentValue) {
+            return RepaymentStatus.DEFAULT;
+        } else {
+            return RepaymentStatus.ON_TIME;
+        }
+    }
+
     function _getPrincipalToken() internal view returns (IERC20 token) {
         return IERC20(termsContract.getPrincipalToken());
     }
@@ -205,7 +217,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
             termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE
         ) {
             termsContract.setLoanStatus(TermsContractLib.LoanStatus.REPAYMENT_CYCLE);
-        } else if (_totalPaid >= _totalDue) {
+        } else if (_totalDue > 0 && _totalPaid >= _totalDue) {
             termsContract.setLoanStatus(TermsContractLib.LoanStatus.REPAYMENT_COMPLETE);
         }
     }
@@ -216,7 +228,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     function _increaseShares(address account, uint256 shares_) private {
         require(account != address(0), "Account must not be zero address");
         require(shares_ > 0, "Can not increase by zero shares");
-        require(_shares[account] >= 0, "Account has zero shares");
+        // require(_shares[account] >= 0, "Account has zero shares"); // DAN: this makes no sense
 
         _totalShares = _totalShares.add(shares_);
         uint256 newShares_ = _shares[account].add(shares_);
@@ -230,7 +242,7 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     function _decreaseShares(address account, uint256 shares_) private {
         require(account != address(0), "Account must not be zero address");
         require(shares_ > 0, "Can not decrease by zero shares");
-        // require(_shares[account] >= 0, 'Account has zero shares');
+        require(_shares[account] > 0, "Account has zero shares");
 
         _totalShares = _totalShares.sub(shares_);
         uint256 newShares_ = _shares[account].sub(shares_);
@@ -248,7 +260,6 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
         require(shares_ > 0, "Can not add Payee with zero shares");
         require(_shares[account] == 0, "Account already has shares, use increaseShares");
 
-        _payees.push(account);
         _shares[account] = shares_;
         _totalShares = _totalShares.add(shares_);
         emit PayeeAdded(account);

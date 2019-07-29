@@ -12,29 +12,30 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     using SafeMath for uint256;
 
     using TermsContractLib for TermsContractLib.LoanParams;
-    using TermsContractLib for TermsContractLib.ScheduledPayment;
     using TermsContractLib for TermsContractLib.LoanStatus;
 
     TermsContractLib.LoanParams public loanParams;
-    TermsContractLib.ScheduledPayment[] public paymentTable;
 
     address private _borrower;
-    // TODO(Dan): To implement
-    // modifier onlyAtStatus(LoanStatus status) {}
 
-    // modifier onlyBeforeStatus(LoanStatus status) {}
-
-    // modifier onlyAfterStatus(LoanStatus status) {}
+    modifier onlyBeforeRepaymentCycle() {
+        require(
+            loanParams.loanStatus < TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
+            "Requires loanStatus to be before RepaymentCycle"
+        );
+        _;
+    }
 
     function initialize(
         address borrower_,
         address _principalTokenAddr,
-        uint256 _principal,
+        uint256 _principalRequested,
         uint256 _loanPeriod,
         uint256 _interestRate,
         address[] memory _controllers
     ) public initializer {
         require(_principalTokenAddr != address(0), "Loaned token must be an ERC20 token"); //TODO(Dan): More rigorous way of testing ERC20?
+        require(_principalRequested != 0, "PrincipalRequested must be greater than 0");
         require(_loanPeriod > 0, "Loan period must be higher than 0");
         require(
             _interestRate > 9,
@@ -48,11 +49,11 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         ControllerRole.initialize(_controllers);
         loanParams = TermsContractLib.LoanParams({
             principalToken: _principalTokenAddr,
-            principal: _principal,
+            principalRequested: _principalRequested,
             loanStatus: TermsContractLib.LoanStatus.NOT_STARTED,
             loanPeriod: _loanPeriod,
-            interestRate: _interestRate, // TODO: reassign constant values below
-            interestPayment: calcInterestPayment(_principal, _interestRate),
+            interestRate: _interestRate,
+            principalDisbursed: 0,
             loanStartTimestamp: 0
         });
     }
@@ -70,8 +71,16 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         return loanParams.loanStatus;
     }
 
-    function getPrincipal() public view returns (uint256) {
-        return loanParams.principal;
+    function getNumScheduledPayments() public view returns (uint256) {
+        return loanParams.loanPeriod;
+    }
+
+    function getPrincipalRequested() public view returns (uint256) {
+        return loanParams.principalRequested;
+    }
+
+    function getPrincipalDisbursed() public view returns (uint256) {
+        return loanParams.principalDisbursed;
     }
 
     function getPrincipalToken() public view returns (address) {
@@ -86,105 +95,158 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         );
     }
 
+    /**
+     * @dev gets loanParams as a tuple
+     */
     function getLoanParams()
         public
         view
         returns (
             address,
             address principalToken,
-            uint256 principal,
+            uint256 principalRequested,
             uint256 loanStatus,
             uint256 loanPeriod,
             uint256 interestRate,
-            uint256 interestPayment,
+            uint256 principalDisbursed,
             uint256 loanStartTimestamp
         )
     {
         return (
             _borrower,
             address(loanParams.principalToken),
-            loanParams.principal,
+            loanParams.principalRequested,
             uint256(loanParams.loanStatus),
             loanParams.loanPeriod,
             loanParams.interestRate,
-            loanParams.interestPayment,
+            loanParams.principalDisbursed,
             loanParams.loanStartTimestamp
         );
     }
 
-    function getScheduledPayment(uint256 tranche)
+    /**
+     * @dev Gets proposed payment schedule based on principalRequested
+     * NOTE This should only be used during crowdfund period
+     */
+    function getRequestedScheduledPayment(uint256 period)
         public
         view
-        returns (uint256 due, uint256 principal, uint256 interest, uint256 total)
+        returns (uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
     {
-        require(
-            tranche > 0 && tranche <= loanParams.loanPeriod,
-            "The requested tranche is outside loan period"
+        (principalPayment, interestPayment, totalPayment) = _calcScheduledPayment(
+            period,
+            loanParams.principalRequested
         );
-        interest = loanParams.interestPayment;
-        if (tranche == loanParams.loanPeriod) {
-            principal = loanParams.principal;
-        } else {
-            principal = 0;
-        }
-        if (loanParams.loanStartTimestamp == 0) {
-            due = 0;
-        } else {
-            due = BokkyPooBahsDateTimeLibrary.addMonths(loanParams.loanStartTimestamp, tranche);
-        }
-        total = interest + principal;
     }
 
-    /** @dev Begins loan and writes timestamps to the payment table
+    /**
+     * @dev Gets finalized payment schedule based on principalDisbursed
+     * NOTE This should only be used when repaymentSchedule has started
      */
-    function startLoan() public onlyController returns (uint256 startTimestamp) {
-        require(
-            loanParams.loanStatus < TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
-            "Cannot start loan that has already been started"
+    function getScheduledPayment(uint256 period)
+        public
+        view
+        returns (
+            uint256 dueTimestamp,
+            uint256 principalPayment,
+            uint256 interestPayment,
+            uint256 totalPayment
+        )
+    {
+        (principalPayment, interestPayment, totalPayment) = _calcScheduledPayment(
+            period,
+            loanParams.principalDisbursed
         );
+        dueTimestamp = BokkyPooBahsDateTimeLibrary.addMonths(loanParams.loanStartTimestamp, period);
+    }
+
+    /**
+     * @dev Begins loan and writes timestamps to the payment table
+     */
+    function startRepaymentCycle(uint256 totalCrowdfunded)
+        public
+        onlyController
+        onlyBeforeRepaymentCycle
+        returns (uint256 startTimestamp)
+    {
+        uint256 principalDisbursed;
+        /** NOTE: prevents over-debt through unauthorized transfers (e.g. native token transfers) into crowdloan */
+        if (totalCrowdfunded > loanParams.principalRequested) {
+            principalDisbursed = loanParams.principalRequested;
+        } else {
+            principalDisbursed = totalCrowdfunded;
+        }
         startTimestamp = now;
-        (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(
-            startTimestamp
-        );
+        loanParams.principalDisbursed = principalDisbursed;
         loanParams.loanStartTimestamp = startTimestamp;
         _setLoanStatus(TermsContractLib.LoanStatus.REPAYMENT_CYCLE);
     }
 
-    /** PMT function to calculate periodic interest rate
-      * Note: divide by 10000 is because of basis points conversion
+    /**
+     * @dev Overloaded function. `now` will be the block's timestamp as reported by the miner
      */
-    function calcInterestPayment(uint256 principal, uint256 interestRate)
-        public
-        pure
-        returns (uint256)
-    {
-        uint256 result = principal.mul(interestRate).div(10000);
-        return result;
+    function getExpectedRepaymentValue() public view returns (uint256 total) {
+        total = getExpectedRepaymentValue(now);
     }
 
-    /// Returns the cumulative units-of-value expected to be repaid by a given block timestamp.
-    ///  Note this is not a constant function -- this value can vary on basis of any number of
-    ///  conditions (e.g. interest rates can be renegotiated if repayments are delinquent).
-    /// @param  timestamp uint. The timestamp of the block for which repayment expectation is being queried.
-    /// @return uint256 The cumulative units-of-value expected to be repaid by the time the given timestamp lapses.
-    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256) {
-        uint256 total = 0;
+    /**
+     * @dev returns the expected repayment value for a given timestamp for the loan's scheduled payments
+     * @dev future developments will allow this to be more dynamic (e.g. delinquent fees, penalties)
+     * @param timestamp uint256
+     * @return uint256 total number of currencyTokens expected to be repaid
+     */
+    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256 total) {
+        total = 0;
         for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
             (uint256 due, , , uint256 amount) = getScheduledPayment(i + 1);
-            if (due < timestamp) {
-                total += amount;
+            if (due <= timestamp) {
+                total = total.add(amount);
             }
         }
-        return total;
     }
 
-    // @notice set the present state of the Loan;
-    // increase present state of the loan
-    // needs to be protected!!!
-    function _setLoanStatus(TermsContractLib.LoanStatus _loanStatus) internal {
+    /**
+     * @dev Calculates the scheduled payment for a given period
+     * Note Uses simple principal calculation for a balloon loan. Will change for future loan types
+     */
+    function _calcScheduledPayment(uint256 period, uint256 principal)
+        internal
+        view
+        returns (uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
+    {
+        require(
+            period > 0 && period <= loanParams.loanPeriod,
+            "The requested period is outside loan period"
+        );
+        interestPayment = _calcMonthlyInterest(principal, loanParams.interestRate);
+        /** Principal is only paid during the last period */
+        if (period == loanParams.loanPeriod) {
+            principalPayment = principal;
+        } else {
+            principalPayment = 0;
+        }
+        totalPayment = interestPayment.add(principalPayment);
+    }
+
+    /**
+     * @dev calculates monthly interest payment
+     * @dev Note 10000 divisor is because of basis points (100) * percentage (100)
+     */
+    function _calcMonthlyInterest(uint256 principal, uint256 interestRate)
+        public
+        pure
+        returns (uint256 result)
+    {
+        result = principal.mul(interestRate).div(10000);
+    }
+
+    /**
+     * @dev internal method to set the loanStatus of the loan
+     */
+    function _setLoanStatus(TermsContractLib.LoanStatus _loanStatus) private {
         if (loanParams.loanStatus != _loanStatus) {
             loanParams.loanStatus = _loanStatus;
-            emit LoanStatusSet(_loanStatus);
+            emit LoanStatusUpdated(_loanStatus);
         }
     }
 }

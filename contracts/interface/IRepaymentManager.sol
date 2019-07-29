@@ -51,11 +51,6 @@ contract IRepaymentManager {
     function releaseAllowance(address account) public view returns (uint256);
 
     /**
-     * @return the address of a payee.
-     */
-    function payee(uint256 index) public view returns (address);
-
-    /**
      * @dev Release one of the payee's proportional payment.
      * @param account Whose payments will be released.
      */

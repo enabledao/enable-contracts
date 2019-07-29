@@ -12,6 +12,7 @@ contract ControllerRole is Initializable {
 
     event ControllerAdded(address indexed account);
     event ControllerRemoved(address indexed account);
+    event LogAccess(address account);
 
     Roles.Role private _minters;
 
@@ -22,6 +23,7 @@ contract ControllerRole is Initializable {
     }
 
     modifier onlyController() {
+        emit LogAccess(msg.sender);
         require(isController(msg.sender), "Permission denied");
         _;
     }
