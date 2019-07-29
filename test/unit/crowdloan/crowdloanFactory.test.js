@@ -1,4 +1,4 @@
-import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
+import {BN, expectEvent} from 'openzeppelin-test-helpers';
 
 const {expect} = require('chai');
 
