@@ -32,7 +32,7 @@ import {BN, expectEvent, expectRevert, time} from 'openzeppelin-test-helpers';
 const {expect} = require('chai');
 
 const {appCreate, getAppAddress, encodeCall, revertEvm, snapShotEvm} = require('../testHelpers');
-const {crowdfundParams, loanParams, paymentTokenParams} = require('../testConstants');
+const {crowdfundParams, loanParams, loanStatuses, paymentTokenParams} = require('../testConstants');
 
 const CrowdloanFactory = artifacts.require('CrowdloanFactory');
 const TermsContract = artifacts.require('TermsContract');
@@ -53,37 +53,40 @@ contract('Enable Suite', accounts => {
   const lenders = [
     {
       address: accounts[1],
-      shares: new BN(loanParams.principal).mul(new BN(5000)).div(TENTHOUSAND)
+      shares: new BN(loanParams.principalRequested).mul(new BN(5000)).div(TENTHOUSAND)
     },
     {
       address: accounts[3],
-      shares: new BN(loanParams.principal).mul(new BN(2500)).div(TENTHOUSAND)
+      shares: new BN(loanParams.principalRequested).mul(new BN(2500)).div(TENTHOUSAND)
     },
     {
       address: accounts[4],
-      shares: new BN(loanParams.principal).mul(new BN(1500)).div(TENTHOUSAND)
+      shares: new BN(loanParams.principalRequested).mul(new BN(1500)).div(TENTHOUSAND)
     },
     {
       address: accounts[5],
-      shares: new BN(loanParams.principal).mul(new BN(500)).div(TENTHOUSAND)
+      shares: new BN(loanParams.principalRequested).mul(new BN(500)).div(TENTHOUSAND)
     },
     {
       address: accounts[6],
-      shares: new BN(loanParams.principal).mul(new BN(300)).div(TENTHOUSAND)
+      shares: new BN(loanParams.principalRequested).mul(new BN(300)).div(TENTHOUSAND)
     },
     {
       address: accounts[7],
-      shares: new BN(loanParams.principal).mul(new BN(100)).div(TENTHOUSAND)
+      shares: new BN(loanParams.principalRequested).mul(new BN(100)).div(TENTHOUSAND)
     },
     {
       address: accounts[8],
-      shares: new BN(loanParams.principal).mul(new BN(99)).div(TENTHOUSAND)
+      shares: new BN(loanParams.principalRequested).mul(new BN(99)).div(TENTHOUSAND)
     },
     {
       address: accounts[9],
-      shares: new BN(loanParams.principal).mul(new BN(1)).div(TENTHOUSAND)
+      shares: new BN(loanParams.principalRequested).mul(new BN(1)).div(TENTHOUSAND)
     }
   ];
+
+  const expectedTranchRepayment = async tranch =>
+    (await termsContract.getScheduledPayment.call(new BN(tranch + 1)))[3];
 
   before(async () => {
     // Create a factory via App
@@ -119,11 +122,11 @@ contract('Enable Suite', accounts => {
     );
 
     const loanCreated = expectEvent.inLogs(tx.logs, 'LoanCreated', {
-      borrower
-      // amount: new BN(loanParams.pricipal)
+      borrower,
+      amount: new BN(loanParams.principalRequested)
     });
 
-    expect(loanCreated.args.amount).to.be.bignumber.equal(new BN(loanParams.principal));
+    expect(loanCreated.args.amount).to.be.bignumber.equal(new BN(loanParams.principalRequested));
 
     crowdloan = await Crowdloan.at(loanCreated.args.crowdloan);
     termsContract = await TermsContract.at(loanCreated.args.termsContract);
@@ -142,10 +145,12 @@ contract('Enable Suite', accounts => {
   it('should successfully startCrowdfund', async () => {
     const tx = await crowdloan.startCrowdfund({from: borrower});
 
-    await expectEvent.inTransaction(tx.tx, TermsContract, 'LoanStatusSet', {
-      status: new BN(1) // FUNDING_STARTED
+    await expectEvent.inTransaction(tx.tx, TermsContract, 'LoanStatusUpdated', {
+      status: new BN(loanStatuses.FUNDING_STARTED) // FUNDING_STARTED
     });
-    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(1)); // FUNDING_STARTED
+    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(
+      new BN(loanStatuses.FUNDING_STARTED)
+    ); // FUNDING_STARTED
   });
 
   it('should successfully fund crowdloan', async () => {
@@ -163,16 +168,17 @@ contract('Enable Suite', accounts => {
     );
 
     expect(await paymentToken.balanceOf.call(crowdloan.address)).to.be.bignumber.equal(
-      new BN(loanParams.principal)
+      new BN(loanParams.principalRequested)
     );
-    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(3)); // FUNDING_STARTED
+    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(
+      new BN(loanStatuses.FUNDING_COMPLETE)
+    ); // FUNDING_COMPLETE
   });
 
   it('should successfully withdraw', async () => {
     const test = new BN(1);
     const balance = await paymentToken.balanceOf(borrower);
-
-    const tx = await crowdloan.withdraw(test, {from: borrower});
+    const tx = await crowdloan.methods['withdraw(uint256)'](test, {from: borrower});
 
     expectEvent.inLogs(tx.logs, 'ReleaseFunds', {
       borrower,
@@ -180,18 +186,20 @@ contract('Enable Suite', accounts => {
     });
 
     expect(await paymentToken.balanceOf(borrower)).to.be.bignumber.equal(test.add(balance));
-    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(4)); // REPAYMENT_CYCLE
+    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(
+      new BN(loanStatuses.REPAYMENT_CYCLE)
+    ); // REPAYMENT_CYCLE
 
     const leftover = await paymentToken.balanceOf(crowdloan.address);
-    await crowdloan.withdraw(leftover, {from: borrower});
+    await crowdloan.methods['withdraw(uint256)'](leftover, {from: borrower});
 
     expect(await paymentToken.balanceOf(borrower)).to.be.bignumber.gte(
-      new BN(loanParams.principal).add(balance)
+      new BN(loanParams.principalRequested).add(balance)
     );
   });
 
   it('should successfully pay RepaymentManager from borrower', async () => {
-    const monthPayment = new BN(300);
+    const monthPayment = await expectedTranchRepayment(0);
 
     await paymentToken.mint(borrower, monthPayment);
     await paymentToken.approve(repaymentManager.address, monthPayment, {from: borrower});
@@ -206,7 +214,7 @@ contract('Enable Suite', accounts => {
   });
 
   it('should successfully release from RepaymentManager', async () => {
-    const monthPayment = new BN(300);
+    const monthPayment = await expectedTranchRepayment(0);
     const totalShares = () => lenders.reduce((a, b) => a.add(b.shares), new BN(0));
     const expectedRepayment = (shares, payment, previousRelease) =>
       shares
@@ -254,8 +262,6 @@ contract('Enable Suite', accounts => {
         .mul(payment)
         .div(totalShares())
         .sub(previousRelease);
-    const expectedTranchRepayment = async tranch =>
-      (await termsContract.getScheduledPayment.call(new BN(tranch + 1)))[3];
     const serializePromise = promiseArray =>
       promiseArray.reduce((previousPromise, nextPromiseFn) => {
         return previousPromise.then(() => {
@@ -301,7 +307,9 @@ contract('Enable Suite', accounts => {
     );
 
     await serializePromise(monthCycles);
-    expect(await termsContract.getLoanStatus.call()).to.be.bignumber.equal(new BN(5)); // REPAYMENT_COMPLETE
+    expect(await termsContract.getLoanStatus.call()).to.be.bignumber.equal(
+      new BN(loanStatuses.REPAYMENT_COMPLETE)
+    ); // REPAYMENT_COMPLETE
 
     const totalPaid = await repaymentManager.totalPaid.call();
     expect(totalPaid).to.be.bignumber.equals(await bulkTranchRepayment(loanParams.loanPeriod));

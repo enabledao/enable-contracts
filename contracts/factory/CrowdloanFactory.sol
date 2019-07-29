@@ -45,7 +45,7 @@ contract CrowdloanFactory is Initializable {
 
     function deploy(
         address _principalTokenAddr,
-        uint256 _principal,
+        uint256 _principalRequested,
         uint256 _loanPeriod,
         uint256 _interestRate,
         uint256 _crowdfundLength,
@@ -69,7 +69,7 @@ contract CrowdloanFactory is Initializable {
         TermsContract(termsContractInstance).initialize(
             msg.sender,
             _principalTokenAddr,
-            _principal,
+            _principalRequested,
             _loanPeriod,
             _interestRate,
             _controllers
@@ -89,7 +89,7 @@ contract CrowdloanFactory is Initializable {
 
         emit LoanCreated(
             msg.sender,
-            _principal,
+            _principalRequested,
             termsContractInstance,
             crowdloanInstance,
             repaymentManagerInstance

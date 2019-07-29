@@ -42,25 +42,43 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         crowdfundParams = CrowdfundParams(_crowdfundLength, _crowdfundStart);
     }
 
+    function getCrowdfundParams() public view returns (uint256, uint256) {
+        return (crowdfundParams.crowdfundLength, crowdfundParams.crowdfundStart);
+    }
+
+    function getCrowdfundEnd() public view returns (uint256) {
+        return (crowdfundParams.crowdfundStart.add(crowdfundParams.crowdfundLength));
+    }
+
+    /** TODO(Dan): Refactor while implementing Donation capability */
+    function getTotalCrowdfunded() public view returns (uint256 total) {
+        /** Note: this may return more than principalRequested because of native ERC20 transfers */
+        total = _getPrincipalToken().balanceOf(address(this));
+    }
+
+    function getBorrower() public view returns (address) {
+        return termsContract.borrower();
+    }
+
     // @notice additional payment does not exceed the pricipal Amount
     function _isBelowMaxSupply(uint256 amount) internal view returns (bool) {
-        uint256 principal = termsContract.getPrincipal();
-        return repaymentManager.totalShares().add(amount) <= principal;
+        uint256 principalRequested = termsContract.getPrincipalRequested();
+        return repaymentManager.totalShares().add(amount) <= principalRequested;
     }
 
     // @notice reconcile the loans funding status
     function _updateCrowdfundStatus() internal {
-        uint256 principal = termsContract.getPrincipal();
+        uint256 principalRequested = termsContract.getPrincipalRequested();
         uint256 totalShares = repaymentManager.totalShares();
         uint256 totalPaid = repaymentManager.totalPaid();
 
         if (
             totalShares > 0 &&
-            totalShares < principal &&
+            totalShares < principalRequested &&
             termsContract.getLoanStatus() < TermsContractLib.LoanStatus.FUNDING_FAILED
         ) {
             termsContract.setLoanStatus(TermsContractLib.LoanStatus.FUNDING_STARTED);
-        } else if (totalShares >= principal && totalPaid == 0) {
+        } else if (totalShares >= principalRequested && totalPaid == 0) {
             termsContract.setLoanStatus(TermsContractLib.LoanStatus.FUNDING_COMPLETE);
         }
     }
@@ -111,7 +129,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         _validatedERC20Transfer(_getPrincipalToken(), msg.sender, address(this), amount);
         //Mint new debt token and transfer to sender
         repaymentManager.increaseShares(msg.sender, amount);
-        emit Fund(msg.sender, amount); // TODO(Dan): Remove comments once IClaimsToken is implemented
+        emit Fund(msg.sender, amount);
     }
 
     /// @notice Get a refund for a debt token owned by the sender
@@ -125,8 +143,14 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
 
         repaymentManager.decreaseShares(msg.sender, amount);
         _validatedERC20Transfer(_getPrincipalToken(), address(this), msg.sender, amount);
-
         emit Refund(msg.sender, amount);
+    }
+
+    /**
+     * @notice Withdraw method
+     */
+    function withdraw() public {
+        withdraw(_getPrincipalToken().balanceOf(address(this)));
     }
 
     // @notice Withdraw loan
@@ -136,35 +160,13 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
             "Crowdfund not completed"
         );
         require(msg.sender == termsContract.borrower(), "Withdrawal only allowed for Borrower");
-        require(
-            _getPrincipalToken().balanceOf(address(this)) >= amount,
-            "Amount exceeds available balance"
-        );
-
+        uint256 contractBalance = _getPrincipalToken().balanceOf(address(this));
+        require(amount <= contractBalance, "Amount exceeds available balance");
         if (termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE) {
-            termsContract.startLoan();
+            termsContract.startRepaymentCycle(contractBalance);
         }
-
         _validatedERC20Transfer(_getPrincipalToken(), address(this), msg.sender, amount);
-
         emit ReleaseFunds(msg.sender, amount);
-    }
-
-    // @notice Withdraw loan
-    function withdraw() public {
-        withdraw(_getPrincipalToken().balanceOf(address(this)));
-    }
-
-    function getCrowdfundParams() public view returns (uint256, uint256) {
-        return (crowdfundParams.crowdfundLength, crowdfundParams.crowdfundStart);
-    }
-
-    function getCrowdfundEnd() public view returns (uint256) {
-        return (crowdfundParams.crowdfundStart.add(crowdfundParams.crowdfundLength));
-    }
-
-    function getBorrower() public view returns (address) {
-        return termsContract.borrower();
     }
 
     /**

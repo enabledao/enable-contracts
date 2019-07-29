@@ -3,6 +3,7 @@ pragma solidity ^0.5.2;
 import "openzeppelin-eth/contracts/token/ERC20/IERC20.sol";
 
 library TermsContractLib {
+    /** NOTE: Update testConstants.js file if changed! */
     enum LoanStatus {
         NOT_STARTED,
         FUNDING_STARTED,
@@ -14,18 +15,11 @@ library TermsContractLib {
 
     struct LoanParams {
         address principalToken;
-        uint256 principal;
+        uint256 principalRequested;
         LoanStatus loanStatus;
         uint256 loanPeriod;
         uint256 interestRate; // NOTE(Dan): in months
-        uint256 interestPayment;
+        uint256 principalDisbursed;
         uint256 loanStartTimestamp;
-    }
-
-    struct ScheduledPayment {
-        uint256 due;
-        uint256 principal;
-        uint256 interest;
-        uint256 total;
     }
 }
