@@ -7357,7 +7357,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-07-30T22:20:38.959Z",
+  "updatedAt": "2019-07-30T22:45:03.834Z",
   "devdoc": {
     "details": "Contract for upgradeable applications. It handles the creation of proxies.",
     "methods": {

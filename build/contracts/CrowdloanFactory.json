@@ -6909,8 +6909,8 @@
     "42": {
       "links": {},
       "events": {},
-      "address": "0xC4c4A8F25ac2c30BaBbf99Ca09F848c8eb587b1f",
-      "updated_at": 1564525248589
+      "address": "0xE4Fa69BdC929AAA0C0491bd2dc015B04A0B4aB68",
+      "updated_at": 1564526713462
     },
     "1564518816946": {
       "links": {},
@@ -6920,7 +6920,7 @@
     }
   },
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-07-30T22:20:38.905Z",
+  "updatedAt": "2019-07-30T22:45:03.767Z",
   "devdoc": {
     "methods": {}
   },

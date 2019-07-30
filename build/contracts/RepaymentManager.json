@@ -18344,7 +18344,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-07-30T22:20:38.887Z",
+  "updatedAt": "2019-07-30T22:45:03.749Z",
   "devdoc": {
     "details": "This contract is inspired by OpenZeppelin's PaymentSplitter * It follows a _pull payment_ model. Payments are not forwarded automatically, and lender will need to trigger the actual transfer by calling the {release} function",
     "methods": {

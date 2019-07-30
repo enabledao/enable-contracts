@@ -13769,7 +13769,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-07-30T22:20:38.897Z",
+  "updatedAt": "2019-07-30T22:45:03.759Z",
   "devdoc": {
     "methods": {
       "_calcMonthlyInterest(uint256,uint256)": {
