@@ -9,19 +9,16 @@ const truffleConfig = require('./truffle-config.js');
 
 const ENABLE_CREDIT_PACKAGE = 'enable-credit';
 
-
-function activeNetwork () {
+function activeNetwork() {
   const networkIndex = process.argv.lastIndexOf('--network');
   if (networkIndex < 2) {
     return 'development';
   }
-    return process.argv[networkIndex + 1];
+  return process.argv[networkIndex + 1];
 }
 
-function activeNetworkName () {
-  return (activeNetwork() === 'development') ?
-    `dev-${App.network_id}` :
-    activeNetwork();
+function activeNetworkName() {
+  return activeNetwork() === 'development' ? `dev-${App.network_id}` : activeNetwork();
 }
 
 /*
@@ -40,18 +37,18 @@ function getAppAddress() {
 function getCrowdloanFactory() {
   const zosNetworkConfig = getZosNetworkConfig(activeNetworkName());
   const factories = zosNetworkConfig.proxies[`${ENABLE_CREDIT_PACKAGE}/CrowdloanFactory`];
-  return factories[factories.length-1];
+  return factories[factories.length - 1];
 }
 
 function helpers() {
   return {
-    constants : {
+    constants: {
       ZERO_ADDRESS: '0x0000000000000000000000000000000000000000'
     }
-  }
+  };
 }
 
-async function initializeCrowdloanFactory (factoryAddress) {
+async function initializeCrowdloanFactory(factoryAddress) {
   const factory = await CrowdloanFactory.at(factoryAddress);
   return factory.initialize(getAppAddress());
 }
@@ -64,11 +61,11 @@ module.exports = async () => {
     const initializeTx = await initializeCrowdloanFactory(factoryAddress);
     console.log('initializeTx:', initializeTx.tx);
 
-    console.log(
-      'done!!!!'
-    );
-  } catch (e) {console.error(e)}
+    console.log('done!!!!');
+  } catch (e) {
+    console.error(e);
+  }
 
   console.log('Exporting Crowdloan version');
   process.exit();
-}
+};

@@ -26,6 +26,7 @@ jobs:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
+      - run: npx truffle compile
       - run: npx zos push --network development
       - run: npx zos publish --network development
       - run: npm test
