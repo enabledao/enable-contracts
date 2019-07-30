@@ -5,7 +5,7 @@
   "main": "truffle-config.js",
   "scripts": {
     "test": "zos push --network development && truffle test",
-    "compile": "truffle compile",
+    "compile": "truffle compile --all",
     "start": "npm run compile && truffle exec deploy.js --network development",
     "eslint": "./node_modules/.bin/eslint ./",
     "eslint:fix": "./node_modules/.bin/eslint ./ --fix",
