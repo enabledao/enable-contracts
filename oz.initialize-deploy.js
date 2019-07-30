@@ -24,19 +24,19 @@ function activeNetworkName() {
 /*
  *  Get zos config info for specified networkId.
  */
-function getZosNetworkConfig(networkName) {
-  const zosNetworkFile = fs.readFileSync(`./zos.${networkName}.json`);
+function getOZNetworkConfig(networkName) {
+  const zosNetworkFile = fs.readFileSync(`./.openzeppelin/${networkName}.json`);
   return JSON.parse(zosNetworkFile);
 }
 
 function getAppAddress() {
-  const zosNetworkConfig = getZosNetworkConfig(activeNetworkName());
-  return zosNetworkConfig.app.address;
+  const ozNetworkConfig = getOZNetworkConfig(activeNetworkName());
+  return ozNetworkConfig.app.address;
 }
 
 function getCrowdloanFactory() {
-  const zosNetworkConfig = getZosNetworkConfig(activeNetworkName());
-  const factories = zosNetworkConfig.proxies[`${ENABLE_CREDIT_PACKAGE}/CrowdloanFactory`];
+  const ozNetworkConfig = getOZNetworkConfig(activeNetworkName());
+  const factories = ozNetworkConfig.proxies[`${ENABLE_CREDIT_PACKAGE}/CrowdloanFactory`];
   return factories[factories.length - 1];
 }
 

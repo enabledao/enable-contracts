@@ -92,28 +92,26 @@ function resolveNetworkFilename(networkId) {
 /*
  *  Get zos config info for specified networkId.
  */
-function getZosNetworkConfig(networkId) {
+function getOZNetworkConfig(networkId) {
   const networkName = resolveNetworkFilename(networkId);
-  const zosNetworkFile = fs.readFileSync(`./zos.${networkName}.json`);
+  const ozNetworkFile = fs.readFileSync(`./.openzeppelin/${networkName}.json`);
 
-  return JSON.parse(zosNetworkFile);
+  return JSON.parse(ozNetworkFile);
 }
 
-function getZosConfig() {
-  return JSON.parse(fs.readFileSync('./zos.json'));
+function getOZProjectConfig() {
+  return JSON.parse(fs.readFileSync('./openzeppelin/project.json'));
 }
 
 function getAppAddress() {
   const currentNetworkId = App.network_id;
-  const zosNetworkConfig = getZosNetworkConfig(currentNetworkId);
-  return zosNetworkConfig.app.address;
+  const ozNetworkConfig = getOZNetworkConfig(currentNetworkId);
+  return ozNetworkConfig.app.address;
 }
 
 // Helper function for creating instances via current App contract
 async function appCreate(packageName, contractName, admin, data) {
-  const currentNetworkId = App.network_id;
-  const zosNetworkConfig = getZosNetworkConfig(currentNetworkId);
-  const appAddress = zosNetworkConfig.app.address;
+  const appAddress = getAppAddress();
 
   const app = await App.at(appAddress);
   const tx = await app.create(packageName, contractName, admin, data);
@@ -169,8 +167,8 @@ module.exports = {
   generateRandomPaddedBN,
   getAppAddress,
   getRandomPercentageOfBN,
-  getZosConfig,
-  getZosNetworkConfig,
+  getOZProjectConfig,
+  getOZNetworkConfig,
   revertEvm,
   snapShotEvm
 };

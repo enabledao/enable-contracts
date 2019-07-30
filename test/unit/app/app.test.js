@@ -1,4 +1,3 @@
-import {Contracts} from 'zos-lib';
 import {BN, constants, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
 
 const {expect} = require('chai');
