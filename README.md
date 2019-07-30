@@ -42,7 +42,7 @@ We use [ZeppelinOS](https://docs.zeppelinos.org/docs/start.html) to develop, dep
 
 1. Run `npm install` to install all zeppelinOS related dependencies
 2. Run `ganache-cli` (or `ganache-cli --deterministic`) to run a local blockchain
-3. Create your own `.env` file based on `.env.sample`. These are the `process.env` variables that will be used for deployment / application.
+3. Create your own `.env` file based on `.env.sample`. These are the `process.env` variables that will be used for deployment / application. As of Aug 2019 this is the Infura API key and mnemonic"
 
 ### Deploy to ganache `development` network
 
@@ -50,6 +50,9 @@ For background: read [Publishing an EVM package](https://docs.zeppelinos.org/doc
 
 1. `zos publish --network development`. This publishes the project's app, package and provider. This updates the [zos config](https://docs.zeppelinos.org/docs/configuration.html) file with "app.address" field that is needed for tests to run.
 2. `zos push --network development`. This deploys the contracts in the project. This has the same effect as running `zos create` on every contract. See [Quickstart](https://docs.zeppelinos.org/docs/first.html) for context.
+
+### Deploy to ethereum and development networks *mainnet, ropsten, kovan, ganche*
+1. Run `npm run deploy:contracts -- --network kovan` from bash; change the network to the desired network
 
 ### Running tests
 
