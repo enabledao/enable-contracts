@@ -15,7 +15,7 @@
     "zos:create": "zos create",
     "zos:publish": "zos publish",
     "zos:push": "zos push",
-    "deploy:contracts": "sh ./zos.deploy.js"
+    "deploy:contracts": "sh ./zos.deploy.sh"
   },
   "husky": {
     "hooks": {
