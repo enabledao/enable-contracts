@@ -1,16 +1,18 @@
 {
-  "zosversion": "2.2",
+  "manifestVersion": "2.2",
   "contracts": {
-    "Crowdloan": "Crowdloan",
     "TermsContract": "TermsContract",
+    "Crowdloan": "Crowdloan",
     "CrowdloanFactory": "CrowdloanFactory",
     "RepaymentManager": "RepaymentManager"
   },
-  "dependencies": {},
+  "dependencies": {
+    "openzeppelin-eth": "2.2.0"
+  },
   "name": "enable-credit",
-  "version": "0.0.1",
+  "version": "0.1.2-alpha.0",
   "compiler": {
-    "manager": "zos",
+    "manager": "truffle",
     "solcVersion": "0.5.10",
     "compilerSettings": {
       "optimizer": {}

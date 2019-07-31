@@ -1,11 +1,11 @@
 {
   "contracts": {
     "TermsContract": {
-      "address": "0x84eBFb0a8cBCe8d0E9cD34836DAC71a99FbA40AC",
-      "constructorCode": "60806040523480156100115760006000fd5b50610017565b611d82806100266000396000f3fe",
-      "bodyBytecodeHash": "305b737329dfcb073a152dfbd6e4aaf47cad1c1f555876738e9d45ca097bf6c0",
-      "localBytecodeHash": "1827328046ca0cc3926c104991b30187c4ec31cd62ffba7cdd1816b8746ec0a2",
-      "deployedBytecodeHash": "1827328046ca0cc3926c104991b30187c4ec31cd62ffba7cdd1816b8746ec0a2",
+      "address": "0xb0E9E321e2Fce71010A6919A3e6D4f0AaaeF1df7",
+      "constructorCode": "608060405234801561001057600080fd5b50611b5c806100206000396000f3fe",
+      "bodyBytecodeHash": "fab835e9fd0863978583832d8b2600e07f0c3aefc12c613b03c7ab6f1bd9c2f2",
+      "localBytecodeHash": "64a38b2a8fd691819d0c5c005c69ede9a46ca8bc039fd53f9a44dbbab668ae77",
+      "deployedBytecodeHash": "64a38b2a8fd691819d0c5c005c69ede9a46ca8bc039fd53f9a44dbbab668ae77",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -178,11 +178,11 @@
       }
     },
     "Crowdloan": {
-      "address": "0x7ceDD9F9a9418F180DF18E5412F9F386257AA097",
-      "constructorCode": "60806040523480156100115760006000fd5b50610017565b61254d806100266000396000f3fe",
-      "bodyBytecodeHash": "6f28c8ae5b07a2618b709c2f97e920ebd5c7d24986cf6a61e518083db9aec323",
-      "localBytecodeHash": "a8257db1e31cef73b7b08af08b1a4e706ad64d7069f4646becf4cbadd203ee08",
-      "deployedBytecodeHash": "a8257db1e31cef73b7b08af08b1a4e706ad64d7069f4646becf4cbadd203ee08",
+      "address": "0xDC4543c11829209402b6B12657342062a11b9a2c",
+      "constructorCode": "608060405234801561001057600080fd5b50612709806100206000396000f3fe",
+      "bodyBytecodeHash": "a92d4a31502e0aa6f4b3d7bfda03c928c96f0e9c6858cc710125e5f31dba76df",
+      "localBytecodeHash": "539cdb529335c93cdb385fc2b68f09f29e1819905f547bd767602ce20ae1fccf",
+      "deployedBytecodeHash": "539cdb529335c93cdb385fc2b68f09f29e1819905f547bd767602ce20ae1fccf",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -301,11 +301,11 @@
       }
     },
     "CrowdloanFactory": {
-      "address": "0x9f814faB8352FD36a92D1777b2Bb573dbD13d6C2",
-      "constructorCode": "60806040523480156100115760006000fd5b50610017565b6110ef806100266000396000f3fe",
-      "bodyBytecodeHash": "02b95363e6cf524875c79af06de2b8df7a4ccecdf9a24319b404d82bd1e2af9a",
-      "localBytecodeHash": "c4c4778f5c6b56a3ce616dc0f1b8f46d0c0f6affbd495dc3f9ec3fb194eafa65",
-      "deployedBytecodeHash": "c4c4778f5c6b56a3ce616dc0f1b8f46d0c0f6affbd495dc3f9ec3fb194eafa65",
+      "address": "0x05b2E9b04F15187150F8d9f905c18d0fcc116DAe",
+      "constructorCode": "608060405234801561001057600080fd5b50611133806100206000396000f3fe",
+      "bodyBytecodeHash": "f6705766e8aef78387ebab85d4298a26189f03938f4b485b4676afa0805e6b81",
+      "localBytecodeHash": "5a845fdb474147cc090dc0230ba36a5058e894ba3a0157d2fdb1e706cbb46a94",
+      "deployedBytecodeHash": "5a845fdb474147cc090dc0230ba36a5058e894ba3a0157d2fdb1e706cbb46a94",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -373,11 +373,11 @@
       }
     },
     "RepaymentManager": {
-      "address": "0xbDbb89C960ca8CEf14c05304c6A8dB467f63fDf2",
-      "constructorCode": "60806040523480156100115760006000fd5b50610017565b612e43806100266000396000f3fe",
-      "bodyBytecodeHash": "64d53b54c2be7a39b4226c5a4c6909ea97f9463e8f531e48377137ae42c389ad",
-      "localBytecodeHash": "bfdd68ca994a1ab0044129c97894a38ca6b6ec8da5bfed29029974b0a21d583c",
-      "deployedBytecodeHash": "bfdd68ca994a1ab0044129c97894a38ca6b6ec8da5bfed29029974b0a21d583c",
+      "address": "0xDc6430C2A6209D1Fff492034FF30F62545d0C16E",
+      "constructorCode": "608060405234801561001057600080fd5b50612e07806100206000396000f3fe",
+      "bodyBytecodeHash": "72766047a1a64e1e23b3a1eb9d02f6f7eb7427f069892d423a5225ba4112b505",
+      "localBytecodeHash": "e8744b42216a0d1cec94810f51fa2b75c6a15af6d3e03924e69825ad6ad6bbe8",
+      "deployedBytecodeHash": "e8744b42216a0d1cec94810f51fa2b75c6a15af6d3e03924e69825ad6ad6bbe8",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -522,26 +522,32 @@
   "proxies": {
     "enable-credit/CrowdloanFactory": [
       {
-        "address": "0x2A734264B0DC8c0f2e2922Ac51775c5C46bFA915",
-        "version": "0.0.1",
-        "implementation": "0x9f814faB8352FD36a92D1777b2Bb573dbD13d6C2",
-        "admin": "0xE39CfF95979907046Bd8298f86152362a98f2b02",
+        "address": "0xE4Fa69BdC929AAA0C0491bd2dc015B04A0B4aB68",
+        "version": "0.1.2-alpha.0",
+        "implementation": "0x05b2E9b04F15187150F8d9f905c18d0fcc116DAe",
+        "admin": "0xDf3CDa0c48fd12A05E8669E93a6F0e1c6E8c088b",
         "kind": "Upgradeable"
       }
     ]
   },
-  "zosversion": "2.2",
-  "version": "0.0.1",
+  "manifestVersion": "2.2",
+  "version": "0.1.2-alpha.0",
+  "dependencies": {
+    "openzeppelin-eth": {
+      "package": "0xb6f8f11b166d526932ee04ffe4d25b810f619e34",
+      "version": "2.2.0"
+    }
+  },
   "app": {
-    "address": "0x65c067C746d93b4565A60aAE9A5492cb06f8CE2b"
+    "address": "0x3BD0F7B75df299A297864852563f8FF29FFEE464"
   },
   "package": {
-    "address": "0x07064893F6ccF3C4061c8339f6d28560628911e1"
+    "address": "0x1466f76B3D11Aa89741Ad5b6A54229c0E284c04E"
   },
   "provider": {
-    "address": "0xacbd0eF37894315E19571499f70dEc9cFacafBBb"
+    "address": "0xE370a1f497c5224C0D603A8E9CFA2E34487ac448"
   },
   "proxyAdmin": {
-    "address": "0xE39CfF95979907046Bd8298f86152362a98f2b02"
+    "address": "0xDf3CDa0c48fd12A05E8669E93a6F0e1c6E8c088b"
   }
 }

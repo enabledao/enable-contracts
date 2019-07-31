@@ -63,6 +63,7 @@ typings/
 
 # zos sessions
 zos.dev-*
+.openzeppelin/dev-*
 
 # contracts build
 build/
@@ -82,3 +83,5 @@ build/**/*
 !build/contracts/TermsContract*.json
 
 .zos.session
+
+.openzeppelin/.session
