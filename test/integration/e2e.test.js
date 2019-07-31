@@ -109,7 +109,7 @@ contract('Enable Suite', accounts => {
   });
 
   it('Factory should have App address initialized', async () => {
-    const result = await crowdloanFactory.app();
+    const result = await crowdloanFactory.getApp();
     expect(result).to.be.equal(appAddress);
   });
 
@@ -131,6 +131,10 @@ contract('Enable Suite', accounts => {
     crowdloan = await Crowdloan.at(loanCreated.args.crowdloan);
     termsContract = await TermsContract.at(loanCreated.args.termsContract);
     repaymentManager = await RepaymentManager.at(loanCreated.args.repaymentManager);
+
+    console.log('crowdloan', crowdloan.address);
+    console.log('termsContract', termsContract.address);
+    console.log('repaymentManager', repaymentManager.address);
 
     // verify crowdloan contracts
     expect(await crowdloan.termsContract.call()).to.be.equal(termsContract.address);
