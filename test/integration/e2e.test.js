@@ -132,10 +132,6 @@ contract('Enable Suite', accounts => {
     termsContract = await TermsContract.at(loanCreated.args.termsContract);
     repaymentManager = await RepaymentManager.at(loanCreated.args.repaymentManager);
 
-    console.log('crowdloan', crowdloan.address);
-    console.log('termsContract', termsContract.address);
-    console.log('repaymentManager', repaymentManager.address);
-
     // verify crowdloan contracts
     expect(await crowdloan.termsContract.call()).to.be.equal(termsContract.address);
 

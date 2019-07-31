@@ -5,8 +5,6 @@
   "main": "truffle-config.js",
   "scripts": {
     "test": "oz push --network development && truffle test",
-    "test:individual": "oz push --network development && truffle test test/unit/crowdloan/crowdloanFactory.test.js",
-    "test:e2e": "oz push --network development && truffle test test/integration/e2e.test.js",
     "compile": "truffle compile --all",
     "eslint": "./node_modules/.bin/eslint ./",
     "eslint:fix": "./node_modules/.bin/eslint ./ --fix",
