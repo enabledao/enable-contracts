@@ -15,6 +15,8 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     using TermsContractLib for TermsContractLib.LoanStatus;
 
     TermsContractLib.LoanParams public loanParams;
+    uint256 constant private MONTHSINYEAR = 12;
+    uint256 constant private TENTHOUSAND = 10000;
 
     address private _borrower;
 
@@ -237,7 +239,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         pure
         returns (uint256 result)
     {
-        result = principal.mul(interestRate).div(10000);
+        result = principal.mul(interestRate).div(MONTHSINYEAR).div(TENTHOUSAND);
     }
 
     /**

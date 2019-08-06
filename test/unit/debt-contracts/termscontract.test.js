@@ -18,13 +18,14 @@ contract('Terms Contract', accounts => {
   const borrower = accounts[5];
   const controller = accounts[6];
   const nonController = accounts[7];
+  const MONTHSINYEAR = 12;
   // TODO(Dan): Should refactor params into testHelpers
   const params = {
     borrower,
     principalToken: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
-    principalRequested: new BN(60000), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
+    principalRequested: new BN(6000000), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
     loanPeriod: new BN(12),
-    interestRate: new BN(50)
+    interestRate: new BN(600)
   };
 
   const reassign = (original, param, value) => {
@@ -60,7 +61,7 @@ contract('Terms Contract', accounts => {
   };
 
   const interestPayment = (principal, interest) => {
-    return new BN(principal).mul(new BN(interest)).div(new BN(10000));
+    return new BN(principal).mul(new BN(interest)).div(new BN(MONTHSINYEAR)).div(new BN(10000));
   };
 
   context('invalid loan term params', async () => {
