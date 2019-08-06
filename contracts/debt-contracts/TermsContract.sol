@@ -69,8 +69,17 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     function borrower() public view returns (address) {
         return _borrower;
     }
+
+    function getInterestRate() public view returns (uint256) {
+        return loanParams.interestRate;
+    }
+
     function getLoanStatus() public view returns (TermsContractLib.LoanStatus loanStatus) {
         return loanParams.loanStatus;
+    }
+
+    function getLoanStartTimestamp() public view returns (uint256) {
+        return loanParams.loanStartTimestamp;
     }
 
     function getNumScheduledPayments() public view returns (uint256) {

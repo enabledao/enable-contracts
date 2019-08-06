@@ -119,6 +119,12 @@ contract('Terms Contract', accounts => {
         expect(result).to.be.equal(params.principalToken);
       });
 
+      it('should get the correct interestRate', async () => {
+        expect(await instance.getInterestRate.call()).to.be.a.bignumber.that.equals(
+          params.interestRate
+        );
+      });
+
       it('should record loan params in storage', async () => {
         Object.keys(params).forEach(key => {
           const value = instanceParams[key];
