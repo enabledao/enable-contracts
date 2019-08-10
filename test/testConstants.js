@@ -26,7 +26,7 @@ const crowdfundParams = {
 const loanParams = {
   principalRequested: web3.utils.toWei('20000000', 'ether'), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
   loanPeriod: 6,
-  interestRate: 50
+  interestRate: 600
 };
 
 const paymentTokenParams = {
