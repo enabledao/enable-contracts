@@ -99,6 +99,17 @@ zos publish
 zos publish --network development
 ```
 
+### "Appears to be git repo or submodule" during `npm install`
+
+This is usually because of the `websocket` module which `web3` depends on. Remove all `.git` submodules using the command below
+
+```shell
+# Finds all instances of .git folders in node_modules
+find ./node_modules -name ".git"
+
+# Deletes them
+find ./node_modules -name ".git" -delete
+```
 
 # Terminology
 
