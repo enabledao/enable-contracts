@@ -5,8 +5,6 @@ const fs = require('fs');
 const App = artifacts.require('App');
 const CrowdloanFactory = artifacts.require('CrowdloanFactory');
 
-const truffleConfig = require('./truffle-config.js');
-
 const ENABLE_CREDIT_PACKAGE = 'enable-credit';
 
 function activeNetwork() {
@@ -40,21 +38,12 @@ function getCrowdloanFactory() {
   return factories[factories.length - 1];
 }
 
-function helpers() {
-  return {
-    constants: {
-      ZERO_ADDRESS: '0x0000000000000000000000000000000000000000'
-    }
-  };
-}
-
 async function initializeCrowdloanFactory(factoryAddress) {
   const factory = await CrowdloanFactory.at(factoryAddress);
   return factory.initialize(getAppAddress());
 }
 
 module.exports = async () => {
-  const {constants} = helpers();
   try {
     const factoryAddress = getCrowdloanFactory().address;
     console.log('Factory to initialize:', factoryAddress);
