@@ -15,8 +15,8 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     using TermsContractLib for TermsContractLib.LoanStatus;
 
     TermsContractLib.LoanParams public loanParams;
-    uint256 constant private MONTHSINYEAR = 12;
-    uint256 constant private TENTHOUSAND = 10000;
+    uint256 private constant MONTHSINYEAR = 12;
+    uint256 private constant TENTHOUSAND = 10000;
 
     address private _borrower;
 
