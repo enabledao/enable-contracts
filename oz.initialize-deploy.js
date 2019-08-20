@@ -49,8 +49,7 @@ module.exports = async () => {
   try {
     const factoryAddress = getCrowdloanFactory().address;
     console.log('Factory to initialize:', factoryAddress);
-    const initializeTx = await initializeCrowdloanFaoopppppppppppppppl;
-    ctory(factoryAddress);
+    const initializeTx = await initializeCrowdloanFactory(factoryAddress);
     console.log('initializeTx:', initializeTx.tx);
   } catch (e) {
     console.error(e);
