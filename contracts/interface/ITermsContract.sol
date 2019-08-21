@@ -8,9 +8,24 @@ contract ITermsContract {
     event LoanStatusUpdated(TermsContractLib.LoanStatus status);
 
     function borrower() external view returns (address);
+    function getInterestRate() external view returns (uint256);
+    function getLoanStatus() external view returns (TermsContractLib.LoanStatus);
+    function getLoanStartTimestamp() external view returns (uint256);
+    function getNumScheduledPayments() external view returns (uint256);
+    function getPrincipalRequested() external view returns (uint256);
+    function getPrincipalDisbursed() external view returns (uint256);
+    function getPrincipalToken() external view returns (address);
 
-    function getExpectedRepaymentValue() public view returns (uint256);
-    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256);
+    function getRequestedScheduledPayment(uint256 period)
+        external
+        view
+        returns (uint256, uint256, uint256);
+    function getScheduledPayment(uint256)
+        external
+        view
+        returns (uint256, uint256, uint256, uint256);
+    function getExpectedRepaymentValue() external view returns (uint256);
+    function getExpectedRepaymentValue(uint256 timestamp) external view returns (uint256);
 
     function getLoanParams()
         external
@@ -27,16 +42,7 @@ contract ITermsContract {
         );
 
     function setLoanStatus(TermsContractLib.LoanStatus _status) external;
-    function startRepaymentCycle(uint256 totalCrowdfunded)
+    function startRepaymentCycle(uint256)
         external
-        returns (uint256 startTimestamp);
-
-    function getLoanStatus() external view returns (TermsContractLib.LoanStatus loanStatus);
-    function getPrincipalRequested() external view returns (uint256);
-    function getPrincipalToken() external view returns (address);
-
-    function getScheduledPayment(uint256)
-        external
-        view
-        returns (uint256, uint256, uint256, uint256);
+        returns (uint256);
 }
