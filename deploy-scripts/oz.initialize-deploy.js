@@ -49,12 +49,8 @@ module.exports = async () => {
     console.log('Factory to initialize:', factoryAddress);
     const initializeTx = await initializeCrowdloanFactory(factoryAddress);
     console.log('initializeTx:', initializeTx.tx);
-
-    console.log('done!!!!');
   } catch (e) {
     console.error(e);
   }
-
-  console.log('Exporting Crowdloan version');
   process.exit();
 };

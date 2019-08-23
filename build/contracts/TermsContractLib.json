@@ -7,9 +7,9 @@
   "sourceMap": "25:546:4:-;;132:2:-1;166:7;155:9;146:7;137:37;252:7;246:14;243:1;238:23;232:4;229:33;270:1;265:20;;;;222:63;;265:20;274:9;222:63;;298:9;295:1;288:20;328:4;319:7;311:22;352:7;343;336:24",
   "deployedSourceMap": "25:546:4:-;;;;;;;;",
   "source": "pragma solidity ^0.5.2;\n\nlibrary TermsContractLib {\n    /** NOTE: Update testConstants.js file if changed! */\n    enum LoanStatus {\n        NOT_STARTED,\n        FUNDING_STARTED,\n        FUNDING_FAILED,\n        FUNDING_COMPLETE,\n        REPAYMENT_CYCLE,\n        REPAYMENT_COMPLETE\n    }\n\n    struct LoanParams {\n        address principalToken;\n        uint256 principalRequested;\n        LoanStatus loanStatus;\n        uint256 loanPeriod;\n        uint256 interestRate; // NOTE(Dan): in months\n        uint256 principalDisbursed;\n        uint256 loanStartTimestamp;\n    }\n}\n",
-  "sourcePath": "/media/brvhrt/Vault/Store/New-folder/ebc/contracts/debt-contracts/TermsContractLib.sol",
+  "sourcePath": "/Users/Daniel/Dropbox/atlas/enable-loans/repo/enable-contracts/contracts/debt-contracts/TermsContractLib.sol",
   "ast": {
-    "absolutePath": "/media/brvhrt/Vault/Store/New-folder/ebc/contracts/debt-contracts/TermsContractLib.sol",
+    "absolutePath": "/Users/Daniel/Dropbox/atlas/enable-loans/repo/enable-contracts/contracts/debt-contracts/TermsContractLib.sol",
     "exportedSymbols": {
       "TermsContractLib": [
         1895
@@ -291,7 +291,7 @@
     "src": "0:572:4"
   },
   "legacyAST": {
-    "absolutePath": "/media/brvhrt/Vault/Store/New-folder/ebc/contracts/debt-contracts/TermsContractLib.sol",
+    "absolutePath": "/Users/Daniel/Dropbox/atlas/enable-loans/repo/enable-contracts/contracts/debt-contracts/TermsContractLib.sol",
     "exportedSymbols": {
       "TermsContractLib": [
         1895

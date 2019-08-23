@@ -300,7 +300,7 @@
   "source": "pragma solidity >=0.4.22 <0.6.0;\n\nimport \"../debt-contracts/TermsContractLib.sol\";\n\ncontract ITermsContract {\n    using TermsContractLib for TermsContractLib.LoanStatus;\n\n    event LoanStatusUpdated(TermsContractLib.LoanStatus status);\n\n    function borrower() external view returns (address);\n    function getInterestRate() external view returns (uint256);\n    function getLoanStatus() external view returns (TermsContractLib.LoanStatus);\n    function getLoanStartTimestamp() external view returns (uint256);\n    function getNumScheduledPayments() external view returns (uint256);\n    function getPrincipalRequested() external view returns (uint256);\n    function getPrincipalDisbursed() external view returns (uint256);\n    function getPrincipalToken() external view returns (address);\n\n    function getRequestedScheduledPayment(uint256 period)\n        external\n        view\n        returns (uint256, uint256, uint256);\n    function getScheduledPayment(uint256)\n        external\n        view\n        returns (uint256, uint256, uint256, uint256);\n    function getExpectedRepaymentValue() external view returns (uint256);\n    function getExpectedRepaymentValue(uint256 timestamp) external view returns (uint256);\n\n    function getLoanParams()\n        external\n        view\n        returns (\n            address,\n            address principalToken,\n            uint256 principalRequested,\n            uint256 loanStatus,\n            uint256 loanPeriod,\n            uint256 interestRate,\n            uint256 principalDisbursed,\n            uint256 loanStartTimestamp\n        );\n\n    function setLoanStatus(TermsContractLib.LoanStatus _status) external;\n    function startRepaymentCycle(uint256)\n        external\n        returns (uint256);\n}\n",
   "sourcePath": "/media/brvhrt/Vault/Store/New-folder/ebc/contracts/interface/ITermsContract.sol",
   "ast": {
-    "absolutePath": "/media/brvhrt/Vault/Store/New-folder/ebc/contracts/interface/ITermsContract.sol",
+    "absolutePath": "/Users/Daniel/Dropbox/atlas/enable-loans/repo/enable-contracts/contracts/interface/ITermsContract.sol",
     "exportedSymbols": {
       "ITermsContract": [
         2413
@@ -324,7 +324,7 @@
         "src": "0:32:8"
       },
       {
-        "absolutePath": "/media/brvhrt/Vault/Store/New-folder/ebc/contracts/debt-contracts/TermsContractLib.sol",
+        "absolutePath": "/Users/Daniel/Dropbox/atlas/enable-loans/repo/enable-contracts/contracts/debt-contracts/TermsContractLib.sol",
         "file": "../debt-contracts/TermsContractLib.sol",
         "id": 2298,
         "nodeType": "ImportDirective",
@@ -1666,7 +1666,7 @@
     "src": "0:1739:8"
   },
   "legacyAST": {
-    "absolutePath": "/media/brvhrt/Vault/Store/New-folder/ebc/contracts/interface/ITermsContract.sol",
+    "absolutePath": "/Users/Daniel/Dropbox/atlas/enable-loans/repo/enable-contracts/contracts/interface/ITermsContract.sol",
     "exportedSymbols": {
       "ITermsContract": [
         2413
@@ -1690,7 +1690,7 @@
         "src": "0:32:8"
       },
       {
-        "absolutePath": "/media/brvhrt/Vault/Store/New-folder/ebc/contracts/debt-contracts/TermsContractLib.sol",
+        "absolutePath": "/Users/Daniel/Dropbox/atlas/enable-loans/repo/enable-contracts/contracts/debt-contracts/TermsContractLib.sol",
         "file": "../debt-contracts/TermsContractLib.sol",
         "id": 2298,
         "nodeType": "ImportDirective",

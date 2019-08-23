@@ -170,9 +170,9 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "pragma solidity >=0.4.22 <0.6.0;\n\ninterface ICrowdloan {\n    event Fund(address indexed sender, uint256 amount);\n    event Refund(address indexed sender, uint256 amount);\n    event ReleaseFunds(address indexed borrower, uint256 amount);\n\n    function startCrowdfund() external;\n\n    /// @notice Fund the loan in exchange for a debt token\n    /// @return debtTokenId Issued debt token ID\n    function fund(uint256 amount) external returns (uint256);\n\n    /// @notice Get a refund for a debt token owned by the sender\n    /// @param debtTokenId Debt token ID\n    function refund(uint256 debtTokenId) external;\n\n    function withdraw() external;\n    function withdraw(uint256 amount) external;\n\n    function getBorrower() external view returns (address);\n\n    function getCrowdfundParams() external view returns (uint256, uint256);\n\n    function getCrowdfundEnd() external view returns (uint256);\n}\n",
-  "sourcePath": "/media/brvhrt/Vault/Store/New-folder/ebc/contracts/interface/ICrowdloan.sol",
+  "sourcePath": "/Users/Daniel/Dropbox/atlas/enable-loans/repo/enable-contracts/contracts/interface/ICrowdloan.sol",
   "ast": {
-    "absolutePath": "/media/brvhrt/Vault/Store/New-folder/ebc/contracts/interface/ICrowdloan.sol",
+    "absolutePath": "/Users/Daniel/Dropbox/atlas/enable-loans/repo/enable-contracts/contracts/interface/ICrowdloan.sol",
     "exportedSymbols": {
       "ICrowdloan": [
         2200
@@ -858,7 +858,7 @@
     "src": "0:896:6"
   },
   "legacyAST": {
-    "absolutePath": "/media/brvhrt/Vault/Store/New-folder/ebc/contracts/interface/ICrowdloan.sol",
+    "absolutePath": "/Users/Daniel/Dropbox/atlas/enable-loans/repo/enable-contracts/contracts/interface/ICrowdloan.sol",
     "exportedSymbols": {
       "ICrowdloan": [
         2200
