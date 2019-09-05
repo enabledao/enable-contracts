@@ -81,6 +81,7 @@ build/**/*
 !build/contracts/ITermsContract*.json
 !build/contracts/RepaymentManager*.json
 !build/contracts/TermsContract*.json
+!build/contracts/TokenFaucet*.json
 
 .zos.session
 

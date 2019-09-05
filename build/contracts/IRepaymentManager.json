@@ -2448,7 +2448,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-08-20T15:24:16.122Z",
+  "updatedAt": "2019-08-21T20:07:14.369Z",
   "devdoc": {
     "methods": {
       "decreaseShares(address,uint256)": {

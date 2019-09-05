@@ -1549,7 +1549,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-08-20T15:24:16.118Z",
+  "updatedAt": "2019-08-21T20:07:14.364Z",
   "devdoc": {
     "methods": {
       "fund(uint256)": {

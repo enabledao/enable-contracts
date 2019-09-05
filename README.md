@@ -54,6 +54,16 @@ For background: read [Publishing an EVM package](https://docs.zeppelinos.org/doc
 ### Deploy to ethereum and development networks *mainnet, ropsten, kovan, ganche*
 1. Run `npm run deploy:contracts -- --network kovan` from bash; change the network to the desired network
 
+### Deploy Miscellaneous contracts to any truffle configures network *mainnet, ropsten, kovan, ganche*
+Run `npx truffle exec deploy-scripts/paymentToken-deploy.js --network development --{args}` from node/terminal; change the network to the desired network
+
+#### Avaialble scripts
+1. `deploy-scripts/paymentToken-deploy.js`: Arguments `--name`, `--symbol`, `--decimals`.  
+  > npx truffle exec deploy-scripts/paymentToken-deploy.js --network development --name 'EnableDao Dai' --symbol EDAI --decimals 18
+
+2. `deploy-scripts/tokenFaucet-deploy.js`: No arguments.  
+  > npx truffle exec deploy-scripts/tokenFaucet-deploy.js --network development
+
 ### Running tests
 
 1. `npm run test`. This also runs `zos push`, which updates the contracts with the latest vrsions

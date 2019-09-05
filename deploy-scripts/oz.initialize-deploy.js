@@ -5,8 +5,6 @@ const fs = require('fs');
 const App = artifacts.require('App');
 const CrowdloanFactory = artifacts.require('CrowdloanFactory');
 
-const truffleConfig = require('./truffle-config.js');
-
 const ENABLE_CREDIT_PACKAGE = 'enable-credit';
 
 function activeNetwork() {
