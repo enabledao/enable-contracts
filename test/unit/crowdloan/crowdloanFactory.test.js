@@ -11,51 +11,6 @@ const Crowdloan = artifacts.require('Crowdloan');
 const RepaymentManager = artifacts.require('RepaymentManager');
 const PaymentToken = artifacts.require('StandaloneERC20');
 
-const crowdfundDeploymentTests = async (
-  deployTx,
-  crowdloanFactory,
-  principalRequested,
-  loanPeriod,
-  interestRate,
-  crowdfundLength,
-  crowdfundStart,
-  sender,
-  loanId
-) => {
-  it('should emit a LoanCreated event on successful deploy', async () => {
-    expectEvent.inLogs(deployTx.logs, 'LoanCreated');
-  });
-
-  it('should deploy all contracts on successful deploy', async () => {
-    const loanCreatedEvent = expectEvent.inLogs(deployTx.logs, 'LoanCreated');
-
-    const termsContract = await TermsContract.at(loanCreatedEvent.args.termsContract);
-    const crowdloan = await Crowdloan.at(loanCreatedEvent.args.crowdloan);
-    const repaymentManager = await RepaymentManager.at(loanCreatedEvent.args.repaymentManager);
-
-    assert.exists(termsContract.address, 'terms contract was not successfully deployed');
-    assert.exists(crowdloan.address, 'crowdloan was not successfully deployed');
-    assert.exists(repaymentManager.address, 'repayment manager was not successfully deployed');
-  });
-
-  it('should register correct borrower', async () => {
-    const loanCreatedEvent = expectEvent.inLogs(deployTx.logs, 'LoanCreated');
-    expect(loanCreatedEvent.args.borrower).to.be.equal(sender);
-  });
-
-  it('should register correct principal amount', async () => {
-    const loanCreatedEvent = expectEvent.inLogs(deployTx.logs, 'LoanCreated');
-    expect(loanCreatedEvent.args.amount).to.be.bignumber.equal(principalRequested);
-  });
-
-  it('should register correct loan ID', async () => {
-    const loanCreatedEvent = expectEvent.inLogs(deployTx.logs, 'LoanCreated');
-    expect(loanCreatedEvent.args.loanId).to.be.bignumber.equal(loanId);
-  });
-
-  it('should revert if invalid arguments', async () => {});
-};
-
 async function crowdloanFactoryUnitTests(
   accounts,
   crowdfundParams,
@@ -110,17 +65,40 @@ async function crowdloanFactoryUnitTests(
       );
     });
 
-    await crowdfundDeploymentTests(
-      deployTx,
-      crowdloanFactory.address,
-      loanParams.principalRequested,
-      loanParams.loanPeriod,
-      loanParams.interestRate,
-      crowdfundParams.crowdfundLength,
-      crowdfundParams.crowdfundStart,
-      borrower,
-      expectedLoanId
-    );
+    describe('Crowdfund deployment', async () => {
+      it('should emit a LoanCreated event on successful deploy', async () => {
+        expectEvent.inLogs(deployTx.logs, 'LoanCreated');
+      });
+
+      it('should deploy all contracts on successful deploy', async () => {
+        const loanCreatedEvent = expectEvent.inLogs(deployTx.logs, 'LoanCreated');
+
+        const termsContract = await TermsContract.at(loanCreatedEvent.args.termsContract);
+        const crowdloan = await Crowdloan.at(loanCreatedEvent.args.crowdloan);
+        const repaymentManager = await RepaymentManager.at(loanCreatedEvent.args.repaymentManager);
+
+        assert.exists(termsContract.address, 'terms contract was not successfully deployed');
+        assert.exists(crowdloan.address, 'crowdloan was not successfully deployed');
+        assert.exists(repaymentManager.address, 'repayment manager was not successfully deployed');
+      });
+
+      it('should register correct borrower', async () => {
+        const loanCreatedEvent = expectEvent.inLogs(deployTx.logs, 'LoanCreated');
+        expect(loanCreatedEvent.args.borrower).to.be.equal(borrower);
+      });
+
+      it('should register correct principal amount', async () => {
+        const loanCreatedEvent = expectEvent.inLogs(deployTx.logs, 'LoanCreated');
+        expect(loanCreatedEvent.args.amount).to.be.bignumber.equal(loanParams.principalRequested);
+      });
+
+      it('should register correct loan ID', async () => {
+        const loanCreatedEvent = expectEvent.inLogs(deployTx.logs, 'LoanCreated');
+        expect(loanCreatedEvent.args.loanId).to.be.bignumber.equal(expectedLoanId);
+      });
+
+      it('should revert if invalid arguments', async () => {});
+    });
 
     describe('Crowdfund post-deployment', async () => {
       let crowdloan;
@@ -142,7 +120,7 @@ async function crowdloanFactoryUnitTests(
       });
 
       it('should initialize crowdloan correctly on successful deploy', async () => {
-        const result = await crowdloan.getCrowdfundParams();
+        result = await crowdloan.getCrowdfundParams();
 
         const params = {
           crowdfundLength: result[0],

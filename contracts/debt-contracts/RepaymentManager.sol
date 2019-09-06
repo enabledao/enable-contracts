@@ -20,22 +20,10 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     using TermsContractLib for TermsContractLib.LoanStatus;
 
     uint256 private _totalShares;
-    uint256 private _totalReleased;
 
     mapping(address => uint256) private _shares;
-    mapping(address => uint256) private _released;
 
     ITermsContract public termsContract;
-
-    enum RepaymentStatus {ON_TIME, DEFAULT}
-
-    modifier onlyActiveLoan() {
-        require(
-            termsContract.getLoanStatus() >= TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
-            "Action only allowed while loan is Active"
-        );
-        _;
-    }
 
     modifier beforeLoanFunded() {
         require(
@@ -43,12 +31,6 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
             "Action only allowed before loan funding is completed"
         );
         _;
-    }
-
-    modifier trackRepaymentStatus() {
-        _updateRepaymentStatus();
-        _;
-        _updateRepaymentStatus();
     }
 
     /**
@@ -71,14 +53,6 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     }
 
     /**
-     * @return the total amount paid to contract.
-     */
-    function totalPaid() public view returns (uint256) {
-        uint256 balance = _getPrincipalToken().balanceOf(address(this));
-        return balance.add(_totalReleased);
-    }
-
-    /**
      * @return the total shares of the contract.
      */
     function totalShares() public view returns (uint256) {
@@ -86,70 +60,10 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
     }
 
     /**
-     * @return the total amount already released.
-     */
-    function totalReleased() public view returns (uint256) {
-        return _totalReleased;
-    }
-
-    /**
      * @return the shares of an account.
      */
     function shares(address account) public view returns (uint256) {
         return _shares[account];
-    }
-
-    /**
-     * @return the amount already released to an account.
-     */
-    function released(address account) public view returns (uint256) {
-        return _released[account];
-    }
-
-    /**
-     * @return the release amount that an account could currently claim.
-     */
-    function releaseAllowance(address account) public view returns (uint256) {
-        uint256 totalReceived = totalPaid();
-        return totalReceived.mul(_shares[account]).div(_totalShares).sub(_released[account]);
-    }
-
-    /**
-     * @notice Send funds
-     * @param amount amount of tokens to send.
-     */
-    function pay(uint256 amount) public onlyActiveLoan trackRepaymentStatus {
-        // TODO Uncomment after late fees implemented
-        // require(
-        //     termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_COMPLETE,
-        //     "Action only allowed before Repayment complete"
-        // );
-        require(amount > 0, "No amount set to pay");
-
-        uint256 balance = _getPrincipalToken().balanceOf(address(this));
-        _getPrincipalToken().transferFrom(msg.sender, address(this), amount);
-        require(
-            _getPrincipalToken().balanceOf(address(this)) >= balance.add(amount),
-            "Were the tokens successfully sent?"
-        );
-        emit PaymentReceived(msg.sender, amount);
-    }
-
-    /**
-     * @dev Release one of the payee's proportional payment.
-     * @param account Whose payments will be released.
-     */
-    function release(address payable account) public onlyActiveLoan trackRepaymentStatus {
-        require(_shares[account] > 0, "Account has zero shares");
-
-        uint256 payment = releaseAllowance(account);
-        require(payment != 0, "Account has zero release allowance");
-
-        _released[account] = _released[account].add(payment);
-        _totalReleased = _totalReleased.add(payment);
-
-        _getPrincipalToken().transfer(account, payment);
-        emit PaymentReleased(account, payment);
     }
 
     /**
@@ -164,105 +78,19 @@ contract RepaymentManager is Initializable, IRepaymentManager, ControllerRole {
             termsContract.getLoanStatus() < TermsContractLib.LoanStatus.FUNDING_FAILED,
             "Action only allowed before loan funding failed"
         );
-        if (_shares[account] == 0) {
-            _addPayee(account, shares_);
-        } else {
-            _increaseShares(account, shares_);
-        }
+        require(account != address(0), "Account must not be zero address");
+        require(shares_ > 0, "Can not increase by zero shares");
+
+        _increaseShares(account, shares_);
+
     }
-
-    /**
-     * @dev Decrease shares of a shareholder.
-     */
-    function decreaseShares(address account, uint256 shares_)
-        public
-        onlyController
-        beforeLoanFunded
-    {
-        _decreaseShares(account, shares_);
-    }
-
-    /**
-      * Simple repayment status of loan
-      * NOTE: In future, we will be adding more statuses, e.g. late 30, 60, 90, written-off etc
-      */
-    function getRepaymentStatus() public view returns (RepaymentStatus) {
-        uint256 expectedRepaymentValue = termsContract.getExpectedRepaymentValue();
-        uint256 paid = totalPaid();
-        if (paid < expectedRepaymentValue) {
-            return RepaymentStatus.DEFAULT;
-        } else {
-            return RepaymentStatus.ON_TIME;
-        }
-    }
-
-    function _getPrincipalToken() internal view returns (IERC20 token) {
-        return IERC20(termsContract.getPrincipalToken());
-    }
-
-    // @notice reconcile the loans funding status
-    function _updateRepaymentStatus() internal {
-        uint256 _totalDue;
-        uint256 _totalPaid = totalPaid();
-
-        (, , , , uint256 loanPeriod, , , ) = termsContract.getLoanParams();
-        for (uint256 lp = 0; lp < loanPeriod; lp++) {
-            (, , , uint256 due) = termsContract.getScheduledPayment(lp + 1);
-            _totalDue = _totalDue + due;
-        }
-
-        if (
-            _totalPaid > 0 &&
-            _totalPaid < _totalDue &&
-            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE
-        ) {
-            termsContract.setLoanStatus(TermsContractLib.LoanStatus.REPAYMENT_CYCLE);
-        } else if (_totalDue > 0 && _totalPaid >= _totalDue) {
-            termsContract.setLoanStatus(TermsContractLib.LoanStatus.REPAYMENT_COMPLETE);
-        }
-    }
-
     /**
      * @dev Increase shares of an existing payee.
      */
-    function _increaseShares(address account, uint256 shares_) private {
-        require(account != address(0), "Account must not be zero address");
-        require(shares_ > 0, "Can not increase by zero shares");
-        // require(_shares[account] >= 0, "Account has zero shares"); // DAN: this makes no sense
-
+    function _increaseShares(address account, uint256 shares_) internal {
+        _shares[account] = _shares[account].add(shares_);
         _totalShares = _totalShares.add(shares_);
-        uint256 newShares_ = _shares[account].add(shares_);
-        _shares[account] = newShares_;
-        emit ShareIncreased(account, shares_);
-    }
 
-    /**
-     * @dev Decrease shares of an existing payee.
-     */
-    function _decreaseShares(address account, uint256 shares_) private {
-        require(account != address(0), "Account must not be zero address");
-        require(shares_ > 0, "Can not decrease by zero shares");
-        require(_shares[account] > 0, "Account has zero shares");
-
-        _totalShares = _totalShares.sub(shares_);
-        uint256 newShares_ = _shares[account].sub(shares_);
-        _shares[account] = newShares_;
-        emit ShareDecreased(account, shares_);
-    }
-
-    /**
-     * @dev Add a new payee to the contract.
-     * @param account The address of the payee to add.
-     * @param shares_ The number of shares owned by the payee.
-     */
-    function _addPayee(address account, uint256 shares_) private {
-        require(account != address(0), "Account must not be zero address");
-        require(shares_ > 0, "Can not add Payee with zero shares");
-        require(_shares[account] == 0, "Account already has shares, use increaseShares");
-
-        _shares[account] = shares_;
-        _totalShares = _totalShares.add(shares_);
-        emit PayeeAdded(account);
         emit ShareIncreased(account, shares_);
     }
 }

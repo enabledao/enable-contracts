@@ -1,7 +1,5 @@
 pragma solidity ^0.5.2;
 
-import "openzeppelin-eth/contracts/token/ERC20/IERC20.sol";
-
 library TermsContractLib {
     /** NOTE: Update testConstants.js file if changed! */
     enum LoanStatus {

@@ -1,4 +1,4 @@
-pragma solidity >=0.4.22 <0.6.0;
+pragma solidity ^0.5.2;
 
 import "openzeppelin-eth/contracts/math/SafeMath.sol";
 import "openzeppelin-eth/contracts/token/ERC20/IERC20.sol";
@@ -70,7 +70,6 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     function _updateCrowdfundStatus() internal {
         uint256 principalRequested = termsContract.getPrincipalRequested();
         uint256 totalShares = repaymentManager.totalShares();
-        uint256 totalPaid = repaymentManager.totalPaid();
 
         if (
             totalShares > 0 &&
@@ -78,8 +77,6 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
             termsContract.getLoanStatus() < TermsContractLib.LoanStatus.FUNDING_FAILED
         ) {
             termsContract.setLoanStatus(TermsContractLib.LoanStatus.FUNDING_STARTED);
-        } else if (totalShares >= principalRequested && totalPaid == 0) {
-            termsContract.setLoanStatus(TermsContractLib.LoanStatus.FUNDING_COMPLETE);
         }
     }
 
@@ -103,11 +100,11 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     }
 
     function startCrowdfund() public {
+        require(msg.sender == getBorrower(), "Only borrower can start crowdfund");
         require(
             crowdfundParams.crowdfundStart == 0 || crowdfundParams.crowdfundStart > now,
             "KickOff already passed"
         );
-        require(msg.sender == getBorrower(), "Only borrower can start crowdfund");
         crowdfundParams.crowdfundStart = now;
         termsContract.setLoanStatus(TermsContractLib.LoanStatus.FUNDING_STARTED);
     }
@@ -132,20 +129,6 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         emit Fund(msg.sender, amount);
     }
 
-    /// @notice Get a refund for a debt token owned by the sender
-    function refund(uint256 amount) public {
-        require(
-            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.FUNDING_COMPLETE,
-            "Funding already complete. Refund Impossible"
-        );
-
-        require(repaymentManager.shares(msg.sender) >= amount, "Amount exceeds owned shares");
-
-        repaymentManager.decreaseShares(msg.sender, amount);
-        _validatedERC20Transfer(_getPrincipalToken(), address(this), msg.sender, amount);
-        emit Refund(msg.sender, amount);
-    }
-
     /**
      * @notice Withdraw method
      */
@@ -163,7 +146,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         uint256 contractBalance = _getPrincipalToken().balanceOf(address(this));
         require(amount <= contractBalance, "Amount exceeds available balance");
         if (termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE) {
-            termsContract.startRepaymentCycle(contractBalance);
+            termsContract.startLoan(contractBalance);
         }
         _validatedERC20Transfer(_getPrincipalToken(), address(this), msg.sender, amount);
         emit ReleaseFunds(msg.sender, amount);

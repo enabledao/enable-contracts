@@ -15,6 +15,8 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     using TermsContractLib for TermsContractLib.LoanStatus;
 
     TermsContractLib.LoanParams public loanParams;
+    uint256 private constant MONTHSINYEAR = 12;
+    uint256 private constant TENTHOUSAND = 10000;
 
     address private _borrower;
 
@@ -67,8 +69,17 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     function borrower() public view returns (address) {
         return _borrower;
     }
+
+    function getInterestRate() public view returns (uint256) {
+        return loanParams.interestRate;
+    }
+
     function getLoanStatus() public view returns (TermsContractLib.LoanStatus loanStatus) {
         return loanParams.loanStatus;
+    }
+
+    function getLoanStartTimestamp() public view returns (uint256) {
+        return loanParams.loanStartTimestamp;
     }
 
     function getNumScheduledPayments() public view returns (uint256) {
@@ -125,45 +136,9 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     }
 
     /**
-     * @dev Gets proposed payment schedule based on principalRequested
-     * NOTE This should only be used during crowdfund period
-     */
-    function getRequestedScheduledPayment(uint256 period)
-        public
-        view
-        returns (uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
-    {
-        (principalPayment, interestPayment, totalPayment) = _calcScheduledPayment(
-            period,
-            loanParams.principalRequested
-        );
-    }
-
-    /**
-     * @dev Gets finalized payment schedule based on principalDisbursed
-     * NOTE This should only be used when repaymentSchedule has started
-     */
-    function getScheduledPayment(uint256 period)
-        public
-        view
-        returns (
-            uint256 dueTimestamp,
-            uint256 principalPayment,
-            uint256 interestPayment,
-            uint256 totalPayment
-        )
-    {
-        (principalPayment, interestPayment, totalPayment) = _calcScheduledPayment(
-            period,
-            loanParams.principalDisbursed
-        );
-        dueTimestamp = BokkyPooBahsDateTimeLibrary.addMonths(loanParams.loanStartTimestamp, period);
-    }
-
-    /**
      * @dev Begins loan and writes timestamps to the payment table
      */
-    function startRepaymentCycle(uint256 totalCrowdfunded)
+    function startLoan(uint256 totalCrowdfunded)
         public
         onlyController
         onlyBeforeRepaymentCycle
@@ -183,70 +158,10 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     }
 
     /**
-     * @dev Overloaded function. `now` will be the block's timestamp as reported by the miner
-     */
-    function getExpectedRepaymentValue() public view returns (uint256 total) {
-        total = getExpectedRepaymentValue(now);
-    }
-
-    /**
-     * @dev returns the expected repayment value for a given timestamp for the loan's scheduled payments
-     * @dev future developments will allow this to be more dynamic (e.g. delinquent fees, penalties)
-     * @param timestamp uint256
-     * @return uint256 total number of currencyTokens expected to be repaid
-     */
-    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256 total) {
-        total = 0;
-        for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
-            (uint256 due, , , uint256 amount) = getScheduledPayment(i + 1);
-            if (due <= timestamp) {
-                total = total.add(amount);
-            }
-        }
-    }
-
-    /**
-     * @dev Calculates the scheduled payment for a given period
-     * Note Uses simple principal calculation for a balloon loan. Will change for future loan types
-     */
-    function _calcScheduledPayment(uint256 period, uint256 principal)
-        internal
-        view
-        returns (uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
-    {
-        require(
-            period > 0 && period <= loanParams.loanPeriod,
-            "The requested period is outside loan period"
-        );
-        interestPayment = _calcMonthlyInterest(principal, loanParams.interestRate);
-        /** Principal is only paid during the last period */
-        if (period == loanParams.loanPeriod) {
-            principalPayment = principal;
-        } else {
-            principalPayment = 0;
-        }
-        totalPayment = interestPayment.add(principalPayment);
-    }
-
-    /**
-     * @dev calculates monthly interest payment
-     * @dev Note 10000 divisor is because of basis points (100) * percentage (100)
-     */
-    function _calcMonthlyInterest(uint256 principal, uint256 interestRate)
-        public
-        pure
-        returns (uint256 result)
-    {
-        result = principal.mul(interestRate).div(10000);
-    }
-
-    /**
      * @dev internal method to set the loanStatus of the loan
      */
-    function _setLoanStatus(TermsContractLib.LoanStatus _loanStatus) private {
-        if (loanParams.loanStatus != _loanStatus) {
-            loanParams.loanStatus = _loanStatus;
-            emit LoanStatusUpdated(_loanStatus);
-        }
+    function _setLoanStatus(TermsContractLib.LoanStatus _loanStatus) internal {
+        loanParams.loanStatus = _loanStatus;
+        emit LoanStatusUpdated(_loanStatus);
     }
 }
