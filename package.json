@@ -1,6 +1,6 @@
 {
   "name": "@enabledao/enable-contracts",
-  "version": "0.1.3-alpha.1",
+  "version": "0.1.4-alpha.0",
   "description": "Borderless peer-to-peer loans with social attestation",
   "main": "truffle-config.js",
   "scripts": {
@@ -15,7 +15,7 @@
     "oz:create": "oz create",
     "oz:publish": "oz publish",
     "oz:push": "oz push",
-    "deploy:contracts": "sh ./oz.deploy.sh"
+    "deploy:contracts": "sh ./deploy-scripts/oz.deploy.sh"
   },
   "husky": {
     "hooks": {
