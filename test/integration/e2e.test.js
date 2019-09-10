@@ -198,7 +198,7 @@ contract('Enable Suite', accounts => {
     );
   });
 
-  it('should successfully pay RepaymentManager from borrower', async () => {
+  xit('should successfully pay RepaymentManager from borrower', async () => {
     const monthPayment = await expectedTranchRepayment(0);
 
     await paymentToken.mint(borrower, monthPayment);
@@ -213,7 +213,7 @@ contract('Enable Suite', accounts => {
     expect(await repaymentManager.totalPaid()).to.be.bignumber.equal(monthPayment);
   });
 
-  it('should successfully release from RepaymentManager', async () => {
+  xit('should successfully release from RepaymentManager', async () => {
     const monthPayment = await expectedTranchRepayment(0);
     const totalShares = () => lenders.reduce((a, b) => a.add(b.shares), new BN(0));
     const expectedRepayment = (shares, payment, previousRelease) =>
@@ -252,7 +252,7 @@ contract('Enable Suite', accounts => {
       })
     );
   });
-  it('should successfully complete loan repayment', async () => {
+  xit('should successfully complete loan repayment', async () => {
     const MONTH = 86400 * 30; // seconds in a month: 30 days
     const BULKPERIOD = 2;
 
