@@ -12,14 +12,14 @@
     "absolutePath": "/Users/thomas/Code/client/enable/test/enable-contracts/contracts/debt-contracts/TermsContractLib.sol",
     "exportedSymbols": {
       "TermsContractLib": [
-        1843
+        1483
       ]
     },
-    "id": 1844,
+    "id": 1484,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1820,
+        "id": 1460,
         "literals": [
           "solidity",
           "^",
@@ -35,49 +35,49 @@
         "contractKind": "library",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 1843,
+        "id": 1483,
         "linearizedBaseContracts": [
-          1843
+          1483
         ],
         "name": "TermsContractLib",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "canonicalName": "TermsContractLib.LoanStatus",
-            "id": 1827,
+            "id": 1467,
             "members": [
               {
-                "id": 1821,
+                "id": 1461,
                 "name": "NOT_STARTED",
                 "nodeType": "EnumValue",
                 "src": "140:11:4"
               },
               {
-                "id": 1822,
+                "id": 1462,
                 "name": "FUNDING_STARTED",
                 "nodeType": "EnumValue",
                 "src": "161:15:4"
               },
               {
-                "id": 1823,
+                "id": 1463,
                 "name": "FUNDING_FAILED",
                 "nodeType": "EnumValue",
                 "src": "186:14:4"
               },
               {
-                "id": 1824,
+                "id": 1464,
                 "name": "FUNDING_COMPLETE",
                 "nodeType": "EnumValue",
                 "src": "210:16:4"
               },
               {
-                "id": 1825,
+                "id": 1465,
                 "name": "REPAYMENT_CYCLE",
                 "nodeType": "EnumValue",
                 "src": "236:15:4"
               },
               {
-                "id": 1826,
+                "id": 1466,
                 "name": "REPAYMENT_COMPLETE",
                 "nodeType": "EnumValue",
                 "src": "261:18:4"
@@ -89,14 +89,14 @@
           },
           {
             "canonicalName": "TermsContractLib.LoanParams",
-            "id": 1842,
+            "id": 1482,
             "members": [
               {
                 "constant": false,
-                "id": 1829,
+                "id": 1469,
                 "name": "principalToken",
                 "nodeType": "VariableDeclaration",
-                "scope": 1842,
+                "scope": 1482,
                 "src": "319:22:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -105,7 +105,7 @@
                   "typeString": "address"
                 },
                 "typeName": {
-                  "id": 1828,
+                  "id": 1468,
                   "name": "address",
                   "nodeType": "ElementaryTypeName",
                   "src": "319:7:4",
@@ -120,10 +120,10 @@
               },
               {
                 "constant": false,
-                "id": 1831,
+                "id": 1471,
                 "name": "principalRequested",
                 "nodeType": "VariableDeclaration",
-                "scope": 1842,
+                "scope": 1482,
                 "src": "351:26:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -132,7 +132,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 1830,
+                  "id": 1470,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
                   "src": "351:7:4",
@@ -146,26 +146,26 @@
               },
               {
                 "constant": false,
-                "id": 1833,
+                "id": 1473,
                 "name": "loanStatus",
                 "nodeType": "VariableDeclaration",
-                "scope": 1842,
+                "scope": 1482,
                 "src": "387:21:4",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_enum$_LoanStatus_$1827",
+                  "typeIdentifier": "t_enum$_LoanStatus_$1467",
                   "typeString": "enum TermsContractLib.LoanStatus"
                 },
                 "typeName": {
                   "contractScope": null,
-                  "id": 1832,
+                  "id": 1472,
                   "name": "LoanStatus",
                   "nodeType": "UserDefinedTypeName",
-                  "referencedDeclaration": 1827,
+                  "referencedDeclaration": 1467,
                   "src": "387:10:4",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_LoanStatus_$1827",
+                    "typeIdentifier": "t_enum$_LoanStatus_$1467",
                     "typeString": "enum TermsContractLib.LoanStatus"
                   }
                 },
@@ -174,10 +174,10 @@
               },
               {
                 "constant": false,
-                "id": 1835,
+                "id": 1475,
                 "name": "loanPeriod",
                 "nodeType": "VariableDeclaration",
-                "scope": 1842,
+                "scope": 1482,
                 "src": "418:18:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -186,7 +186,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 1834,
+                  "id": 1474,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
                   "src": "418:7:4",
@@ -200,10 +200,10 @@
               },
               {
                 "constant": false,
-                "id": 1837,
+                "id": 1477,
                 "name": "interestRate",
                 "nodeType": "VariableDeclaration",
-                "scope": 1842,
+                "scope": 1482,
                 "src": "446:20:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -212,7 +212,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 1836,
+                  "id": 1476,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
                   "src": "446:7:4",
@@ -226,10 +226,10 @@
               },
               {
                 "constant": false,
-                "id": 1839,
+                "id": 1479,
                 "name": "principalDisbursed",
                 "nodeType": "VariableDeclaration",
-                "scope": 1842,
+                "scope": 1482,
                 "src": "500:26:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -238,7 +238,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 1838,
+                  "id": 1478,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
                   "src": "500:7:4",
@@ -252,10 +252,10 @@
               },
               {
                 "constant": false,
-                "id": 1841,
+                "id": 1481,
                 "name": "loanStartTimestamp",
                 "nodeType": "VariableDeclaration",
-                "scope": 1842,
+                "scope": 1482,
                 "src": "536:26:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -264,7 +264,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 1840,
+                  "id": 1480,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
                   "src": "536:7:4",
@@ -279,12 +279,12 @@
             ],
             "name": "LoanParams",
             "nodeType": "StructDefinition",
-            "scope": 1843,
+            "scope": 1483,
             "src": "291:278:4",
             "visibility": "public"
           }
         ],
-        "scope": 1844,
+        "scope": 1484,
         "src": "25:546:4"
       }
     ],
@@ -294,14 +294,14 @@
     "absolutePath": "/Users/thomas/Code/client/enable/test/enable-contracts/contracts/debt-contracts/TermsContractLib.sol",
     "exportedSymbols": {
       "TermsContractLib": [
-        1843
+        1483
       ]
     },
-    "id": 1844,
+    "id": 1484,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1820,
+        "id": 1460,
         "literals": [
           "solidity",
           "^",
@@ -317,49 +317,49 @@
         "contractKind": "library",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 1843,
+        "id": 1483,
         "linearizedBaseContracts": [
-          1843
+          1483
         ],
         "name": "TermsContractLib",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "canonicalName": "TermsContractLib.LoanStatus",
-            "id": 1827,
+            "id": 1467,
             "members": [
               {
-                "id": 1821,
+                "id": 1461,
                 "name": "NOT_STARTED",
                 "nodeType": "EnumValue",
                 "src": "140:11:4"
               },
               {
-                "id": 1822,
+                "id": 1462,
                 "name": "FUNDING_STARTED",
                 "nodeType": "EnumValue",
                 "src": "161:15:4"
               },
               {
-                "id": 1823,
+                "id": 1463,
                 "name": "FUNDING_FAILED",
                 "nodeType": "EnumValue",
                 "src": "186:14:4"
               },
               {
-                "id": 1824,
+                "id": 1464,
                 "name": "FUNDING_COMPLETE",
                 "nodeType": "EnumValue",
                 "src": "210:16:4"
               },
               {
-                "id": 1825,
+                "id": 1465,
                 "name": "REPAYMENT_CYCLE",
                 "nodeType": "EnumValue",
                 "src": "236:15:4"
               },
               {
-                "id": 1826,
+                "id": 1466,
                 "name": "REPAYMENT_COMPLETE",
                 "nodeType": "EnumValue",
                 "src": "261:18:4"
@@ -371,14 +371,14 @@
           },
           {
             "canonicalName": "TermsContractLib.LoanParams",
-            "id": 1842,
+            "id": 1482,
             "members": [
               {
                 "constant": false,
-                "id": 1829,
+                "id": 1469,
                 "name": "principalToken",
                 "nodeType": "VariableDeclaration",
-                "scope": 1842,
+                "scope": 1482,
                 "src": "319:22:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -387,7 +387,7 @@
                   "typeString": "address"
                 },
                 "typeName": {
-                  "id": 1828,
+                  "id": 1468,
                   "name": "address",
                   "nodeType": "ElementaryTypeName",
                   "src": "319:7:4",
@@ -402,10 +402,10 @@
               },
               {
                 "constant": false,
-                "id": 1831,
+                "id": 1471,
                 "name": "principalRequested",
                 "nodeType": "VariableDeclaration",
-                "scope": 1842,
+                "scope": 1482,
                 "src": "351:26:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -414,7 +414,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 1830,
+                  "id": 1470,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
                   "src": "351:7:4",
@@ -428,26 +428,26 @@
               },
               {
                 "constant": false,
-                "id": 1833,
+                "id": 1473,
                 "name": "loanStatus",
                 "nodeType": "VariableDeclaration",
-                "scope": 1842,
+                "scope": 1482,
                 "src": "387:21:4",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_enum$_LoanStatus_$1827",
+                  "typeIdentifier": "t_enum$_LoanStatus_$1467",
                   "typeString": "enum TermsContractLib.LoanStatus"
                 },
                 "typeName": {
                   "contractScope": null,
-                  "id": 1832,
+                  "id": 1472,
                   "name": "LoanStatus",
                   "nodeType": "UserDefinedTypeName",
-                  "referencedDeclaration": 1827,
+                  "referencedDeclaration": 1467,
                   "src": "387:10:4",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_LoanStatus_$1827",
+                    "typeIdentifier": "t_enum$_LoanStatus_$1467",
                     "typeString": "enum TermsContractLib.LoanStatus"
                   }
                 },
@@ -456,10 +456,10 @@
               },
               {
                 "constant": false,
-                "id": 1835,
+                "id": 1475,
                 "name": "loanPeriod",
                 "nodeType": "VariableDeclaration",
-                "scope": 1842,
+                "scope": 1482,
                 "src": "418:18:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -468,7 +468,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 1834,
+                  "id": 1474,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
                   "src": "418:7:4",
@@ -482,10 +482,10 @@
               },
               {
                 "constant": false,
-                "id": 1837,
+                "id": 1477,
                 "name": "interestRate",
                 "nodeType": "VariableDeclaration",
-                "scope": 1842,
+                "scope": 1482,
                 "src": "446:20:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -494,7 +494,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 1836,
+                  "id": 1476,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
                   "src": "446:7:4",
@@ -508,10 +508,10 @@
               },
               {
                 "constant": false,
-                "id": 1839,
+                "id": 1479,
                 "name": "principalDisbursed",
                 "nodeType": "VariableDeclaration",
-                "scope": 1842,
+                "scope": 1482,
                 "src": "500:26:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -520,7 +520,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 1838,
+                  "id": 1478,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
                   "src": "500:7:4",
@@ -534,10 +534,10 @@
               },
               {
                 "constant": false,
-                "id": 1841,
+                "id": 1481,
                 "name": "loanStartTimestamp",
                 "nodeType": "VariableDeclaration",
-                "scope": 1842,
+                "scope": 1482,
                 "src": "536:26:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -546,7 +546,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 1840,
+                  "id": 1480,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
                   "src": "536:7:4",
@@ -561,12 +561,12 @@
             ],
             "name": "LoanParams",
             "nodeType": "StructDefinition",
-            "scope": 1843,
+            "scope": 1483,
             "src": "291:278:4",
             "visibility": "public"
           }
         ],
-        "scope": 1844,
+        "scope": 1484,
         "src": "25:546:4"
       }
     ],
@@ -578,7 +578,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-09-10T10:40:38.753Z",
+  "updatedAt": "2019-09-10T13:38:11.546Z",
   "devdoc": {
     "methods": {}
   },

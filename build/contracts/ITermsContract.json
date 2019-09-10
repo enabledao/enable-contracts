@@ -297,20 +297,20 @@
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "pragma solidity >=0.4.22 <0.6.0;\n\nimport \"../debt-contracts/TermsContractLib.sol\";\n\ncontract ITermsContract {\n    using TermsContractLib for TermsContractLib.LoanStatus;\n\n    event LoanStatusUpdated(TermsContractLib.LoanStatus status);\n\n    function borrower() external view returns (address);\n    function getInterestRate() external view returns (uint256);\n    function getLoanStatus() external view returns (TermsContractLib.LoanStatus);\n    function getLoanStartTimestamp() external view returns (uint256);\n    function getNumScheduledPayments() external view returns (uint256);\n    function getPrincipalRequested() external view returns (uint256);\n    function getPrincipalDisbursed() external view returns (uint256);\n    function getPrincipalToken() external view returns (address);\n\n    function getRequestedScheduledPayment(uint256 period)\n        external\n        view\n        returns (uint256, uint256, uint256);\n    function getScheduledPayment(uint256)\n        external\n        view\n        returns (uint256, uint256, uint256, uint256);\n    function getExpectedRepaymentValue() external view returns (uint256);\n    function getExpectedRepaymentValue(uint256 timestamp) external view returns (uint256);\n\n    function getLoanParams()\n        external\n        view\n        returns (\n            address,\n            address principalToken,\n            uint256 principalRequested,\n            uint256 loanStatus,\n            uint256 loanPeriod,\n            uint256 interestRate,\n            uint256 principalDisbursed,\n            uint256 loanStartTimestamp\n        );\n\n    function setLoanStatus(TermsContractLib.LoanStatus _status) external;\n    function startRepaymentCycle(uint256)\n        external\n        returns (uint256);\n}\n",
+  "source": "pragma solidity >=0.4.22 <0.6.0;\n\nimport \"../debt-contracts/TermsContractLib.sol\";\n\ncontract ITermsContract {\n    using TermsContractLib for TermsContractLib.LoanStatus;\n\n    event LoanStatusUpdated(TermsContractLib.LoanStatus status);\n\n    function borrower() external view returns (address);\n    function getInterestRate() external view returns (uint256);\n    function getLoanStatus() external view returns (TermsContractLib.LoanStatus);\n    function getLoanStartTimestamp() external view returns (uint256);\n    function getNumScheduledPayments() external view returns (uint256);\n    function getPrincipalRequested() external view returns (uint256);\n    function getPrincipalDisbursed() external view returns (uint256);\n    function getPrincipalToken() external view returns (address);\n\n    function getRequestedScheduledPayment(uint256 period)\n        external\n        view\n        returns (uint256, uint256, uint256);\n    function getScheduledPayment(uint256)\n        external\n        view\n        returns (uint256, uint256, uint256, uint256);\n    function getExpectedRepaymentValue() external view returns (uint256);\n    function getExpectedRepaymentValue(uint256 timestamp) external view returns (uint256);\n\n    function getLoanParams()\n        external\n        view\n        returns (\n            address,\n            address principalToken,\n            uint256 principalRequested,\n            uint256 loanStatus,\n            uint256 loanPeriod,\n            uint256 interestRate,\n            uint256 principalDisbursed,\n            uint256 loanStartTimestamp\n        );\n\n    function setLoanStatus(TermsContractLib.LoanStatus _status) external;\n    function startRepaymentCycle(uint256) external returns (uint256);\n}\n",
   "sourcePath": "/Users/thomas/Code/client/enable/test/enable-contracts/contracts/interface/ITermsContract.sol",
   "ast": {
     "absolutePath": "/Users/thomas/Code/client/enable/test/enable-contracts/contracts/interface/ITermsContract.sol",
     "exportedSymbols": {
       "ITermsContract": [
-        2361
+        2001
       ]
     },
-    "id": 2362,
+    "id": 2002,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2245,
+        "id": 1885,
         "literals": [
           "solidity",
           ">=",
@@ -326,10 +326,10 @@
       {
         "absolutePath": "/Users/thomas/Code/client/enable/test/enable-contracts/contracts/debt-contracts/TermsContractLib.sol",
         "file": "../debt-contracts/TermsContractLib.sol",
-        "id": 2246,
+        "id": 1886,
         "nodeType": "ImportDirective",
-        "scope": 2362,
-        "sourceUnit": 1844,
+        "scope": 2002,
+        "sourceUnit": 1484,
         "src": "34:48:8",
         "symbolAliases": [],
         "unitAlias": ""
@@ -340,24 +340,24 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 2361,
+        "id": 2001,
         "linearizedBaseContracts": [
-          2361
+          2001
         ],
         "name": "ITermsContract",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
-            "id": 2249,
+            "id": 1889,
             "libraryName": {
               "contractScope": null,
-              "id": 2247,
+              "id": 1887,
               "name": "TermsContractLib",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 1843,
+              "referencedDeclaration": 1483,
               "src": "120:16:8",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_TermsContractLib_$1843",
+                "typeIdentifier": "t_contract$_TermsContractLib_$1483",
                 "typeString": "library TermsContractLib"
               }
             },
@@ -365,13 +365,13 @@
             "src": "114:55:8",
             "typeName": {
               "contractScope": null,
-              "id": 2248,
+              "id": 1888,
               "name": "TermsContractLib.LoanStatus",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 1827,
+              "referencedDeclaration": 1467,
               "src": "141:27:8",
               "typeDescriptions": {
-                "typeIdentifier": "t_enum$_LoanStatus_$1827",
+                "typeIdentifier": "t_enum$_LoanStatus_$1467",
                 "typeString": "enum TermsContractLib.LoanStatus"
               }
             }
@@ -379,36 +379,36 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 2253,
+            "id": 1893,
             "name": "LoanStatusUpdated",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 2252,
+              "id": 1892,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2251,
+                  "id": 1891,
                   "indexed": false,
                   "name": "status",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2253,
+                  "scope": 1893,
                   "src": "199:34:8",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_LoanStatus_$1827",
+                    "typeIdentifier": "t_enum$_LoanStatus_$1467",
                     "typeString": "enum TermsContractLib.LoanStatus"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 2250,
+                    "id": 1890,
                     "name": "TermsContractLib.LoanStatus",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 1827,
+                    "referencedDeclaration": 1467,
                     "src": "199:27:8",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_enum$_LoanStatus_$1827",
+                      "typeIdentifier": "t_enum$_LoanStatus_$1467",
                       "typeString": "enum TermsContractLib.LoanStatus"
                     }
                   },
@@ -423,28 +423,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2258,
+            "id": 1898,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "borrower",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2254,
+              "id": 1894,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "258:2:8"
             },
             "returnParameters": {
-              "id": 2257,
+              "id": 1897,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2256,
+                  "id": 1896,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2258,
+                  "scope": 1898,
                   "src": "284:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -453,7 +453,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2255,
+                    "id": 1895,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "284:7:8",
@@ -469,7 +469,7 @@
               ],
               "src": "283:9:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "241:52:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -478,28 +478,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2263,
+            "id": 1903,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getInterestRate",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2259,
+              "id": 1899,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "322:2:8"
             },
             "returnParameters": {
-              "id": 2262,
+              "id": 1902,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2261,
+                  "id": 1901,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2263,
+                  "scope": 1903,
                   "src": "348:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -508,7 +508,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2260,
+                    "id": 1900,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "348:7:8",
@@ -523,7 +523,7 @@
               ],
               "src": "347:9:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "298:59:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -532,44 +532,44 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2268,
+            "id": 1908,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getLoanStatus",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2264,
+              "id": 1904,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "384:2:8"
             },
             "returnParameters": {
-              "id": 2267,
+              "id": 1907,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2266,
+                  "id": 1906,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2268,
+                  "scope": 1908,
                   "src": "410:27:8",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_LoanStatus_$1827",
+                    "typeIdentifier": "t_enum$_LoanStatus_$1467",
                     "typeString": "enum TermsContractLib.LoanStatus"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 2265,
+                    "id": 1905,
                     "name": "TermsContractLib.LoanStatus",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 1827,
+                    "referencedDeclaration": 1467,
                     "src": "410:27:8",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_enum$_LoanStatus_$1827",
+                      "typeIdentifier": "t_enum$_LoanStatus_$1467",
                       "typeString": "enum TermsContractLib.LoanStatus"
                     }
                   },
@@ -579,7 +579,7 @@
               ],
               "src": "409:29:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "362:77:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -588,28 +588,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2273,
+            "id": 1913,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getLoanStartTimestamp",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2269,
+              "id": 1909,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "474:2:8"
             },
             "returnParameters": {
-              "id": 2272,
+              "id": 1912,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2271,
+                  "id": 1911,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2273,
+                  "scope": 1913,
                   "src": "500:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -618,7 +618,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2270,
+                    "id": 1910,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "500:7:8",
@@ -633,7 +633,7 @@
               ],
               "src": "499:9:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "444:65:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -642,28 +642,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2278,
+            "id": 1918,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getNumScheduledPayments",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2274,
+              "id": 1914,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "546:2:8"
             },
             "returnParameters": {
-              "id": 2277,
+              "id": 1917,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2276,
+                  "id": 1916,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2278,
+                  "scope": 1918,
                   "src": "572:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -672,7 +672,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2275,
+                    "id": 1915,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "572:7:8",
@@ -687,7 +687,7 @@
               ],
               "src": "571:9:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "514:67:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -696,28 +696,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2283,
+            "id": 1923,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getPrincipalRequested",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2279,
+              "id": 1919,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "616:2:8"
             },
             "returnParameters": {
-              "id": 2282,
+              "id": 1922,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2281,
+                  "id": 1921,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2283,
+                  "scope": 1923,
                   "src": "642:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -726,7 +726,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2280,
+                    "id": 1920,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "642:7:8",
@@ -741,7 +741,7 @@
               ],
               "src": "641:9:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "586:65:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -750,28 +750,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2288,
+            "id": 1928,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getPrincipalDisbursed",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2284,
+              "id": 1924,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "686:2:8"
             },
             "returnParameters": {
-              "id": 2287,
+              "id": 1927,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2286,
+                  "id": 1926,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2288,
+                  "scope": 1928,
                   "src": "712:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -780,7 +780,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2285,
+                    "id": 1925,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "712:7:8",
@@ -795,7 +795,7 @@
               ],
               "src": "711:9:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "656:65:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -804,28 +804,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2293,
+            "id": 1933,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getPrincipalToken",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2289,
+              "id": 1929,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "752:2:8"
             },
             "returnParameters": {
-              "id": 2292,
+              "id": 1932,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2291,
+                  "id": 1931,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2293,
+                  "scope": 1933,
                   "src": "778:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -834,7 +834,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2290,
+                    "id": 1930,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "778:7:8",
@@ -850,7 +850,7 @@
               ],
               "src": "777:9:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "726:61:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -859,22 +859,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2304,
+            "id": 1944,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getRequestedScheduledPayment",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2296,
+              "id": 1936,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2295,
+                  "id": 1935,
                   "name": "period",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2304,
+                  "scope": 1944,
                   "src": "831:14:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -883,7 +883,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2294,
+                    "id": 1934,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "831:7:8",
@@ -899,15 +899,15 @@
               "src": "830:16:8"
             },
             "returnParameters": {
-              "id": 2303,
+              "id": 1943,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2298,
+                  "id": 1938,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2304,
+                  "scope": 1944,
                   "src": "894:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -916,7 +916,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2297,
+                    "id": 1937,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "894:7:8",
@@ -930,10 +930,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2300,
+                  "id": 1940,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2304,
+                  "scope": 1944,
                   "src": "903:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -942,7 +942,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2299,
+                    "id": 1939,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "903:7:8",
@@ -956,10 +956,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2302,
+                  "id": 1942,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2304,
+                  "scope": 1944,
                   "src": "912:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -968,7 +968,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2301,
+                    "id": 1941,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "912:7:8",
@@ -983,7 +983,7 @@
               ],
               "src": "893:27:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "793:128:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -992,22 +992,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2317,
+            "id": 1957,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getScheduledPayment",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2307,
+              "id": 1947,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2306,
+                  "id": 1946,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2317,
+                  "scope": 1957,
                   "src": "955:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1016,7 +1016,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2305,
+                    "id": 1945,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "955:7:8",
@@ -1032,15 +1032,15 @@
               "src": "954:9:8"
             },
             "returnParameters": {
-              "id": 2316,
+              "id": 1956,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2309,
+                  "id": 1949,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2317,
+                  "scope": 1957,
                   "src": "1011:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1049,7 +1049,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2308,
+                    "id": 1948,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1011:7:8",
@@ -1063,10 +1063,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2311,
+                  "id": 1951,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2317,
+                  "scope": 1957,
                   "src": "1020:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1075,7 +1075,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2310,
+                    "id": 1950,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1020:7:8",
@@ -1089,10 +1089,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2313,
+                  "id": 1953,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2317,
+                  "scope": 1957,
                   "src": "1029:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1101,7 +1101,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2312,
+                    "id": 1952,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1029:7:8",
@@ -1115,10 +1115,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2315,
+                  "id": 1955,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2317,
+                  "scope": 1957,
                   "src": "1038:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1127,7 +1127,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2314,
+                    "id": 1954,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1038:7:8",
@@ -1142,7 +1142,7 @@
               ],
               "src": "1010:36:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "926:121:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -1151,28 +1151,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2322,
+            "id": 1962,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getExpectedRepaymentValue",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2318,
+              "id": 1958,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1086:2:8"
             },
             "returnParameters": {
-              "id": 2321,
+              "id": 1961,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2320,
+                  "id": 1960,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2322,
+                  "scope": 1962,
                   "src": "1112:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1181,7 +1181,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2319,
+                    "id": 1959,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1112:7:8",
@@ -1196,7 +1196,7 @@
               ],
               "src": "1111:9:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "1052:69:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -1205,22 +1205,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2329,
+            "id": 1969,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getExpectedRepaymentValue",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2325,
+              "id": 1965,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2324,
+                  "id": 1964,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2329,
+                  "scope": 1969,
                   "src": "1161:17:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1229,7 +1229,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2323,
+                    "id": 1963,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1161:7:8",
@@ -1245,15 +1245,15 @@
               "src": "1160:19:8"
             },
             "returnParameters": {
-              "id": 2328,
+              "id": 1968,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2327,
+                  "id": 1967,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2329,
+                  "scope": 1969,
                   "src": "1203:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1262,7 +1262,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2326,
+                    "id": 1966,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1203:7:8",
@@ -1277,7 +1277,7 @@
               ],
               "src": "1202:9:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "1126:86:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -1286,28 +1286,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2348,
+            "id": 1988,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getLoanParams",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2330,
+              "id": 1970,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1240:2:8"
             },
             "returnParameters": {
-              "id": 2347,
+              "id": 1987,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2332,
+                  "id": 1972,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2348,
+                  "scope": 1988,
                   "src": "1303:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1316,7 +1316,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2331,
+                    "id": 1971,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "1303:7:8",
@@ -1331,10 +1331,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2334,
+                  "id": 1974,
                   "name": "principalToken",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2348,
+                  "scope": 1988,
                   "src": "1324:22:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1343,7 +1343,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2333,
+                    "id": 1973,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "1324:7:8",
@@ -1358,10 +1358,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2336,
+                  "id": 1976,
                   "name": "principalRequested",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2348,
+                  "scope": 1988,
                   "src": "1360:26:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1370,7 +1370,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2335,
+                    "id": 1975,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1360:7:8",
@@ -1384,10 +1384,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2338,
+                  "id": 1978,
                   "name": "loanStatus",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2348,
+                  "scope": 1988,
                   "src": "1400:18:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1396,7 +1396,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2337,
+                    "id": 1977,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1400:7:8",
@@ -1410,10 +1410,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2340,
+                  "id": 1980,
                   "name": "loanPeriod",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2348,
+                  "scope": 1988,
                   "src": "1432:18:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1422,7 +1422,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2339,
+                    "id": 1979,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1432:7:8",
@@ -1436,10 +1436,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2342,
+                  "id": 1982,
                   "name": "interestRate",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2348,
+                  "scope": 1988,
                   "src": "1464:20:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1448,7 +1448,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2341,
+                    "id": 1981,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1464:7:8",
@@ -1462,10 +1462,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2344,
+                  "id": 1984,
                   "name": "principalDisbursed",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2348,
+                  "scope": 1988,
                   "src": "1498:26:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1474,7 +1474,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2343,
+                    "id": 1983,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1498:7:8",
@@ -1488,10 +1488,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2346,
+                  "id": 1986,
                   "name": "loanStartTimestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2348,
+                  "scope": 1988,
                   "src": "1538:26:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1500,7 +1500,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2345,
+                    "id": 1985,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1538:7:8",
@@ -1515,7 +1515,7 @@
               ],
               "src": "1289:285:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "1218:357:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -1524,38 +1524,38 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2353,
+            "id": 1993,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "setLoanStatus",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2351,
+              "id": 1991,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2350,
+                  "id": 1990,
                   "name": "_status",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2353,
+                  "scope": 1993,
                   "src": "1604:35:8",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_LoanStatus_$1827",
+                    "typeIdentifier": "t_enum$_LoanStatus_$1467",
                     "typeString": "enum TermsContractLib.LoanStatus"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 2349,
+                    "id": 1989,
                     "name": "TermsContractLib.LoanStatus",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 1827,
+                    "referencedDeclaration": 1467,
                     "src": "1604:27:8",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_enum$_LoanStatus_$1827",
+                      "typeIdentifier": "t_enum$_LoanStatus_$1467",
                       "typeString": "enum TermsContractLib.LoanStatus"
                     }
                   },
@@ -1566,12 +1566,12 @@
               "src": "1603:37:8"
             },
             "returnParameters": {
-              "id": 2352,
+              "id": 1992,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1649:0:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "1581:69:8",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -1580,22 +1580,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2360,
+            "id": 2000,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "startRepaymentCycle",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2356,
+              "id": 1996,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2355,
+                  "id": 1995,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2360,
+                  "scope": 2000,
                   "src": "1684:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1604,7 +1604,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2354,
+                    "id": 1994,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1684:7:8",
@@ -1620,16 +1620,16 @@
               "src": "1683:9:8"
             },
             "returnParameters": {
-              "id": 2359,
+              "id": 1999,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2358,
+                  "id": 1998,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2360,
-                  "src": "1727:7:8",
+                  "scope": 2000,
+                  "src": "1711:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1637,10 +1637,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2357,
+                    "id": 1997,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1727:7:8",
+                    "src": "1711:7:8",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1650,33 +1650,33 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1726:9:8"
+              "src": "1710:9:8"
             },
-            "scope": 2361,
-            "src": "1655:81:8",
+            "scope": 2001,
+            "src": "1655:65:8",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 2362,
-        "src": "84:1654:8"
+        "scope": 2002,
+        "src": "84:1638:8"
       }
     ],
-    "src": "0:1739:8"
+    "src": "0:1723:8"
   },
   "legacyAST": {
     "absolutePath": "/Users/thomas/Code/client/enable/test/enable-contracts/contracts/interface/ITermsContract.sol",
     "exportedSymbols": {
       "ITermsContract": [
-        2361
+        2001
       ]
     },
-    "id": 2362,
+    "id": 2002,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2245,
+        "id": 1885,
         "literals": [
           "solidity",
           ">=",
@@ -1692,10 +1692,10 @@
       {
         "absolutePath": "/Users/thomas/Code/client/enable/test/enable-contracts/contracts/debt-contracts/TermsContractLib.sol",
         "file": "../debt-contracts/TermsContractLib.sol",
-        "id": 2246,
+        "id": 1886,
         "nodeType": "ImportDirective",
-        "scope": 2362,
-        "sourceUnit": 1844,
+        "scope": 2002,
+        "sourceUnit": 1484,
         "src": "34:48:8",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1706,24 +1706,24 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 2361,
+        "id": 2001,
         "linearizedBaseContracts": [
-          2361
+          2001
         ],
         "name": "ITermsContract",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
-            "id": 2249,
+            "id": 1889,
             "libraryName": {
               "contractScope": null,
-              "id": 2247,
+              "id": 1887,
               "name": "TermsContractLib",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 1843,
+              "referencedDeclaration": 1483,
               "src": "120:16:8",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_TermsContractLib_$1843",
+                "typeIdentifier": "t_contract$_TermsContractLib_$1483",
                 "typeString": "library TermsContractLib"
               }
             },
@@ -1731,13 +1731,13 @@
             "src": "114:55:8",
             "typeName": {
               "contractScope": null,
-              "id": 2248,
+              "id": 1888,
               "name": "TermsContractLib.LoanStatus",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 1827,
+              "referencedDeclaration": 1467,
               "src": "141:27:8",
               "typeDescriptions": {
-                "typeIdentifier": "t_enum$_LoanStatus_$1827",
+                "typeIdentifier": "t_enum$_LoanStatus_$1467",
                 "typeString": "enum TermsContractLib.LoanStatus"
               }
             }
@@ -1745,36 +1745,36 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 2253,
+            "id": 1893,
             "name": "LoanStatusUpdated",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 2252,
+              "id": 1892,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2251,
+                  "id": 1891,
                   "indexed": false,
                   "name": "status",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2253,
+                  "scope": 1893,
                   "src": "199:34:8",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_LoanStatus_$1827",
+                    "typeIdentifier": "t_enum$_LoanStatus_$1467",
                     "typeString": "enum TermsContractLib.LoanStatus"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 2250,
+                    "id": 1890,
                     "name": "TermsContractLib.LoanStatus",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 1827,
+                    "referencedDeclaration": 1467,
                     "src": "199:27:8",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_enum$_LoanStatus_$1827",
+                      "typeIdentifier": "t_enum$_LoanStatus_$1467",
                       "typeString": "enum TermsContractLib.LoanStatus"
                     }
                   },
@@ -1789,28 +1789,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2258,
+            "id": 1898,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "borrower",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2254,
+              "id": 1894,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "258:2:8"
             },
             "returnParameters": {
-              "id": 2257,
+              "id": 1897,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2256,
+                  "id": 1896,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2258,
+                  "scope": 1898,
                   "src": "284:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1819,7 +1819,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2255,
+                    "id": 1895,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "284:7:8",
@@ -1835,7 +1835,7 @@
               ],
               "src": "283:9:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "241:52:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -1844,28 +1844,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2263,
+            "id": 1903,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getInterestRate",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2259,
+              "id": 1899,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "322:2:8"
             },
             "returnParameters": {
-              "id": 2262,
+              "id": 1902,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2261,
+                  "id": 1901,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2263,
+                  "scope": 1903,
                   "src": "348:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1874,7 +1874,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2260,
+                    "id": 1900,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "348:7:8",
@@ -1889,7 +1889,7 @@
               ],
               "src": "347:9:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "298:59:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -1898,44 +1898,44 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2268,
+            "id": 1908,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getLoanStatus",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2264,
+              "id": 1904,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "384:2:8"
             },
             "returnParameters": {
-              "id": 2267,
+              "id": 1907,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2266,
+                  "id": 1906,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2268,
+                  "scope": 1908,
                   "src": "410:27:8",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_LoanStatus_$1827",
+                    "typeIdentifier": "t_enum$_LoanStatus_$1467",
                     "typeString": "enum TermsContractLib.LoanStatus"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 2265,
+                    "id": 1905,
                     "name": "TermsContractLib.LoanStatus",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 1827,
+                    "referencedDeclaration": 1467,
                     "src": "410:27:8",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_enum$_LoanStatus_$1827",
+                      "typeIdentifier": "t_enum$_LoanStatus_$1467",
                       "typeString": "enum TermsContractLib.LoanStatus"
                     }
                   },
@@ -1945,7 +1945,7 @@
               ],
               "src": "409:29:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "362:77:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -1954,28 +1954,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2273,
+            "id": 1913,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getLoanStartTimestamp",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2269,
+              "id": 1909,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "474:2:8"
             },
             "returnParameters": {
-              "id": 2272,
+              "id": 1912,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2271,
+                  "id": 1911,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2273,
+                  "scope": 1913,
                   "src": "500:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1984,7 +1984,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2270,
+                    "id": 1910,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "500:7:8",
@@ -1999,7 +1999,7 @@
               ],
               "src": "499:9:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "444:65:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -2008,28 +2008,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2278,
+            "id": 1918,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getNumScheduledPayments",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2274,
+              "id": 1914,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "546:2:8"
             },
             "returnParameters": {
-              "id": 2277,
+              "id": 1917,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2276,
+                  "id": 1916,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2278,
+                  "scope": 1918,
                   "src": "572:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2038,7 +2038,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2275,
+                    "id": 1915,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "572:7:8",
@@ -2053,7 +2053,7 @@
               ],
               "src": "571:9:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "514:67:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -2062,28 +2062,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2283,
+            "id": 1923,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getPrincipalRequested",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2279,
+              "id": 1919,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "616:2:8"
             },
             "returnParameters": {
-              "id": 2282,
+              "id": 1922,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2281,
+                  "id": 1921,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2283,
+                  "scope": 1923,
                   "src": "642:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2092,7 +2092,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2280,
+                    "id": 1920,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "642:7:8",
@@ -2107,7 +2107,7 @@
               ],
               "src": "641:9:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "586:65:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -2116,28 +2116,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2288,
+            "id": 1928,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getPrincipalDisbursed",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2284,
+              "id": 1924,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "686:2:8"
             },
             "returnParameters": {
-              "id": 2287,
+              "id": 1927,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2286,
+                  "id": 1926,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2288,
+                  "scope": 1928,
                   "src": "712:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2146,7 +2146,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2285,
+                    "id": 1925,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "712:7:8",
@@ -2161,7 +2161,7 @@
               ],
               "src": "711:9:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "656:65:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -2170,28 +2170,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2293,
+            "id": 1933,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getPrincipalToken",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2289,
+              "id": 1929,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "752:2:8"
             },
             "returnParameters": {
-              "id": 2292,
+              "id": 1932,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2291,
+                  "id": 1931,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2293,
+                  "scope": 1933,
                   "src": "778:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2200,7 +2200,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2290,
+                    "id": 1930,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "778:7:8",
@@ -2216,7 +2216,7 @@
               ],
               "src": "777:9:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "726:61:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -2225,22 +2225,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2304,
+            "id": 1944,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getRequestedScheduledPayment",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2296,
+              "id": 1936,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2295,
+                  "id": 1935,
                   "name": "period",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2304,
+                  "scope": 1944,
                   "src": "831:14:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2249,7 +2249,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2294,
+                    "id": 1934,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "831:7:8",
@@ -2265,15 +2265,15 @@
               "src": "830:16:8"
             },
             "returnParameters": {
-              "id": 2303,
+              "id": 1943,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2298,
+                  "id": 1938,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2304,
+                  "scope": 1944,
                   "src": "894:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2282,7 +2282,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2297,
+                    "id": 1937,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "894:7:8",
@@ -2296,10 +2296,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2300,
+                  "id": 1940,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2304,
+                  "scope": 1944,
                   "src": "903:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2308,7 +2308,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2299,
+                    "id": 1939,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "903:7:8",
@@ -2322,10 +2322,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2302,
+                  "id": 1942,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2304,
+                  "scope": 1944,
                   "src": "912:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2334,7 +2334,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2301,
+                    "id": 1941,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "912:7:8",
@@ -2349,7 +2349,7 @@
               ],
               "src": "893:27:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "793:128:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -2358,22 +2358,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2317,
+            "id": 1957,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getScheduledPayment",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2307,
+              "id": 1947,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2306,
+                  "id": 1946,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2317,
+                  "scope": 1957,
                   "src": "955:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2382,7 +2382,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2305,
+                    "id": 1945,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "955:7:8",
@@ -2398,15 +2398,15 @@
               "src": "954:9:8"
             },
             "returnParameters": {
-              "id": 2316,
+              "id": 1956,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2309,
+                  "id": 1949,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2317,
+                  "scope": 1957,
                   "src": "1011:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2415,7 +2415,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2308,
+                    "id": 1948,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1011:7:8",
@@ -2429,10 +2429,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2311,
+                  "id": 1951,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2317,
+                  "scope": 1957,
                   "src": "1020:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2441,7 +2441,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2310,
+                    "id": 1950,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1020:7:8",
@@ -2455,10 +2455,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2313,
+                  "id": 1953,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2317,
+                  "scope": 1957,
                   "src": "1029:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2467,7 +2467,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2312,
+                    "id": 1952,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1029:7:8",
@@ -2481,10 +2481,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2315,
+                  "id": 1955,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2317,
+                  "scope": 1957,
                   "src": "1038:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2493,7 +2493,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2314,
+                    "id": 1954,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1038:7:8",
@@ -2508,7 +2508,7 @@
               ],
               "src": "1010:36:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "926:121:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -2517,28 +2517,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2322,
+            "id": 1962,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getExpectedRepaymentValue",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2318,
+              "id": 1958,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1086:2:8"
             },
             "returnParameters": {
-              "id": 2321,
+              "id": 1961,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2320,
+                  "id": 1960,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2322,
+                  "scope": 1962,
                   "src": "1112:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2547,7 +2547,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2319,
+                    "id": 1959,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1112:7:8",
@@ -2562,7 +2562,7 @@
               ],
               "src": "1111:9:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "1052:69:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -2571,22 +2571,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2329,
+            "id": 1969,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getExpectedRepaymentValue",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2325,
+              "id": 1965,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2324,
+                  "id": 1964,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2329,
+                  "scope": 1969,
                   "src": "1161:17:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2595,7 +2595,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2323,
+                    "id": 1963,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1161:7:8",
@@ -2611,15 +2611,15 @@
               "src": "1160:19:8"
             },
             "returnParameters": {
-              "id": 2328,
+              "id": 1968,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2327,
+                  "id": 1967,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2329,
+                  "scope": 1969,
                   "src": "1203:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2628,7 +2628,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2326,
+                    "id": 1966,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1203:7:8",
@@ -2643,7 +2643,7 @@
               ],
               "src": "1202:9:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "1126:86:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -2652,28 +2652,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2348,
+            "id": 1988,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getLoanParams",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2330,
+              "id": 1970,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1240:2:8"
             },
             "returnParameters": {
-              "id": 2347,
+              "id": 1987,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2332,
+                  "id": 1972,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2348,
+                  "scope": 1988,
                   "src": "1303:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2682,7 +2682,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2331,
+                    "id": 1971,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "1303:7:8",
@@ -2697,10 +2697,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2334,
+                  "id": 1974,
                   "name": "principalToken",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2348,
+                  "scope": 1988,
                   "src": "1324:22:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2709,7 +2709,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2333,
+                    "id": 1973,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "1324:7:8",
@@ -2724,10 +2724,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2336,
+                  "id": 1976,
                   "name": "principalRequested",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2348,
+                  "scope": 1988,
                   "src": "1360:26:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2736,7 +2736,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2335,
+                    "id": 1975,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1360:7:8",
@@ -2750,10 +2750,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2338,
+                  "id": 1978,
                   "name": "loanStatus",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2348,
+                  "scope": 1988,
                   "src": "1400:18:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2762,7 +2762,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2337,
+                    "id": 1977,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1400:7:8",
@@ -2776,10 +2776,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2340,
+                  "id": 1980,
                   "name": "loanPeriod",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2348,
+                  "scope": 1988,
                   "src": "1432:18:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2788,7 +2788,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2339,
+                    "id": 1979,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1432:7:8",
@@ -2802,10 +2802,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2342,
+                  "id": 1982,
                   "name": "interestRate",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2348,
+                  "scope": 1988,
                   "src": "1464:20:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2814,7 +2814,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2341,
+                    "id": 1981,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1464:7:8",
@@ -2828,10 +2828,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2344,
+                  "id": 1984,
                   "name": "principalDisbursed",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2348,
+                  "scope": 1988,
                   "src": "1498:26:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2840,7 +2840,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2343,
+                    "id": 1983,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1498:7:8",
@@ -2854,10 +2854,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2346,
+                  "id": 1986,
                   "name": "loanStartTimestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2348,
+                  "scope": 1988,
                   "src": "1538:26:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2866,7 +2866,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2345,
+                    "id": 1985,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1538:7:8",
@@ -2881,7 +2881,7 @@
               ],
               "src": "1289:285:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "1218:357:8",
             "stateMutability": "view",
             "superFunction": null,
@@ -2890,38 +2890,38 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2353,
+            "id": 1993,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "setLoanStatus",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2351,
+              "id": 1991,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2350,
+                  "id": 1990,
                   "name": "_status",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2353,
+                  "scope": 1993,
                   "src": "1604:35:8",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_LoanStatus_$1827",
+                    "typeIdentifier": "t_enum$_LoanStatus_$1467",
                     "typeString": "enum TermsContractLib.LoanStatus"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 2349,
+                    "id": 1989,
                     "name": "TermsContractLib.LoanStatus",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 1827,
+                    "referencedDeclaration": 1467,
                     "src": "1604:27:8",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_enum$_LoanStatus_$1827",
+                      "typeIdentifier": "t_enum$_LoanStatus_$1467",
                       "typeString": "enum TermsContractLib.LoanStatus"
                     }
                   },
@@ -2932,12 +2932,12 @@
               "src": "1603:37:8"
             },
             "returnParameters": {
-              "id": 2352,
+              "id": 1992,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1649:0:8"
             },
-            "scope": 2361,
+            "scope": 2001,
             "src": "1581:69:8",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -2946,22 +2946,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2360,
+            "id": 2000,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "startRepaymentCycle",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2356,
+              "id": 1996,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2355,
+                  "id": 1995,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2360,
+                  "scope": 2000,
                   "src": "1684:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2970,7 +2970,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2354,
+                    "id": 1994,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1684:7:8",
@@ -2986,16 +2986,16 @@
               "src": "1683:9:8"
             },
             "returnParameters": {
-              "id": 2359,
+              "id": 1999,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2358,
+                  "id": 1998,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2360,
-                  "src": "1727:7:8",
+                  "scope": 2000,
+                  "src": "1711:7:8",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3003,10 +3003,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2357,
+                    "id": 1997,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1727:7:8",
+                    "src": "1711:7:8",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -3016,20 +3016,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1726:9:8"
+              "src": "1710:9:8"
             },
-            "scope": 2361,
-            "src": "1655:81:8",
+            "scope": 2001,
+            "src": "1655:65:8",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 2362,
-        "src": "84:1654:8"
+        "scope": 2002,
+        "src": "84:1638:8"
       }
     ],
-    "src": "0:1739:8"
+    "src": "0:1723:8"
   },
   "compiler": {
     "name": "solc",
@@ -3037,7 +3037,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-09-10T10:40:38.763Z",
+  "updatedAt": "2019-09-10T13:38:11.554Z",
   "devdoc": {
     "methods": {}
   },

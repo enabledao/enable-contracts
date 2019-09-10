@@ -143,12 +143,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         public
         view
         returns (uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
-    {
-        (principalPayment, interestPayment, totalPayment) = _calcScheduledPayment(
-            period,
-            loanParams.principalRequested
-        );
-    }
+    {}
 
     /**
      * @dev Gets finalized payment schedule based on principalDisbursed
@@ -163,13 +158,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             uint256 interestPayment,
             uint256 totalPayment
         )
-    {
-        (principalPayment, interestPayment, totalPayment) = _calcScheduledPayment(
-            period,
-            loanParams.principalDisbursed
-        );
-        dueTimestamp = BokkyPooBahsDateTimeLibrary.addMonths(loanParams.loanStartTimestamp, period);
-    }
+    {}
 
     /**
      * @dev Begins loan and writes timestamps to the payment table
@@ -196,9 +185,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     /**
      * @dev Overloaded function. `now` will be the block's timestamp as reported by the miner
      */
-    function getExpectedRepaymentValue() public view returns (uint256 total) {
-        total = getExpectedRepaymentValue(now);
-    }
+    function getExpectedRepaymentValue() public view returns (uint256 total) {}
 
     /**
      * @dev returns the expected repayment value for a given timestamp for the loan's scheduled payments
@@ -206,15 +193,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
      * @param timestamp uint256
      * @return uint256 total number of currencyTokens expected to be repaid
      */
-    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256 total) {
-        total = 0;
-        for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
-            (uint256 due, , , uint256 amount) = getScheduledPayment(i + 1);
-            if (due <= timestamp) {
-                total = total.add(amount);
-            }
-        }
-    }
+    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256 total) {}
 
     /**
      * @dev Calculates the scheduled payment for a given period
@@ -224,20 +203,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         internal
         view
         returns (uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
-    {
-        require(
-            period > 0 && period <= loanParams.loanPeriod,
-            "The requested period is outside loan period"
-        );
-        interestPayment = _calcMonthlyInterest(principal, loanParams.interestRate);
-        /** Principal is only paid during the last period */
-        if (period == loanParams.loanPeriod) {
-            principalPayment = principal;
-        } else {
-            principalPayment = 0;
-        }
-        totalPayment = interestPayment.add(principalPayment);
-    }
+    {}
 
     /**
      * @dev calculates monthly interest payment
@@ -247,9 +213,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         public
         pure
         returns (uint256 result)
-    {
-        result = principal.mul(interestRate).div(MONTHSINYEAR).div(TENTHOUSAND);
-    }
+    {}
 
     /**
      * @dev internal method to set the loanStatus of the loan

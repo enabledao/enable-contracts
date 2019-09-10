@@ -42,7 +42,5 @@ contract ITermsContract {
         );
 
     function setLoanStatus(TermsContractLib.LoanStatus _status) external;
-    function startRepaymentCycle(uint256)
-        external
-        returns (uint256);
+    function startRepaymentCycle(uint256) external returns (uint256);
 }
