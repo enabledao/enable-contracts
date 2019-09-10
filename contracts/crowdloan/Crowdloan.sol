@@ -63,7 +63,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     }
 
     function _rejectCrowdfund() internal {
-      if (termsContract.getLoanStatus() == TermsContractLib.LoanStatus.FUNDING_STARTED &&  now >= getCrowdfundEnd().add(WITHDRAW_WINDOW)) {
+      if (termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE &&  now >= getCrowdfundEnd().add(WITHDRAW_WINDOW)) {
         termsContract.setLoanStatus(TermsContractLib.LoanStatus.FUNDING_FAILED);
       }
     }
@@ -116,7 +116,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
 
     function rejectCrowdfund() public {
         require(msg.sender == getBorrower(), "Only borrower can reject crowdfund");
-        require(termsContract.getLoanStatus() == TermsContractLib.LoanStatus.FUNDING_STARTED, "Crowdfund can only be rejected before completion");
+        require(termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE, "Crowdfund can only be rejected before repayment cycle");
 
         _rejectCrowdfund();
         require(termsContract.getLoanStatus() == TermsContractLib.LoanStatus.FUNDING_FAILED, "Crowdfund not successfully rejected");
@@ -146,7 +146,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     /// @notice Get a refund for a debt token owned by the sender
     function refund(uint256 amount) public {
         require(
-            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.FUNDING_COMPLETE,
+            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
             "Funding already complete. Refund Impossible"
         );
 

@@ -7,7 +7,7 @@
 // Lender should not be able to contribute after loan is fully funded
 // Lender should not be able to contribute after loan is withdrawn by borrower
 
-import {BN, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
+import {BN, expectEvent, expectRevert, time} from 'openzeppelin-test-helpers';
 
 const {expect} = require('chai');
 
@@ -282,21 +282,47 @@ contract('Crowdloan', accounts => {
     });
 
     context('after crowdfunding phase', async () => {
+      beforeEach(async () => {
+        await termsContract.setLoanStatus(loanStatuses.FUNDING_STARTED); // FUNDING_STARTED
+        await crowdloan.fund(contributor.value, {from: contributor.address});
+      })
       it('should not allow refund if funding is complete', async () => {
-        termsContract.setLoanStatus(loanStatuses.FUNDING_STARTED); // FUNDING_STARTED
-        crowdloan.fund(contributor.value, {from: contributor.address});
-
+        await termsContract.setLoanStatus(loanStatuses.REPAYMENT_CYCLE); // REPAYMENT_CYCLE
         // console.log(contributor)
         // const current = await repaymentManager.totalShares();
         // console.log(`Just funded: ${current.toNumber()}`);
-        expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(
-          loanStatuses.FUNDING_COMPLETE
-        );
 
         await expectRevert.unspecified(
           crowdloan.refund(contributor.value, {from: contributor.address}),
           'Funding already complete. Refund Impossible'
         );
+
+      });
+
+      it('should allow refund after Withdraw timeout', async () => {
+        const WITHDRAW_TIMEOUT = 86400 * 3; // Refund delay: 3 days
+        const crowdfundEnd =  await crowdloan.getCrowdfundEnd.call();
+        await termsContract.setLoanStatus(loanStatuses.FUNDING_COMPLETE); // FUNDING_COMPLETE
+        expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(
+          loanStatuses.FUNDING_COMPLETE
+        );
+
+        const snapshotId = await snapShotEvm();
+        await expectRevert.unspecified(
+          crowdloan.refund(contributor.value, {from: contributor.address}),
+          'Refund only allowed if funding failed'
+        );
+
+        const now = Math.floor(new Date().getTime()/1000);
+        const timeTillTimeout = (crowdfundEnd.add(new BN(WITHDRAW_TIMEOUT)).toNumber())
+          - now;
+        await time.increase(timeTillTimeout + 5);
+
+        await crowdloan.refund(partialAmount, {from: contributor.address});
+        expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(
+          loanStatuses.FUNDING_FAILED
+        );
+        await revertEvm(snapshotId);
       });
     });
   });
