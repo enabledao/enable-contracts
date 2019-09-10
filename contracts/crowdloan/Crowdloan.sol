@@ -135,7 +135,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
             termsContract.getLoanStatus() < TermsContractLib.LoanStatus.FUNDING_FAILED,
             "Crowdfund completed or failed"
         );
-        require( getCrowdfundEnd() < now, "Crowdfund period over");
+        // require( getCrowdfundEnd() < now, "Crowdfund period over");
         require(_isBelowMaxSupply(amount), "Amount exceeds capital");
         _validatedERC20Transfer(_getPrincipalToken(), msg.sender, address(this), amount);
         //Mint new debt token and transfer to sender
