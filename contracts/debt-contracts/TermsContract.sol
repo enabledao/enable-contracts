@@ -18,8 +18,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     uint256 private constant MONTHSINYEAR = 12;
     uint256 private constant TENTHOUSAND = 10000;
 
-    address private _borrower;
-
     modifier onlyBeforeRepaymentCycle() {
         require(
             loanParams.loanStatus < TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
@@ -29,32 +27,37 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     }
 
     function initialize(
-        address borrower_,
-        address _principalTokenAddr,
-        uint256 _principalRequested,
-        uint256 _loanPeriod,
-        uint256 _interestRate,
+        address borrower,
+        address principalToken,
+        uint256 principalRequested,
+        uint256 loanPeriod,
+        uint256 interestRate,
+        uint256 minimumRepayment,
+        uint256 maximumRepayment,
         address[] memory _controllers
     ) public initializer {
-        require(_principalTokenAddr != address(0), "Loaned token must be an ERC20 token"); //TODO(Dan): More rigorous way of testing ERC20?
-        require(_principalRequested != 0, "PrincipalRequested must be greater than 0");
-        require(_loanPeriod > 0, "Loan period must be higher than 0");
+        require(principalToken != address(0), "Loaned token must be an ERC20 token"); //TODO(Dan): More rigorous way of testing ERC20?
+        require(principalRequested != 0, "PrincipalRequested must be greater than 0");
+        require(loanPeriod > 0, "Loan period must be higher than 0");
         require(
-            _interestRate > 9,
+            interestRate > 9,
             "Interest rate should be in basis points and have minimum of 10 (0.1%)"
         );
         require(
-            _interestRate < 10000,
+            interestRate < 10000,
             "Interest rate be in basis points and less than 10,000 (100%)"
         );
-        _borrower = borrower_;
+
         ControllerRole.initialize(_controllers);
         loanParams = TermsContractLib.LoanParams({
-            principalToken: _principalTokenAddr,
-            principalRequested: _principalRequested,
+            borrower: borrower,
+            principalToken: principalToken,
+            principalRequested: principalRequested,
             loanStatus: TermsContractLib.LoanStatus.NOT_STARTED,
-            loanPeriod: _loanPeriod,
-            interestRate: _interestRate,
+            loanPeriod: loanPeriod,
+            interestRate: interestRate,
+            minimumRepayment: minimumRepayment,
+            maximumRepayment: maximumRepayment,
             principalDisbursed: 0,
             loanStartTimestamp: 0
         });
@@ -66,8 +69,8 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
 
     /** Public view functions
      */
-    function borrower() public view returns (address) {
-        return _borrower;
+    function getBorrower() public view returns (address) {
+        return loanParams.borrower;
     }
 
     function getInterestRate() public view returns (uint256) {
@@ -98,6 +101,14 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         return loanParams.principalToken;
     }
 
+    function getMinimumRepayment() public view returns (uint256) {
+        return loanParams.minimumRepayment;
+    }
+
+    function getMaximumRepayment() public view returns (uint256) {
+        return loanParams.maximumRepayment;
+    }
+
     function getLoanEndTimestamp() public view returns (uint256 end) {
         require(loanParams.loanStartTimestamp != 0, "Loan hasn't been started yet");
         end = BokkyPooBahsDateTimeLibrary.addMonths(
@@ -113,23 +124,27 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         public
         view
         returns (
-            address,
+            address borrower,
             address principalToken,
             uint256 principalRequested,
             uint256 loanStatus,
             uint256 loanPeriod,
             uint256 interestRate,
+            uint256 minimumRepayment,
+            uint256 maximumRepayment,
             uint256 principalDisbursed,
             uint256 loanStartTimestamp
         )
     {
         return (
-            _borrower,
-            address(loanParams.principalToken),
+            loanParams.borrower,
+            loanParams.principalToken,
             loanParams.principalRequested,
             uint256(loanParams.loanStatus),
             loanParams.loanPeriod,
             loanParams.interestRate,
+            loanParams.minimumRepayment,
+            loanParams.maximumRepayment,
             loanParams.principalDisbursed,
             loanParams.loanStartTimestamp
         );

@@ -54,10 +54,15 @@ const generateLoanScenario = accounts => {
       shares: generateRandomPaddedBN(split_MAX_CROWDFUND)
     }
   ];
+
+  const principal = lenders.reduce((total, lender) => total.add(lender.shares), new BN(0));
+
   const loanParams = {
-    principalRequested: lenders.reduce((total, lender) => total.add(lender.shares), new BN(0)),
+    principalRequested: principal,
     loanPeriod, // TODO(Dan): Randomize
-    interestRate: 50 // TODO(Dan): Randomize
+    interestRate: 50, // TODO(Dan): Randomize
+    minimumRepayment: principal,
+    maximumRepayment: principal
   };
   const repayments = [];
   for (let i = 0; i < loanPeriod; i += 1) {

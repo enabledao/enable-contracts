@@ -137,7 +137,7 @@ contract('Enable Suite', accounts => {
 
     expect(await crowdloan.repaymentManager.call()).to.be.equal(repaymentManager.address);
 
-    expect(await termsContract.borrower.call()).to.be.equal(borrower);
+    expect(await termsContract.getBorrower.call()).to.be.equal(borrower);
 
     expect(await repaymentManager.termsContract.call()).to.be.equal(termsContract.address);
   });

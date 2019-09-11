@@ -59,7 +59,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     }
 
     function getBorrower() public view returns (address) {
-        return termsContract.borrower();
+        return termsContract.getBorrower();
     }
 
     // @notice additional payment does not exceed the pricipal Amount
@@ -149,9 +149,9 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
             "Crowdfund not completed"
         );
 
-        address borrower = termsContract.borrower();
+        address borrower = termsContract.getBorrower();
 
-        require(msg.sender == termsContract.borrower(), "Withdrawal only allowed for Borrower");
+        require(msg.sender == termsContract.getBorrower(), "Withdrawal only allowed for Borrower");
 
         uint256 contractBalance = _getPrincipalToken().balanceOf(address(this));
         require(amount <= contractBalance, "Amount exceeds available balance");

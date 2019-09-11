@@ -268,14 +268,14 @@
     "absolutePath": "/Users/thomas/Code/client/enable/test/enable-contracts/contracts/interface/IRepaymentManager.sol",
     "exportedSymbols": {
       "IRepaymentManager": [
-        1883
+        1922
       ]
     },
-    "id": 1884,
+    "id": 1923,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1790,
+        "id": 1829,
         "literals": [
           "solidity",
           ">=",
@@ -294,9 +294,9 @@
         "contractKind": "contract",
         "documentation": "@title IRepaymentManager\n@notice The RepaymentManager accepts payments in a given ERC20-compliant token, and allows shareholders to withdraw a portion of tokens relative to their share\nThe share amounts are managed by a Controller, which has the exclusive right to set user shares.\nShares cannot be changed once the repayment process begins.",
         "fullyImplemented": false,
-        "id": 1883,
+        "id": 1922,
         "linearizedBaseContracts": [
-          1883
+          1922
         ],
         "name": "IRepaymentManager",
         "nodeType": "ContractDefinition",
@@ -304,20 +304,20 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 1794,
+            "id": 1833,
             "name": "PayeeAdded",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 1793,
+              "id": 1832,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1792,
+                  "id": 1831,
                   "indexed": false,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1794,
+                  "scope": 1833,
                   "src": "450:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -326,7 +326,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1791,
+                    "id": 1830,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "450:7:7",
@@ -347,20 +347,20 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 1798,
+            "id": 1837,
             "name": "PayeeRemoved",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 1797,
+              "id": 1836,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1796,
+                  "id": 1835,
                   "indexed": false,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1798,
+                  "scope": 1837,
                   "src": "491:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -369,7 +369,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1795,
+                    "id": 1834,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "491:7:7",
@@ -390,20 +390,20 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 1804,
+            "id": 1843,
             "name": "ShareIncreased",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 1803,
+              "id": 1842,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1800,
+                  "id": 1839,
                   "indexed": false,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1804,
+                  "scope": 1843,
                   "src": "534:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -412,7 +412,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1799,
+                    "id": 1838,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "534:7:7",
@@ -427,11 +427,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 1802,
+                  "id": 1841,
                   "indexed": false,
                   "name": "sharesAdded",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1804,
+                  "scope": 1843,
                   "src": "551:19:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -440,7 +440,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1801,
+                    "id": 1840,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "551:7:7",
@@ -460,20 +460,20 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 1810,
+            "id": 1849,
             "name": "ShareDecreased",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 1809,
+              "id": 1848,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1806,
+                  "id": 1845,
                   "indexed": false,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1810,
+                  "scope": 1849,
                   "src": "598:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -482,7 +482,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1805,
+                    "id": 1844,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "598:7:7",
@@ -497,11 +497,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 1808,
+                  "id": 1847,
                   "indexed": false,
                   "name": "sharesRemoved",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1810,
+                  "scope": 1849,
                   "src": "615:21:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -510,7 +510,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1807,
+                    "id": 1846,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "615:7:7",
@@ -530,20 +530,20 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 1816,
+            "id": 1855,
             "name": "PaymentReleased",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 1815,
+              "id": 1854,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1812,
+                  "id": 1851,
                   "indexed": false,
                   "name": "to",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1816,
+                  "scope": 1855,
                   "src": "665:10:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -552,7 +552,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1811,
+                    "id": 1850,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "665:7:7",
@@ -567,11 +567,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 1814,
+                  "id": 1853,
                   "indexed": false,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1816,
+                  "scope": 1855,
                   "src": "677:14:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -580,7 +580,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1813,
+                    "id": 1852,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "677:7:7",
@@ -600,20 +600,20 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 1822,
+            "id": 1861,
             "name": "PaymentReceived",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 1821,
+              "id": 1860,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1818,
+                  "id": 1857,
                   "indexed": false,
                   "name": "from",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1822,
+                  "scope": 1861,
                   "src": "720:12:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -622,7 +622,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1817,
+                    "id": 1856,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "720:7:7",
@@ -637,11 +637,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 1820,
+                  "id": 1859,
                   "indexed": false,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1822,
+                  "scope": 1861,
                   "src": "734:14:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -650,7 +650,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1819,
+                    "id": 1858,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "734:7:7",
@@ -670,22 +670,22 @@
           {
             "body": null,
             "documentation": "@notice Send funds\n@param amount amount of tokens to send.",
-            "id": 1827,
+            "id": 1866,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "pay",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1825,
+              "id": 1864,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1824,
+                  "id": 1863,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1827,
+                  "scope": 1866,
                   "src": "858:14:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -694,7 +694,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1823,
+                    "id": 1862,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "858:7:7",
@@ -710,12 +710,12 @@
               "src": "857:16:7"
             },
             "returnParameters": {
-              "id": 1826,
+              "id": 1865,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "880:0:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "845:36:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -724,28 +724,28 @@
           {
             "body": null,
             "documentation": "@return the total shares of the contract.",
-            "id": 1832,
+            "id": 1871,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "totalShares",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1828,
+              "id": 1867,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "972:2:7"
             },
             "returnParameters": {
-              "id": 1831,
+              "id": 1870,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1830,
+                  "id": 1869,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1832,
+                  "scope": 1871,
                   "src": "996:7:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -754,7 +754,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1829,
+                    "id": 1868,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "996:7:7",
@@ -769,7 +769,7 @@
               ],
               "src": "995:9:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "952:53:7",
             "stateMutability": "view",
             "superFunction": null,
@@ -778,28 +778,28 @@
           {
             "body": null,
             "documentation": "@return the total amount already released.",
-            "id": 1837,
+            "id": 1876,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "totalReleased",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1833,
+              "id": 1872,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1099:2:7"
             },
             "returnParameters": {
-              "id": 1836,
+              "id": 1875,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1835,
+                  "id": 1874,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1837,
+                  "scope": 1876,
                   "src": "1123:7:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -808,7 +808,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1834,
+                    "id": 1873,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1123:7:7",
@@ -823,7 +823,7 @@
               ],
               "src": "1122:9:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "1077:55:7",
             "stateMutability": "view",
             "superFunction": null,
@@ -832,28 +832,28 @@
           {
             "body": null,
             "documentation": "@return the total amount paid to contract.",
-            "id": 1842,
+            "id": 1881,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "totalPaid",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1838,
+              "id": 1877,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1222:2:7"
             },
             "returnParameters": {
-              "id": 1841,
+              "id": 1880,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1840,
+                  "id": 1879,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1842,
+                  "scope": 1881,
                   "src": "1246:7:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -862,7 +862,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1839,
+                    "id": 1878,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1246:7:7",
@@ -877,7 +877,7 @@
               ],
               "src": "1245:9:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "1204:51:7",
             "stateMutability": "view",
             "superFunction": null,
@@ -886,22 +886,22 @@
           {
             "body": null,
             "documentation": "@return the shares of an account.",
-            "id": 1849,
+            "id": 1888,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "shares",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1845,
+              "id": 1884,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1844,
+                  "id": 1883,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1849,
+                  "scope": 1888,
                   "src": "1334:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -910,7 +910,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1843,
+                    "id": 1882,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "1334:7:7",
@@ -927,15 +927,15 @@
               "src": "1333:17:7"
             },
             "returnParameters": {
-              "id": 1848,
+              "id": 1887,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1847,
+                  "id": 1886,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1849,
+                  "scope": 1888,
                   "src": "1372:7:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -944,7 +944,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1846,
+                    "id": 1885,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1372:7:7",
@@ -959,7 +959,7 @@
               ],
               "src": "1371:9:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "1318:63:7",
             "stateMutability": "view",
             "superFunction": null,
@@ -968,22 +968,22 @@
           {
             "body": null,
             "documentation": "@return the amount already released to an account.",
-            "id": 1856,
+            "id": 1895,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "released",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1852,
+              "id": 1891,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1851,
+                  "id": 1890,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1856,
+                  "scope": 1895,
                   "src": "1479:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -992,7 +992,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1850,
+                    "id": 1889,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "1479:7:7",
@@ -1009,15 +1009,15 @@
               "src": "1478:17:7"
             },
             "returnParameters": {
-              "id": 1855,
+              "id": 1894,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1854,
+                  "id": 1893,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1856,
+                  "scope": 1895,
                   "src": "1517:7:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1026,7 +1026,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1853,
+                    "id": 1892,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1517:7:7",
@@ -1041,7 +1041,7 @@
               ],
               "src": "1516:9:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "1461:65:7",
             "stateMutability": "view",
             "superFunction": null,
@@ -1050,22 +1050,22 @@
           {
             "body": null,
             "documentation": "@return the release amount that an account could currently claim.",
-            "id": 1863,
+            "id": 1902,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "releaseAllowance",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1859,
+              "id": 1898,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1858,
+                  "id": 1897,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1863,
+                  "scope": 1902,
                   "src": "1647:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1074,7 +1074,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1857,
+                    "id": 1896,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "1647:7:7",
@@ -1091,15 +1091,15 @@
               "src": "1646:17:7"
             },
             "returnParameters": {
-              "id": 1862,
+              "id": 1901,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1861,
+                  "id": 1900,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1863,
+                  "scope": 1902,
                   "src": "1685:7:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1108,7 +1108,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1860,
+                    "id": 1899,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1685:7:7",
@@ -1123,7 +1123,7 @@
               ],
               "src": "1684:9:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "1621:73:7",
             "stateMutability": "view",
             "superFunction": null,
@@ -1132,22 +1132,22 @@
           {
             "body": null,
             "documentation": "@dev Release one of the payee's proportional payment.\n@param account Whose payments will be released.",
-            "id": 1868,
+            "id": 1907,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "release",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1866,
+              "id": 1905,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1865,
+                  "id": 1904,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1868,
+                  "scope": 1907,
                   "src": "1849:23:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1156,7 +1156,7 @@
                     "typeString": "address payable"
                   },
                   "typeName": {
-                    "id": 1864,
+                    "id": 1903,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "1849:15:7",
@@ -1173,12 +1173,12 @@
               "src": "1848:25:7"
             },
             "returnParameters": {
-              "id": 1867,
+              "id": 1906,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1880:0:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "1832:49:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -1187,22 +1187,22 @@
           {
             "body": null,
             "documentation": "@dev Increase shares of a shareholder.",
-            "id": 1875,
+            "id": 1914,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "increaseShares",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1873,
+              "id": 1912,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1870,
+                  "id": 1909,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1875,
+                  "scope": 1914,
                   "src": "1973:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1211,7 +1211,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1869,
+                    "id": 1908,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "1973:7:7",
@@ -1226,10 +1226,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 1872,
+                  "id": 1911,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1875,
+                  "scope": 1914,
                   "src": "1990:14:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1238,7 +1238,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1871,
+                    "id": 1910,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1990:7:7",
@@ -1254,12 +1254,12 @@
               "src": "1972:33:7"
             },
             "returnParameters": {
-              "id": 1874,
+              "id": 1913,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "2012:0:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "1949:64:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -1268,22 +1268,22 @@
           {
             "body": null,
             "documentation": "@dev Decrease shares of a shareholder.",
-            "id": 1882,
+            "id": 1921,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "decreaseShares",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1880,
+              "id": 1919,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1877,
+                  "id": 1916,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1882,
+                  "scope": 1921,
                   "src": "2105:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1292,7 +1292,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1876,
+                    "id": 1915,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "2105:7:7",
@@ -1307,10 +1307,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 1879,
+                  "id": 1918,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1882,
+                  "scope": 1921,
                   "src": "2122:14:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1319,7 +1319,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1878,
+                    "id": 1917,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "2122:7:7",
@@ -1335,19 +1335,19 @@
               "src": "2104:33:7"
             },
             "returnParameters": {
-              "id": 1881,
+              "id": 1920,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "2144:0:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "2081:64:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 1884,
+        "scope": 1923,
         "src": "400:1747:7"
       }
     ],
@@ -1357,14 +1357,14 @@
     "absolutePath": "/Users/thomas/Code/client/enable/test/enable-contracts/contracts/interface/IRepaymentManager.sol",
     "exportedSymbols": {
       "IRepaymentManager": [
-        1883
+        1922
       ]
     },
-    "id": 1884,
+    "id": 1923,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1790,
+        "id": 1829,
         "literals": [
           "solidity",
           ">=",
@@ -1383,9 +1383,9 @@
         "contractKind": "contract",
         "documentation": "@title IRepaymentManager\n@notice The RepaymentManager accepts payments in a given ERC20-compliant token, and allows shareholders to withdraw a portion of tokens relative to their share\nThe share amounts are managed by a Controller, which has the exclusive right to set user shares.\nShares cannot be changed once the repayment process begins.",
         "fullyImplemented": false,
-        "id": 1883,
+        "id": 1922,
         "linearizedBaseContracts": [
-          1883
+          1922
         ],
         "name": "IRepaymentManager",
         "nodeType": "ContractDefinition",
@@ -1393,20 +1393,20 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 1794,
+            "id": 1833,
             "name": "PayeeAdded",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 1793,
+              "id": 1832,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1792,
+                  "id": 1831,
                   "indexed": false,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1794,
+                  "scope": 1833,
                   "src": "450:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1415,7 +1415,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1791,
+                    "id": 1830,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "450:7:7",
@@ -1436,20 +1436,20 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 1798,
+            "id": 1837,
             "name": "PayeeRemoved",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 1797,
+              "id": 1836,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1796,
+                  "id": 1835,
                   "indexed": false,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1798,
+                  "scope": 1837,
                   "src": "491:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1458,7 +1458,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1795,
+                    "id": 1834,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "491:7:7",
@@ -1479,20 +1479,20 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 1804,
+            "id": 1843,
             "name": "ShareIncreased",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 1803,
+              "id": 1842,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1800,
+                  "id": 1839,
                   "indexed": false,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1804,
+                  "scope": 1843,
                   "src": "534:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1501,7 +1501,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1799,
+                    "id": 1838,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "534:7:7",
@@ -1516,11 +1516,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 1802,
+                  "id": 1841,
                   "indexed": false,
                   "name": "sharesAdded",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1804,
+                  "scope": 1843,
                   "src": "551:19:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1529,7 +1529,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1801,
+                    "id": 1840,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "551:7:7",
@@ -1549,20 +1549,20 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 1810,
+            "id": 1849,
             "name": "ShareDecreased",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 1809,
+              "id": 1848,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1806,
+                  "id": 1845,
                   "indexed": false,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1810,
+                  "scope": 1849,
                   "src": "598:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1571,7 +1571,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1805,
+                    "id": 1844,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "598:7:7",
@@ -1586,11 +1586,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 1808,
+                  "id": 1847,
                   "indexed": false,
                   "name": "sharesRemoved",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1810,
+                  "scope": 1849,
                   "src": "615:21:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1599,7 +1599,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1807,
+                    "id": 1846,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "615:7:7",
@@ -1619,20 +1619,20 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 1816,
+            "id": 1855,
             "name": "PaymentReleased",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 1815,
+              "id": 1854,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1812,
+                  "id": 1851,
                   "indexed": false,
                   "name": "to",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1816,
+                  "scope": 1855,
                   "src": "665:10:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1641,7 +1641,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1811,
+                    "id": 1850,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "665:7:7",
@@ -1656,11 +1656,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 1814,
+                  "id": 1853,
                   "indexed": false,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1816,
+                  "scope": 1855,
                   "src": "677:14:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1669,7 +1669,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1813,
+                    "id": 1852,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "677:7:7",
@@ -1689,20 +1689,20 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 1822,
+            "id": 1861,
             "name": "PaymentReceived",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 1821,
+              "id": 1860,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1818,
+                  "id": 1857,
                   "indexed": false,
                   "name": "from",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1822,
+                  "scope": 1861,
                   "src": "720:12:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1711,7 +1711,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1817,
+                    "id": 1856,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "720:7:7",
@@ -1726,11 +1726,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 1820,
+                  "id": 1859,
                   "indexed": false,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1822,
+                  "scope": 1861,
                   "src": "734:14:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1739,7 +1739,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1819,
+                    "id": 1858,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "734:7:7",
@@ -1759,22 +1759,22 @@
           {
             "body": null,
             "documentation": "@notice Send funds\n@param amount amount of tokens to send.",
-            "id": 1827,
+            "id": 1866,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "pay",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1825,
+              "id": 1864,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1824,
+                  "id": 1863,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1827,
+                  "scope": 1866,
                   "src": "858:14:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1783,7 +1783,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1823,
+                    "id": 1862,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "858:7:7",
@@ -1799,12 +1799,12 @@
               "src": "857:16:7"
             },
             "returnParameters": {
-              "id": 1826,
+              "id": 1865,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "880:0:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "845:36:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -1813,28 +1813,28 @@
           {
             "body": null,
             "documentation": "@return the total shares of the contract.",
-            "id": 1832,
+            "id": 1871,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "totalShares",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1828,
+              "id": 1867,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "972:2:7"
             },
             "returnParameters": {
-              "id": 1831,
+              "id": 1870,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1830,
+                  "id": 1869,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1832,
+                  "scope": 1871,
                   "src": "996:7:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1843,7 +1843,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1829,
+                    "id": 1868,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "996:7:7",
@@ -1858,7 +1858,7 @@
               ],
               "src": "995:9:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "952:53:7",
             "stateMutability": "view",
             "superFunction": null,
@@ -1867,28 +1867,28 @@
           {
             "body": null,
             "documentation": "@return the total amount already released.",
-            "id": 1837,
+            "id": 1876,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "totalReleased",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1833,
+              "id": 1872,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1099:2:7"
             },
             "returnParameters": {
-              "id": 1836,
+              "id": 1875,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1835,
+                  "id": 1874,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1837,
+                  "scope": 1876,
                   "src": "1123:7:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1897,7 +1897,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1834,
+                    "id": 1873,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1123:7:7",
@@ -1912,7 +1912,7 @@
               ],
               "src": "1122:9:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "1077:55:7",
             "stateMutability": "view",
             "superFunction": null,
@@ -1921,28 +1921,28 @@
           {
             "body": null,
             "documentation": "@return the total amount paid to contract.",
-            "id": 1842,
+            "id": 1881,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "totalPaid",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1838,
+              "id": 1877,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1222:2:7"
             },
             "returnParameters": {
-              "id": 1841,
+              "id": 1880,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1840,
+                  "id": 1879,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1842,
+                  "scope": 1881,
                   "src": "1246:7:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1951,7 +1951,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1839,
+                    "id": 1878,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1246:7:7",
@@ -1966,7 +1966,7 @@
               ],
               "src": "1245:9:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "1204:51:7",
             "stateMutability": "view",
             "superFunction": null,
@@ -1975,22 +1975,22 @@
           {
             "body": null,
             "documentation": "@return the shares of an account.",
-            "id": 1849,
+            "id": 1888,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "shares",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1845,
+              "id": 1884,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1844,
+                  "id": 1883,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1849,
+                  "scope": 1888,
                   "src": "1334:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1999,7 +1999,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1843,
+                    "id": 1882,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "1334:7:7",
@@ -2016,15 +2016,15 @@
               "src": "1333:17:7"
             },
             "returnParameters": {
-              "id": 1848,
+              "id": 1887,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1847,
+                  "id": 1886,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1849,
+                  "scope": 1888,
                   "src": "1372:7:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2033,7 +2033,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1846,
+                    "id": 1885,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1372:7:7",
@@ -2048,7 +2048,7 @@
               ],
               "src": "1371:9:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "1318:63:7",
             "stateMutability": "view",
             "superFunction": null,
@@ -2057,22 +2057,22 @@
           {
             "body": null,
             "documentation": "@return the amount already released to an account.",
-            "id": 1856,
+            "id": 1895,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "released",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1852,
+              "id": 1891,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1851,
+                  "id": 1890,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1856,
+                  "scope": 1895,
                   "src": "1479:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2081,7 +2081,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1850,
+                    "id": 1889,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "1479:7:7",
@@ -2098,15 +2098,15 @@
               "src": "1478:17:7"
             },
             "returnParameters": {
-              "id": 1855,
+              "id": 1894,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1854,
+                  "id": 1893,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1856,
+                  "scope": 1895,
                   "src": "1517:7:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2115,7 +2115,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1853,
+                    "id": 1892,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1517:7:7",
@@ -2130,7 +2130,7 @@
               ],
               "src": "1516:9:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "1461:65:7",
             "stateMutability": "view",
             "superFunction": null,
@@ -2139,22 +2139,22 @@
           {
             "body": null,
             "documentation": "@return the release amount that an account could currently claim.",
-            "id": 1863,
+            "id": 1902,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "releaseAllowance",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1859,
+              "id": 1898,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1858,
+                  "id": 1897,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1863,
+                  "scope": 1902,
                   "src": "1647:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2163,7 +2163,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1857,
+                    "id": 1896,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "1647:7:7",
@@ -2180,15 +2180,15 @@
               "src": "1646:17:7"
             },
             "returnParameters": {
-              "id": 1862,
+              "id": 1901,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1861,
+                  "id": 1900,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1863,
+                  "scope": 1902,
                   "src": "1685:7:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2197,7 +2197,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1860,
+                    "id": 1899,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1685:7:7",
@@ -2212,7 +2212,7 @@
               ],
               "src": "1684:9:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "1621:73:7",
             "stateMutability": "view",
             "superFunction": null,
@@ -2221,22 +2221,22 @@
           {
             "body": null,
             "documentation": "@dev Release one of the payee's proportional payment.\n@param account Whose payments will be released.",
-            "id": 1868,
+            "id": 1907,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "release",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1866,
+              "id": 1905,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1865,
+                  "id": 1904,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1868,
+                  "scope": 1907,
                   "src": "1849:23:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2245,7 +2245,7 @@
                     "typeString": "address payable"
                   },
                   "typeName": {
-                    "id": 1864,
+                    "id": 1903,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "1849:15:7",
@@ -2262,12 +2262,12 @@
               "src": "1848:25:7"
             },
             "returnParameters": {
-              "id": 1867,
+              "id": 1906,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1880:0:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "1832:49:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -2276,22 +2276,22 @@
           {
             "body": null,
             "documentation": "@dev Increase shares of a shareholder.",
-            "id": 1875,
+            "id": 1914,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "increaseShares",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1873,
+              "id": 1912,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1870,
+                  "id": 1909,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1875,
+                  "scope": 1914,
                   "src": "1973:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2300,7 +2300,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1869,
+                    "id": 1908,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "1973:7:7",
@@ -2315,10 +2315,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 1872,
+                  "id": 1911,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1875,
+                  "scope": 1914,
                   "src": "1990:14:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2327,7 +2327,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1871,
+                    "id": 1910,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1990:7:7",
@@ -2343,12 +2343,12 @@
               "src": "1972:33:7"
             },
             "returnParameters": {
-              "id": 1874,
+              "id": 1913,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "2012:0:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "1949:64:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -2357,22 +2357,22 @@
           {
             "body": null,
             "documentation": "@dev Decrease shares of a shareholder.",
-            "id": 1882,
+            "id": 1921,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "decreaseShares",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1880,
+              "id": 1919,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1877,
+                  "id": 1916,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1882,
+                  "scope": 1921,
                   "src": "2105:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2381,7 +2381,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1876,
+                    "id": 1915,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "2105:7:7",
@@ -2396,10 +2396,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 1879,
+                  "id": 1918,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1882,
+                  "scope": 1921,
                   "src": "2122:14:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2408,7 +2408,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1878,
+                    "id": 1917,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "2122:7:7",
@@ -2424,19 +2424,19 @@
               "src": "2104:33:7"
             },
             "returnParameters": {
-              "id": 1881,
+              "id": 1920,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "2144:0:7"
             },
-            "scope": 1883,
+            "scope": 1922,
             "src": "2081:64:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 1884,
+        "scope": 1923,
         "src": "400:1747:7"
       }
     ],
@@ -2448,7 +2448,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-09-10T13:38:11.552Z",
+  "updatedAt": "2019-09-11T09:56:23.983Z",
   "devdoc": {
     "methods": {
       "decreaseShares(address,uint256)": {

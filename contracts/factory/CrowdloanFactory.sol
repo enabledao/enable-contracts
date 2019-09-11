@@ -44,12 +44,14 @@ contract CrowdloanFactory is Initializable {
     }
 
     function deploy(
-        address _principalTokenAddr,
-        uint256 _principalRequested,
-        uint256 _loanPeriod,
-        uint256 _interestRate,
-        uint256 _crowdfundLength,
-        uint256 _crowdfundStart
+        address principalToken,
+        uint256 principalRequested,
+        uint256 loanPeriod,
+        uint256 interestRate,
+        uint256 minimumRepayment,
+        uint256 maximumRepayment,
+        uint256 crowdfundLength,
+        uint256 crowdfundStart
     ) public {
         // TODO(Dan): Asserts and require statements
 
@@ -59,37 +61,39 @@ contract CrowdloanFactory is Initializable {
 
         // address(uint160(addr))
 
-        address[] memory _controllers = new address[](2);
-        _controllers[0] = crowdloanInstance;
-        _controllers[1] = repaymentManagerInstance;
+        address[] memory controllers = new address[](2);
+        controllers[0] = crowdloanInstance;
+        controllers[1] = repaymentManagerInstance;
 
-        address[] memory _loanInstanceAsController = new address[](1);
-        _loanInstanceAsController[0] = crowdloanInstance;
+        address[] memory loanInstanceAsController = new address[](1);
+        loanInstanceAsController[0] = crowdloanInstance;
 
         TermsContract(termsContractInstance).initialize(
             msg.sender,
-            _principalTokenAddr,
-            _principalRequested,
-            _loanPeriod,
-            _interestRate,
-            _controllers
+            principalToken,
+            principalRequested,
+            loanPeriod,
+            interestRate,
+            minimumRepayment,
+            maximumRepayment,
+            controllers
         );
 
         Crowdloan(address(uint160(crowdloanInstance))).initialize(
             termsContractInstance,
             repaymentManagerInstance,
-            _crowdfundLength,
-            _crowdfundStart
+            crowdfundLength,
+            crowdfundStart
         );
 
         RepaymentManager(address(uint160(repaymentManagerInstance))).initialize(
             termsContractInstance,
-            _loanInstanceAsController
+            loanInstanceAsController
         );
 
         emit LoanCreated(
             msg.sender,
-            _principalRequested,
+            principalRequested,
             termsContractInstance,
             crowdloanInstance,
             repaymentManagerInstance

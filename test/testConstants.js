@@ -24,9 +24,11 @@ const crowdfundParams = {
 };
 
 const loanParams = {
-  principalRequested: web3.utils.toWei('20000000', 'ether'), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
+  principalRequested: web3.utils.toWei('60000', 'ether'), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
   loanPeriod: 6,
-  interestRate: 600
+  interestRate: 600,
+  minimumRepayment: web3.utils.toWei('70000', 'ether'),
+  maximumRepayment: web3.utils.toWei('90000', 'ether')
 };
 
 const paymentTokenParams = {
