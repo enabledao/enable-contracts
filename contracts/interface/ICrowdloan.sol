@@ -6,6 +6,7 @@ interface ICrowdloan {
     event ReleaseFunds(address indexed borrower, uint256 amount);
 
     function startCrowdfund() external;
+    function rejectCrowdfund() external;
 
     /// @notice Fund the loan in exchange for a debt token
     /// @return debtTokenId Issued debt token ID
