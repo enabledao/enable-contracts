@@ -3603,7 +3603,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-09-11T09:56:23.989Z",
+  "updatedAt": "2019-09-11T10:02:22.401Z",
   "devdoc": {
     "methods": {
       "initialize(address)": {

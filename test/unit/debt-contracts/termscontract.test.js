@@ -83,10 +83,10 @@ contract('Terms Contract', accounts => {
         // 'Loaned tsoken must be an ERC20 token'
       );
     });
-    xit('should have a principalRequested greater than 0', async () => {
+    it('should have a principalRequested greater than 0', async () => {
       await invalidInputCheckRevert(params, 'principalRequested', new BN(0));
     });
-    xit('should revert if loan period is 0', async () => {
+    it('should revert if loan period is 0', async () => {
       await invalidInputCheckRevert(
         params,
         'loanPeriod',
@@ -94,7 +94,7 @@ contract('Terms Contract', accounts => {
         // 'Loan period must be higher than 0'
       );
     });
-    xit('should revert if interest rate is not in basis points', async () => {
+    it('should revert if interest rate is not in basis points', async () => {
       await invalidInputCheckRevert(
         params,
         'interestRate',
@@ -102,7 +102,7 @@ contract('Terms Contract', accounts => {
         // 'Interest rate should be in basis points and have minimum of 10 (0.1%)'
       );
     });
-    xit('should revert if interest rate is too high', async () => {
+    it('should revert if interest rate is too high', async () => {
       await invalidInputCheckRevert(
         params,
         'interestRate',
@@ -127,40 +127,40 @@ contract('Terms Contract', accounts => {
     });
 
     context('should store correct requested loanParams', async () => {
-      xit('should deploy successfully', async () => {
+      it('should deploy successfully', async () => {
         assert.exists(instance.address, 'instance was not successfully deployed');
       });
 
-      xit('should have valid PaymentToken address initialized', async () => {
+      it('should have valid PaymentToken address initialized', async () => {
         const result = await instance.getPrincipalToken.call();
         expect(result).to.be.equal(params.principalToken);
       });
 
-      xit('should get the correct interestRate', async () => {
+      it('should get the correct interestRate', async () => {
         expect(await instance.getInterestRate.call()).to.be.a.bignumber.that.equals(
           params.interestRate
         );
       });
 
-      xit('should get the correct principalRequested', async () => {
-        expect(await instance.getInterestRate.call()).to.be.a.bignumber.that.equals(
-          params.interestRate
+      it('should get the correct principalRequested', async () => {
+        expect(await instance.getPrincipalRequested.call()).to.be.a.bignumber.that.equals(
+          params.principalRequested
         );
       });
 
-      xit('should get the correct minimumRepayment', async () => {
-        expect(await instance.getInterestRate.call()).to.be.a.bignumber.that.equals(
-          params.interestRate
+      it('should get the correct minimumRepayment', async () => {
+        expect(await instance.getMinimumRepayment.call()).to.be.a.bignumber.that.equals(
+          params.minimumRepayment
         );
       });
 
-      xit('should get the correct maximumRepayment', async () => {
-        expect(await instance.getInterestRate.call()).to.be.a.bignumber.that.equals(
-          params.interestRate
+      it('should get the correct maximumRepayment', async () => {
+        expect(await instance.getMaximumRepayment.call()).to.be.a.bignumber.that.equals(
+          params.maximumRepayment
         );
       });
 
-      xit('should store loanStatus, loanStartTimestamp, and principalDisbursed as 0', async () => {
+      it('should store loanStatus, loanStartTimestamp, and principalDisbursed as 0', async () => {
         expect(instanceParams.loanStatus).to.be.a.bignumber.that.equals(new BN(0));
         expect(instanceParams.principalDisbursed).to.be.a.bignumber.that.equals(new BN(0));
         expect(instanceParams.loanStartTimestamp).to.be.a.bignumber.that.equals(new BN(0));
