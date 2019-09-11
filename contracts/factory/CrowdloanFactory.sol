@@ -58,7 +58,7 @@ contract CrowdloanFactory is Initializable {
         uint256 crowdfundStart,
         address contractAdmin
     ) public {
-        address[] memory proxies = new address[](5);
+        address[] memory proxies = new address[](3);
 
         proxies[0] = _createTermsContract("", contractAdmin);
         proxies[1] = _createCrowdloan("", contractAdmin);
