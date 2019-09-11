@@ -23,6 +23,7 @@ async function crowdloanFactoryUnitTests(
   let paymentToken;
   const appAddress = getAppAddress();
   const borrower = accounts[0];
+  const contractAdmin = accounts[9];
 
   beforeEach(async () => {
     // Create a factory via App
@@ -62,6 +63,7 @@ async function crowdloanFactoryUnitTests(
         loanParams.maximumRepayment,
         crowdfundParams.crowdfundLength,
         crowdfundParams.crowdfundStart,
+        contractAdmin,
         {from: borrower}
       );
     });
@@ -80,6 +82,28 @@ async function crowdloanFactoryUnitTests(
       assert.exists(termsContract.address, 'terms contract was not successfully deployed');
       assert.exists(crowdloan.address, 'crowdloan was not successfully deployed');
       assert.exists(repaymentManager.address, 'repayment manager was not successfully deployed');
+    });
+
+    it('should emit admin address on successful deploy', async () => {
+      const loanCreatedEvent = expectEvent.inLogs(deployTx.logs, 'LoanCreated');
+      const adminAddress = loanCreatedEvent.args.contractAdmin;
+
+      expect(adminAddress).to.be.equal(contractAdmin);
+    });
+
+    it('should register admin address on instances after successful deploy', async () => {
+      const loanCreatedEvent = expectEvent.inLogs(deployTx.logs, 'LoanCreated');
+
+      const termsContract = await TermsContract.at(loanCreatedEvent.args.termsContract);
+      const crowdloan = await Crowdloan.at(loanCreatedEvent.args.crowdloan);
+      const repaymentManager = await RepaymentManager.at(loanCreatedEvent.args.repaymentManager);
+
+      result = termsContract.admin({from: contractAdmin});
+      expect(result).to.be.equal(contractAdmin);
+      result = crowdloan.admin({from: contractAdmin});
+      expect(result).to.be.equal(contractAdmin);
+      result = repaymentManager.admin({from: contractAdmin});
+      expect(result).to.be.equal(contractAdmin);
     });
 
     it('should revert if invalid arguments', async () => {});

@@ -21,25 +21,29 @@ contract CrowdloanFactory is Initializable {
         uint256 indexed amount,
         address termsContract,
         address crowdloan,
-        address repaymentManager
+        address repaymentManager,
+        address contractAdmin
     );
 
     function initialize(address _appContractAddress) public initializer {
         app = App(_appContractAddress);
     }
 
-    function _createTermsContract(bytes memory _data) internal returns (address proxy) {
-        address admin = address(0);
+    function _createTermsContract(bytes memory _data, address admin)
+        internal
+        returns (address proxy)
+    {
         return address(app.create(ENABLE_CREDIT_PACKAGE, TERMS_CONTRACT, admin, _data));
     }
 
-    function _createCrowdloan(bytes memory _data) internal returns (address proxy) {
-        address admin = address(0);
+    function _createCrowdloan(bytes memory _data, address admin) internal returns (address proxy) {
         return address(app.create(ENABLE_CREDIT_PACKAGE, CROWDLOAN, admin, _data));
     }
 
-    function _createRepaymentManager(bytes memory _data) internal returns (address proxy) {
-        address admin = address(0);
+    function _createRepaymentManager(bytes memory _data, address admin)
+        internal
+        returns (address proxy)
+    {
         return address(app.create(ENABLE_CREDIT_PACKAGE, REPAYMENT_ROUTER, admin, _data));
     }
 
@@ -51,24 +55,23 @@ contract CrowdloanFactory is Initializable {
         uint256 minimumRepayment,
         uint256 maximumRepayment,
         uint256 crowdfundLength,
-        uint256 crowdfundStart
+        uint256 crowdfundStart,
+        address contractAdmin
     ) public {
-        // TODO(Dan): Asserts and require statements
+        address[] memory proxies = new address[](5);
 
-        address termsContractInstance = _createTermsContract("");
-        address crowdloanInstance = _createCrowdloan("");
-        address repaymentManagerInstance = _createRepaymentManager("");
-
-        // address(uint160(addr))
+        proxies[0] = _createTermsContract("", contractAdmin);
+        proxies[1] = _createCrowdloan("", contractAdmin);
+        proxies[2] = _createRepaymentManager("", contractAdmin);
 
         address[] memory controllers = new address[](2);
-        controllers[0] = crowdloanInstance;
-        controllers[1] = repaymentManagerInstance;
+        controllers[0] = proxies[1];
+        controllers[1] = proxies[2];
 
         address[] memory loanInstanceAsController = new address[](1);
-        loanInstanceAsController[0] = crowdloanInstance;
+        loanInstanceAsController[0] = proxies[1];
 
-        TermsContract(termsContractInstance).initialize(
+        TermsContract(proxies[0]).initialize(
             msg.sender,
             principalToken,
             principalRequested,
@@ -79,24 +82,25 @@ contract CrowdloanFactory is Initializable {
             controllers
         );
 
-        Crowdloan(address(uint160(crowdloanInstance))).initialize(
-            termsContractInstance,
-            repaymentManagerInstance,
+        Crowdloan(address(uint160(proxies[1]))).initialize(
+            proxies[0],
+            proxies[2],
             crowdfundLength,
             crowdfundStart
         );
 
-        RepaymentManager(address(uint160(repaymentManagerInstance))).initialize(
-            termsContractInstance,
+        RepaymentManager(address(uint160(proxies[2]))).initialize(
+            proxies[0],
             loanInstanceAsController
         );
 
         emit LoanCreated(
             msg.sender,
             principalRequested,
-            termsContractInstance,
-            crowdloanInstance,
-            repaymentManagerInstance
+            proxies[0],
+            proxies[1],
+            proxies[2],
+            contractAdmin
         );
     }
 }
