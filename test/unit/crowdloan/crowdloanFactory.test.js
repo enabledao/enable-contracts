@@ -91,21 +91,6 @@ async function crowdloanFactoryUnitTests(
       expect(adminAddress).to.be.equal(contractAdmin);
     });
 
-    it('should register admin address on instances after successful deploy', async () => {
-      const loanCreatedEvent = expectEvent.inLogs(deployTx.logs, 'LoanCreated');
-
-      const termsContract = await TermsContract.at(loanCreatedEvent.args.termsContract);
-      const crowdloan = await Crowdloan.at(loanCreatedEvent.args.crowdloan);
-      const repaymentManager = await RepaymentManager.at(loanCreatedEvent.args.repaymentManager);
-
-      result = termsContract.admin({from: contractAdmin});
-      expect(result).to.be.equal(contractAdmin);
-      result = crowdloan.admin({from: contractAdmin});
-      expect(result).to.be.equal(contractAdmin);
-      result = repaymentManager.admin({from: contractAdmin});
-      expect(result).to.be.equal(contractAdmin);
-    });
-
     it('should revert if invalid arguments', async () => {});
 
     describe('Crowdfund post-deployment', async () => {

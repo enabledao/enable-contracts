@@ -49,6 +49,7 @@ contract('Enable Suite', accounts => {
 
   const TENTHOUSAND = new BN(10000);
   const borrower = accounts[2];
+  const contractAdmin = accounts[6];
   const appAddress = getAppAddress();
   const lenders = [
     {
@@ -65,11 +66,7 @@ contract('Enable Suite', accounts => {
     },
     {
       address: accounts[5],
-      shares: new BN(loanParams.principalRequested).mul(new BN(500)).div(TENTHOUSAND)
-    },
-    {
-      address: accounts[6],
-      shares: new BN(loanParams.principalRequested).mul(new BN(300)).div(TENTHOUSAND)
+      shares: new BN(loanParams.principalRequested).mul(new BN(800)).div(TENTHOUSAND)
     },
     {
       address: accounts[7],
@@ -118,6 +115,7 @@ contract('Enable Suite', accounts => {
       paymentToken.address,
       ...Object.values(loanParams),
       ...Object.values(crowdfundParams),
+      contractAdmin,
       {from: borrower}
     );
 
