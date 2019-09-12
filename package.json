@@ -4,18 +4,20 @@
   "description": "Borderless peer-to-peer loans with social attestation",
   "main": "truffle-config.js",
   "scripts": {
-    "test": "oz publish --network development && oz push --network development && truffle test",
     "compile": "truffle compile --all",
+    "deploy:contracts": "sh ./scripts/deploy/oz.deploy.sh",
     "eslint": "./node_modules/.bin/eslint ./",
     "eslint:fix": "./node_modules/.bin/eslint ./ --fix",
-    "solhint": "./node_modules/.bin/solhint contracts/**/*.sol",
-    "prettier:solidity": "./node_modules/.bin/prettier --write contracts/**/*.sol",
-    "solium": "./node_modules/.bin/solium -d contracts/",
-    "solium:fix": "./node_modules/.bin/solium -d contracts/ --fix",
     "oz:create": "oz create",
     "oz:publish": "oz publish",
     "oz:push": "oz push",
-    "deploy:contracts": "sh ./deploy-scripts/oz.deploy.sh"
+    "prettier:solidity": "./node_modules/.bin/prettier --write contracts/**/*.sol",
+    "postinstall": "npm run version",
+    "solhint": "./node_modules/.bin/solhint contracts/**/*.sol",
+    "solium": "./node_modules/.bin/solium -d contracts/",
+    "solium:fix": "./node_modules/.bin/solium -d contracts/ --fix",
+    "test": "oz publish --network development && oz push --network development && truffle test",
+    "version": "node ./scripts/version/on-version.js && git add ."
   },
   "husky": {
     "hooks": {
@@ -44,7 +46,7 @@
     "@babel/register": "^7.4.4",
     "dotenv": "^6.2.0",
     "minimist": "^1.2.0",
-    "openzeppelin-eth": "^2.2.0",
+    "openzeppelin-eth": "2.2.0",
     "truffle-hdwallet-provider": "^1.0.3",
     "zos-lib": "^2.4.2"
   },
