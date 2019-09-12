@@ -17,7 +17,7 @@
     "solium": "./node_modules/.bin/solium -d contracts/",
     "solium:fix": "./node_modules/.bin/solium -d contracts/ --fix",
     "test": "oz publish --network development && oz push --network development && truffle test",
-    "version": "node ./scripts/version/on-version.js"
+    "version": "node ./scripts/version/on-version.js && git add ."
   },
   "husky": {
     "hooks": {
