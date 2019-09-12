@@ -3,6 +3,7 @@ require('@babel/register');
 require('@babel/polyfill');
 
 const mnemonic = process.env.MNEMONIC;
+const infuraProjectId = process.env.INFURA_PROJECT_ID;
 const HDWalletProvider = require('truffle-hdwallet-provider');
 // Create your own key for Production environments (https://infura.io/)
 
@@ -22,10 +23,7 @@ module.exports = {
     },
     ropsten: {
       provider() {
-        return new HDWalletProvider(
-          mnemonic,
-          `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`
-        );
+        return new HDWalletProvider(mnemonic, `https://ropsten.infura.io/v3/${infuraProjectId}`);
       },
       network_id: '3',
       gas: 4465030,
@@ -33,10 +31,7 @@ module.exports = {
     },
     kovan: {
       provider() {
-        return new HDWalletProvider(
-          mnemonic,
-          `https://kovan.infura.io/v3/${process.env.INFURA_API_KEY}`
-        );
+        return new HDWalletProvider(mnemonic, `https://kovan.infura.io/v3/${infuraProjectId}`);
       },
       network_id: '42',
       gas: 4465030,
@@ -46,7 +41,7 @@ module.exports = {
       provider: () =>
         new HDWalletProvider(
           process.env.MNEMONIC,
-          `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`
+          `https://rinkeby.infura.io/v3/${infuraProjectId}`
         ),
       network_id: 4,
       gas: 3000000,
@@ -57,7 +52,7 @@ module.exports = {
       provider: () =>
         new HDWalletProvider(
           process.env.MNEMONIC,
-          `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`
+          `https://mainnet.infura.io/v3/${infuraProjectId}`
         ),
       network_id: 1,
       gas: 3000000,
@@ -69,7 +64,7 @@ module.exports = {
   },
   compilers: {
     solc: {
-      version: '0.5.2'
+      version: '0.5.11'
     }
   }
 };
