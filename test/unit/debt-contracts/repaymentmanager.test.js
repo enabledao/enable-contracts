@@ -161,7 +161,7 @@ contract('RepaymentManager', accounts => {
             account: lender.address
           });
         } catch (err) {
-          expect(err.message).to.contain("'PayeeAdded' events");
+          expect(err.message).to.contain("'PayeeAdded'");
         }
       });
     });
