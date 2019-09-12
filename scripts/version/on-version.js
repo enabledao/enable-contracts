@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require("path");
 
-const OZ_PROJECT_FILE = '../.openzeppelin/project.json';
-const PACKAGE_FILE = '../package.json';
+const OZ_PROJECT_FILE = '../../.openzeppelin/project.json';
+const PACKAGE_FILE = '../../package.json';
 
 function getOZProjectConfig() {
   const filename = path.resolve(__dirname, OZ_PROJECT_FILE);

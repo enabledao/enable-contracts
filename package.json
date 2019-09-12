@@ -5,7 +5,7 @@
   "main": "truffle-config.js",
   "scripts": {
     "compile": "truffle compile --all",
-    "deploy:contracts": "sh ./deploy-scripts/oz.deploy.sh",
+    "deploy:contracts": "sh ./scripts/deploy/oz.deploy.sh",
     "eslint": "./node_modules/.bin/eslint ./",
     "eslint:fix": "./node_modules/.bin/eslint ./ --fix",
     "oz:create": "oz create",
@@ -17,7 +17,7 @@
     "solium": "./node_modules/.bin/solium -d contracts/",
     "solium:fix": "./node_modules/.bin/solium -d contracts/ --fix",
     "test": "oz publish --network development && oz push --network development && truffle test",
-    "version": "node ./version-scripts/on-version.js"
+    "version": "node ./scripts/version/on-version.js"
   },
   "husky": {
     "hooks": {
