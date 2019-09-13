@@ -1,10 +1,8 @@
 {
   "manifestVersion": "2.2",
   "contracts": {
-    "TermsContract": "TermsContract",
     "Crowdloan": "Crowdloan",
-    "CrowdloanFactory": "CrowdloanFactory",
-    "RepaymentManager": "RepaymentManager"
+    "CrowdloanFactory": "CrowdloanFactory"
   },
   "dependencies": {
     "openzeppelin-eth": "2.2.0"
