@@ -10,7 +10,9 @@ contract Crowdloan is Initializable {
     using SafeERC20 for IERC20;
 
     // Loan terms
-    uint256 public crowdFundEnd; // Last time contributions are accepted
+    uint256 public crowdfundStart;
+    uint256 public crowdfundEnd; // Last time contributions are accepted
+    uint256 public crowdfundDuration;
     address public borrower;
     IERC20 public token;
     uint256 public principalRequested;
@@ -30,23 +32,25 @@ contract Crowdloan is Initializable {
     event WithdrawPrincipal(address sender, uint256 amount);
     event WithdrawRepayment(address sender, uint256 amount);
     event Repay(uint256 amount);
+    event StartCrowdfund(uint256 crowdfundStart);
 
     function initialize(
         address _borrower,
-        uint256 duration,
         IERC20 _token,
         uint256 _principalRequested,
+        uint256 _duration,
         string calldata _loanMetadataUrl
     ) external initializer {
         borrower = _borrower;
-        crowdFundEnd = now + duration;
+        crowdfundDuration = _duration;
         token = _token;
         principalRequested = _principalRequested;
         loanMetadataUrl = _loanMetadataUrl;
     }
 
     function fund(uint256 amount) external {
-        require(now <= crowdFundEnd, "The contribution period has ended.");
+        require(now <= crowdfundEnd, "The contribution period has ended.");
+        require(amount > 0, "Fund amount cannot be zero");
 
         totalContributed = totalContributed.add(amount);
         require(
@@ -85,5 +89,15 @@ contract Crowdloan is Initializable {
         token.safeTransfer(msg.sender, amount);
 
         emit WithdrawRepayment(msg.sender, amount);
+    }
+
+    function startCrowdfund() external {
+        require(msg.sender == borrower, "Only the borrower can start crowdfund.");
+        require(crowdfundStart == 0, "Crowdfund must not have already been started.");
+
+        crowdfundStart = now;
+        crowdfundEnd = now + crowdfundDuration;
+
+        emit StartCrowdfund(now);
     }
 }

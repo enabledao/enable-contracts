@@ -18,17 +18,10 @@ const repaymentStatuses = {
   DEFAULT: new BN(1)
 };
 
-const crowdfundParams = {
-  crowdfundLength: 600,
-  crowdfundStart: 0
-};
-
 const loanParams = {
   principalRequested: web3.utils.toWei('60000', 'ether'), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
-  loanPeriod: 6,
-  interestRate: 600,
-  minimumRepayment: web3.utils.toWei('70000', 'ether'),
-  maximumRepayment: web3.utils.toWei('90000', 'ether')
+  crowdfundLength: 600,
+  loanMetadataURL: 'ipfsHash'
 };
 
 const paymentTokenParams = {
@@ -43,7 +36,6 @@ export {
   MAX_CROWDFUND,
   loanStatuses,
   repaymentStatuses,
-  crowdfundParams,
   loanParams,
   paymentTokenParams
 };

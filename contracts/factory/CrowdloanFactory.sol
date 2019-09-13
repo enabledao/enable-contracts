@@ -43,9 +43,9 @@ contract CrowdloanFactory is Initializable {
 
         Crowdloan(crowdloan).initialize(
             msg.sender,
-            crowdfundLength,
             principalToken,
             principalRequested,
+            crowdfundLength,
             loanMetadataUrl
         );
 
