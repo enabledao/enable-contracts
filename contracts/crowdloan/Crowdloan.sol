@@ -1,4 +1,4 @@
-pragma solidity >=0.4.22 <0.6.0;
+pragma solidity 0.5.11;
 
 import "openzeppelin-eth/contracts/math/SafeMath.sol";
 import "openzeppelin-eth/contracts/token/ERC20/IERC20.sol";
@@ -27,7 +27,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     ITermsContract public termsContract;
     IRepaymentManager public repaymentManager;
 
-    uint256 constant public WITHDRAW_WINDOW = 259200; //72 hours (3 days) wait time after crowdfund End, to allow borrower accept loan, otherwise allow refund from lenders
+    uint256 public constant WITHDRAW_WINDOW = 259200; //72 hours (3 days) wait time after crowdfund End, to allow borrower accept loan, otherwise allow refund from lenders
 
     modifier trackCrowdfundStatus() {
         _updateCrowdfundStatus();
@@ -65,9 +65,12 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     }
 
     function _rejectCrowdfund() internal {
-      if (termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE &&  now >= getCrowdfundEnd().add(WITHDRAW_WINDOW)) {
-        termsContract.setLoanStatus(TermsContractLib.LoanStatus.FUNDING_FAILED);
-      }
+        if (
+            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE &&
+            now >= getCrowdfundEnd().add(WITHDRAW_WINDOW)
+        ) {
+            termsContract.setLoanStatus(TermsContractLib.LoanStatus.FUNDING_FAILED);
+        }
     }
 
     // @notice reconcile the loans funding status
@@ -103,10 +106,16 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
 
     function rejectCrowdfund() public {
         require(msg.sender == getBorrower(), "Only borrower can reject crowdfund");
-        require(termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE, "Crowdfund can only be rejected before repayment cycle");
+        require(
+            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
+            "Crowdfund can only be rejected before repayment cycle"
+        );
 
         _rejectCrowdfund();
-        require(termsContract.getLoanStatus() == TermsContractLib.LoanStatus.FUNDING_FAILED, "Crowdfund not successfully rejected");
+        require(
+            termsContract.getLoanStatus() == TermsContractLib.LoanStatus.FUNDING_FAILED,
+            "Crowdfund not successfully rejected"
+        );
     }
 
     /// @notice Fund the loan in exchange for a debt token
@@ -138,7 +147,7 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
             "Funding already complete. Refund Impossible"
         );
 
-          _rejectCrowdfund();
+        _rejectCrowdfund();
 
         require(
             termsContract.getLoanStatus() == TermsContractLib.LoanStatus.FUNDING_FAILED,

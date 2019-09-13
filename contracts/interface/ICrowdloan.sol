@@ -1,4 +1,4 @@
-pragma solidity >=0.4.22 <0.6.0;
+pragma solidity 0.5.11;
 
 interface ICrowdloan {
     event Fund(address indexed sender, uint256 amount);

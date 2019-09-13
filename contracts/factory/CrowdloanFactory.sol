@@ -1,4 +1,4 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.11;
 
 import "zos-lib/contracts/Initializable.sol";
 import "zos-lib/contracts/application/App.sol";
