@@ -147,27 +147,53 @@ contract('Crowdloan', accounts => {
     let partialAmount;
     let contributor;
 
-    beforeEach(async () => {});
+    const nonBorrower = accounts[2];
+    const lender = accounts[3];
 
-    context('borrower', async () => {
-      beforeEach(async () => {});
-      xit('borrower should not be able to withdraw before crowdfund starts', async () => {});
-      xit('borrower should not be able to withdraw before crowdfund ends', async () => {});
-      xit('borrower should be able to withdraw after crowdfund ends', async () => {});
+    beforeEach(async () => {
+      await crowdloan.startCrowdfund({from: borrower});
+      await paymentToken.mint(contributor.address, new BN(loanParams.principalRequested));
+      await paymentToken.approve(crowdloan.address, new BN(loanParams.principalRequested), {
+        from: contributor.address
+      });
     });
 
-    context('Invalid case: non-borrower withdraws principal', async () => {
+    context('Before crowdfund', async () => {
       beforeEach(async () => {});
-      xit('non-borrower should not be able to withdraw before crowdfund starts', async () => {});
-      xit('non-borrower should not be able to withdraw before crowdfund ends', async () => {});
-      xit('non-borrower should not be able to withdraw after crowdfund ends', async () => {});
-    });
+      xit('borrower should not be able to withdraw before crowdfund starts', async () => {
+        await expectRevert.unspecified(crowdloan.withdrawPrincipal({from: borrower}));
+      });
 
-    context('Invalid case: lender withdraws principal', async () => {
-      beforeEach(async () => {});
+      xit('non-borrower should not be able to withdraw before crowdfund starts', async () => {
+        await expectRevert.unspecified(crowdloan.withdrawPrincipal({from: borrower}));
+      });
       xit('lender should not be able to withdraw before crowdfund starts', async () => {});
+    });
+
+    context('During crowdfund', async () => {
+      xit('non-borrower should not be able to withdraw before crowdfund ends', async () => {
+        await expectRevert.unspecified(crowdloan.withdrawPrincipal({from: borrower}));
+      });
       xit('lender should not be able to withdraw before crowdfund ends', async () => {});
+      xit('borrower should not be able to withdraw before crowdfund ends', async () => {
+        await expectRevert.unspecified(crowdloan.withdrawPrincipal({from: borrower}));
+      });
+    });
+
+    context('After crowdfund', async () => {
+      xit('non-borrower should not be able to withdraw after crowdfund ends', async () => {
+        await expectRevert.unspecified(crowdloan.withdrawPrincipal({from: nonBorrower}));
+      });
       xit('lender should not be able to withdraw after crowdfund ends', async () => {});
+      xit('borrower should be able to withdraw after crowdfund ends', async () => {
+        await crowdloan.withdrawPrincipal({from: borrower});
+      });
+      xit('should register event', async () => {
+        await crowdloan.withdrawPrincipal({from: borrower});
+      });
+      xit('should update state variables', async () => {
+        await crowdloan.withdrawPrincipal({from: borrower});
+      });
     });
   });
 
