@@ -31,14 +31,18 @@ contract Crowdloan is Initializable {
     event WithdrawRepayment(address sender, uint256 amount);
     event Repay(uint256 amount);
 
-    function initialize(uint256 duration, IERC20 _token, uint256 _principalRequested)
-        external
-        initializer
-    {
-        borrower = msg.sender;
+    function initialize(
+        address _borrower,
+        uint256 duration,
+        IERC20 _token,
+        uint256 _principalRequested,
+        string calldata _loanMetadataUrl
+    ) external initializer {
+        borrower = _borrower;
         crowdFundEnd = now + duration;
         token = _token;
         principalRequested = _principalRequested;
+        loanMetadataUrl = _loanMetadataUrl;
     }
 
     function fund(uint256 amount) external {

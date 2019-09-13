@@ -4,6 +4,7 @@ import "zos-lib/contracts/Initializable.sol";
 import "zos-lib/contracts/application/App.sol";
 import "zos-lib/contracts/upgradeability/AdminUpgradeabilityProxy.sol";
 import "openzeppelin-eth/contracts/token/ERC20/IERC20.sol";
+import "openzeppelin-eth/contracts/token/ERC20/StandaloneERC20.sol";
 import "../crowdloan/Crowdloan.sol";
 
 contract CrowdloanFactory is Initializable {
@@ -18,6 +19,7 @@ contract CrowdloanFactory is Initializable {
         address indexed borrower,
         uint256 indexed principalRequested,
         address crowdloan,
+        string loanMetadataUrl,
         address contractAdmin
     );
 
@@ -34,12 +36,19 @@ contract CrowdloanFactory is Initializable {
         uint256 principalRequested,
         uint256 crowdfundLength,
         uint256 crowdfundStart,
+        string calldata loanMetadataUrl,
         address contractAdmin
-    ) public {
+    ) external {
         address crowdloan = _createCrowdloan("", contractAdmin);
 
-        Crowdloan(crowdloan).initialize(crowdfundLength, principalToken, principalRequested);
+        Crowdloan(crowdloan).initialize(
+            msg.sender,
+            crowdfundLength,
+            principalToken,
+            principalRequested,
+            loanMetadataUrl
+        );
 
-        emit LoanCreated(msg.sender, principalRequested, crowdloan, contractAdmin);
+        emit LoanCreated(msg.sender, principalRequested, crowdloan, loanMetadataUrl, contractAdmin);
     }
 }

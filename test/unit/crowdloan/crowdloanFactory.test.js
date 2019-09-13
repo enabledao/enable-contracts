@@ -6,9 +6,7 @@ const {appCreate, getAppAddress, encodeCall} = require('../../testHelpers');
 const {crowdfundParams, loanParams, paymentTokenParams} = require('../../testConstants');
 
 const CrowdloanFactory = artifacts.require('CrowdloanFactory');
-const TermsContract = artifacts.require('TermsContract');
 const Crowdloan = artifacts.require('Crowdloan');
-const RepaymentManager = artifacts.require('RepaymentManager');
 const PaymentToken = artifacts.require('StandaloneERC20');
 
 async function crowdloanFactoryUnitTests(
@@ -57,12 +55,9 @@ async function crowdloanFactoryUnitTests(
       deployTx = await crowdloanFactory.deploy(
         paymentToken.address,
         loanParams.principalRequested,
-        loanParams.loanPeriod,
-        loanParams.interestRate,
-        loanParams.minimumRepayment,
-        loanParams.maximumRepayment,
         crowdfundParams.crowdfundLength,
         crowdfundParams.crowdfundStart,
+        'ipfsHash',
         contractAdmin,
         {from: borrower}
       );
@@ -75,13 +70,9 @@ async function crowdloanFactoryUnitTests(
     it('should deploy all contracts on successful deploy', async () => {
       const loanCreatedEvent = expectEvent.inLogs(deployTx.logs, 'LoanCreated');
 
-      const termsContract = await TermsContract.at(loanCreatedEvent.args.termsContract);
       const crowdloan = await Crowdloan.at(loanCreatedEvent.args.crowdloan);
-      const repaymentManager = await RepaymentManager.at(loanCreatedEvent.args.repaymentManager);
 
-      assert.exists(termsContract.address, 'terms contract was not successfully deployed');
       assert.exists(crowdloan.address, 'crowdloan was not successfully deployed');
-      assert.exists(repaymentManager.address, 'repayment manager was not successfully deployed');
     });
 
     it('should emit admin address on successful deploy', async () => {
@@ -95,77 +86,29 @@ async function crowdloanFactoryUnitTests(
 
     describe('Crowdfund post-deployment', async () => {
       let crowdloan;
-      let termsContract;
-      let repaymentManager;
 
       beforeEach(async () => {
         const loanCreatedEvent = expectEvent.inLogs(deployTx.logs, 'LoanCreated');
 
-        termsContract = await TermsContract.at(loanCreatedEvent.args.termsContract);
         crowdloan = await Crowdloan.at(loanCreatedEvent.args.crowdloan);
-        repaymentManager = await RepaymentManager.at(loanCreatedEvent.args.repaymentManager);
       });
 
       it('should initialize borrower parameter correctly on successful deploy', async () => {
-        expect(await termsContract.getBorrower()).to.be.equal(borrower);
+        expect(await crowdloan.borrower()).to.be.equal(borrower);
       });
 
-      it('should initialize terms interest rate parameter on successful deploy', async () => {
-        expect(await termsContract.getInterestRate()).to.be.bignumber.equal(
-          new BN(loanParams.interestRate)
-        );
-      });
-
-      it('should initialize loan status parameter correctly on successful deploy', async () => {
-        expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(0));
-      });
-
-      it('should initialize loan start timestamp parameter correctly on successful deploy', async () => {
-        expect(await termsContract.getLoanStartTimestamp()).to.be.bignumber.equal(new BN(0));
+      xit('we want the borrower to start loan rather than automatic?!', async () => {
+        expect(await crowdloan.crowdfundEnd()).to.be.bignumber.equal(new BN(0));
       });
 
       it('should initialize principal requested parameter correctly on successful deploy', async () => {
-        expect(await termsContract.getPrincipalRequested()).to.be.bignumber.equal(
+        expect(await crowdloan.principalRequested()).to.be.bignumber.equal(
           new BN(loanParams.principalRequested)
         );
       });
 
-      it('should initialize principal disbursed parameter correctly on successful deploy', async () => {
-        expect(await termsContract.getPrincipalDisbursed()).to.be.bignumber.equal(new BN(0));
-      });
-
       it('should initialize principal token parameter correctly on successful deploy', async () => {
-        expect(await termsContract.getPrincipalToken()).to.be.equal(paymentToken.address);
-      });
-
-      it('should initialize minimum repayment parameter correctly on successful deploy', async () => {
-        expect(await termsContract.getMinimumRepayment()).to.be.bignumber.equal(
-          new BN(loanParams.minimumRepayment)
-        );
-      });
-
-      it('should initialize maximum repayment parameter correctly on successful deploy', async () => {
-        expect(await termsContract.getMaximumRepayment()).to.be.bignumber.equal(
-          new BN(loanParams.maximumRepayment)
-        );
-      });
-
-      it('should initialize crowdloan correctly on successful deploy', async () => {
-        const result = await crowdloan.getCrowdfundParams();
-
-        const params = {
-          crowdfundLength: result[0],
-          crowdfundStart: result[1]
-        };
-
-        expect(params.crowdfundStart).to.be.bignumber.equal(new BN(crowdfundParams.crowdfundStart));
-        expect(params.crowdfundLength).to.be.bignumber.equal(
-          new BN(crowdfundParams.crowdfundLength)
-        );
-      });
-
-      it('should initialize repayment manager correctly on successful deploy', async () => {
-        expect(await repaymentManager.totalShares()).to.be.bignumber.equal(new BN(0));
+        expect(await crowdloan.token()).to.be.equal(paymentToken.address);
       });
     });
   });
