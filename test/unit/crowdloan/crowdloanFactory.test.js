@@ -3,18 +3,13 @@ import {BN, expectEvent} from 'openzeppelin-test-helpers';
 const {expect} = require('chai');
 
 const {appCreate, getAppAddress, encodeCall} = require('../../testHelpers');
-const {crowdfundParams, loanParams, paymentTokenParams} = require('../../testConstants');
+const {loanParams, paymentTokenParams} = require('../../testConstants');
 
 const CrowdloanFactory = artifacts.require('CrowdloanFactory');
 const Crowdloan = artifacts.require('Crowdloan');
 const PaymentToken = artifacts.require('StandaloneERC20');
 
-async function crowdloanFactoryUnitTests(
-  accounts,
-  crowdfundParams,
-  loanParams,
-  paymentTokenParams
-) {
+async function crowdloanFactoryUnitTests(accounts, loanParams, paymentTokenParams) {
   let tx;
   let result;
   let crowdloanFactory;
@@ -54,9 +49,8 @@ async function crowdloanFactoryUnitTests(
     beforeEach(async () => {
       deployTx = await crowdloanFactory.deploy(
         paymentToken.address,
-        loanParams.principalRequested,
-        crowdfundParams.crowdfundLength,
-        crowdfundParams.crowdfundStart,
+        loanParams.principalRequested.toString(),
+        loanParams.crowdfundLength.toString(),
         'ipfsHash',
         contractAdmin,
         {from: borrower}
@@ -115,5 +109,5 @@ async function crowdloanFactoryUnitTests(
 }
 
 contract('CrowdloanFactory', async accounts => {
-  await crowdloanFactoryUnitTests(accounts, crowdfundParams, loanParams, paymentTokenParams);
+  await crowdloanFactoryUnitTests(accounts, loanParams, paymentTokenParams);
 });

@@ -35,7 +35,6 @@ contract CrowdloanFactory is Initializable {
         IERC20 principalToken,
         uint256 principalRequested,
         uint256 crowdfundLength,
-        uint256 crowdfundStart,
         string calldata loanMetadataUrl,
         address contractAdmin
     ) external {
