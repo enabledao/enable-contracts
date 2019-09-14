@@ -51,7 +51,7 @@ async function crowdloanFactoryUnitTests(accounts, loanParams, paymentTokenParam
         paymentToken.address,
         loanParams.principalRequested.toString(),
         loanParams.crowdfundLength.toString(),
-        'ipfsHash',
+        loanParams.loanMetadataURL,
         contractAdmin,
         {from: borrower}
       );

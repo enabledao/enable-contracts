@@ -18,9 +18,7 @@ var web3 = new Web3(provider);
 
 const abis = {
   crowdloanFactory: require('../build/contracts/CrowdloanFactory.json'),
-  termsContract: require('../build/contracts/TermsContract.json'),
   crowdloan: require('../build/contracts/Crowdloan.json'),
-  repaymentManager: require('../build/contracts/RepaymentManager.json'),
   standaloneERC20: require('../build/contracts/StandaloneERC20.json'),
   adminProxy: require('../build/contracts/AdminUpgradeabilityProxy.json')
 };
@@ -33,10 +31,8 @@ const addresses = {
     repaymentManager: '0xd20BEba18ECa8CC89a1506875bD2d09d021a4696'
   },
   instances: {
-    crowdloanFactory: '0x71Aa62D1221551577fedB28e16aa8CeC4B71D6A1',
-    termsContract: '0x82b5ac7848a14047940e1a736bf7dd48b8e1b764',
-    crowdloan: '0x6FCa80671e7bDA4371825Ec84C09fFcc1057F666',
-    repaymentManager: ' 0x9a5a57d7e3e3d51e520985da1940a988bd0a8e66'
+    crowdloanFactory: '0xa415EF179c079E9c045C277Bf6531D812743F9f1',
+    crowdloan: '0xdd3723ea2f2734fba71d022dbced06892756b366'
   }
 };
 
@@ -44,7 +40,7 @@ const upgradeProxy = async (proxy, newImplementation) => {
   let result;
 
   const accounts = await web3.eth.getAccounts();
-  const contractAdmin = accounts[2];
+  const contractAdmin = accounts[0];
 
   const proxyInstance = new web3.eth.Contract(abis.adminProxy.abi, proxy);
 
@@ -61,7 +57,8 @@ const upgradeProxy = async (proxy, newImplementation) => {
 };
 
 const main = async () => {
-  await upgradeProxy(addresses.instances.termsContract, addresses.logic.crowdloanFactory);
+  console.log(await web3.eth.getAccounts());
+  await upgradeProxy(addresses.instances.crowdloan, addresses.logic.crowdloanFactory);
 };
 
 main();

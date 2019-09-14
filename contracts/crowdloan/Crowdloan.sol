@@ -63,7 +63,7 @@ contract Crowdloan is Initializable {
 
         amountContributed[msg.sender] = amountContributed[msg.sender].add(amount);
 
-        require(token.transferFrom(msg.sender, address(this), amount));
+        token.safeTransferFrom(msg.sender, address(this), amount);
 
         emit Fund(msg.sender, amount);
     }
@@ -74,12 +74,10 @@ contract Crowdloan is Initializable {
         _onlyBorrower();
         _onlyAfterCrowdfundStart();
 
-        require(
-            amount <= totalContributed.sub(principalWithdrawn),
-            "Insufficent principal to withdraw"
-        );
+        // FIX DONATIONS!
+        uint256 tokenBalance = token.balanceOf(address(this));
 
-        principalWithdrawn = principalWithdrawn.add(amount);
+        require(amount <= tokenBalance, "Insufficent tokens to withdraw");
 
         token.safeTransfer(msg.sender, amount);
 
@@ -88,7 +86,7 @@ contract Crowdloan is Initializable {
 
     /// @dev Anyone can make repayments on behalf of the borrower
     function repay(uint256 amount) external {
-        _onlyAfterCrowdfundStart();
+        _onlyAfterCrowdfundEnd();
 
         require(amount > 0, "Repayment amount cannot be zero");
 
