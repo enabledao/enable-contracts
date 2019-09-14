@@ -92,138 +92,69 @@ contract('RepaymentManager', accounts => {
     beforeEach(async () => {
       [lender] = lenders;
       increment = generateRandomPaddedBN(MAX_CROWDFUND);
+
+      await crowdloan.startCrowdfund({from: borrower});
     });
 
     context('validations', async () => {
-      it('should not allow non-controllers to add lender', async () => {
-        await expectRevert(
-          repaymentManager.increaseShares(lender.address, increment, {from: nonControllers[0]}),
-          'Permission denied'
-        );
-      });
-      it('should not allow shares to be increased if crowdfund is over', async () => {
-        await termsContract.setLoanStatus(loanStatuses.FUNDING_FAILED, {from: controller}); // FUNDING_FAILED
-        await expectRevert(
-          repaymentManager.increaseShares(lender.address, increment, {from: controller}),
-          'Action only allowed before loan funding failed'
-        );
-      });
-      xit('should not allow lender with zero address', async () => {});
-      xit('should not allow zero shares increment', async () => {});
+      xit('should not allow shares to be increased if crowdfund is over', async () => {});
     });
 
     context('functionality', async () => {
       beforeEach(async () => {
-        original = await repaymentManager.shares(lender.address);
-        tx = await repaymentManager.increaseShares(lender.address, increment, {
-          from: controller
+        original = await crowdloan.amountContributed(lender.address);
+        tx = await crowdloan.fund(increment, {
+          from: lender.address
         });
       });
+
       it('should increase the shares that lender has', async () => {
-        const increased = await repaymentManager.shares(lender.address);
+        const increased = await crowdloan.amountContributed(lender.address);
         expect(increased.sub(original)).to.be.bignumber.equal(increment);
       });
-      it('should emit a PayeeAdded event and ShareIncreased event for new shareholders', async () => {
-        expectEvent.inLogs(tx.logs, 'PayeeAdded', {
+      it('should emit a Fund event', async () => {
+        const increased = await crowdloan.amountContributed(lender.address);
+
+        expectEvent.inLogs(tx.logs, 'Fund', {
           account: lender.address
         });
-        expectEvent.inLogs(tx.logs, 'ShareIncreased', {
-          account: lender.address,
-          sharesAdded: increment
+        expectEvent.inLogs(tx.logs, 'Fund', {
+          sender: lender.address,
+          amount: increased
         });
       });
+
       it('should emit a ShareIncreased event but not PayeeAdded event for existing shareholders', async () => {
         const newIncrement = generateRandomPaddedBN(10, 1);
-        const newTx = await repaymentManager.increaseShares(lender.address, newIncrement, {
-          from: controller
+        const newTx = await crowdloan.fund(newIncrement, {
+          from: lender.address
         });
         expectEvent.inLogs(newTx.logs, 'ShareIncreased', {
-          account: lender.address,
-          sharesAdded: newIncrement
-        });
-        try {
-          expectEvent.inLogs(newTx.logs, 'PayeeAdded', {
-            account: lender.address
-          });
-        } catch (err) {
-          expect(err.message).to.contain("'PayeeAdded'");
-        }
-      });
-    });
-  });
-  describe('decreaseShares', async () => {
-    let tx;
-    let original;
-    let payee;
-    let decrement;
-
-    beforeEach(async () => {
-      [payee] = lenders;
-      original = generateRandomPaddedBN(MAX_CROWDFUND);
-      decrement = new BN(100);
-    });
-
-    context('validations', async () => {
-      xit('should not allow payee with zero shares to decrease shares', async () => {});
-      xit('should not allow payee with zero address', async () => {});
-      it('should not allow zero shares decrement', async () => {
-        await expectRevert(
-          repaymentManager.decreaseShares(payee.address, decrement, {from: controller}),
-          'Account has zero shares'
-        );
-      });
-      it('should not allow shares to be decreased if crowdfund is over', async () => {
-        await repaymentManager.increaseShares(payee.address, original, {from: controller});
-        await termsContract.setLoanStatus(loanStatuses.FUNDING_COMPLETE, {from: controller});
-        await expectRevert(
-          repaymentManager.decreaseShares(payee.address, decrement, {from: controller}),
-          'Action only allowed before loan funding is completed'
-        );
-      });
-    });
-
-    context('functionality', async () => {
-      beforeEach(async () => {
-        await repaymentManager.increaseShares(payee.address, original, {from: controller});
-        tx = await repaymentManager.decreaseShares(payee.address, decrement, {from: controller});
-      });
-      it('should decrease the shares that a payee has', async () => {
-        const decreased = await repaymentManager.shares(payee.address);
-        expect(original.sub(decreased)).to.be.bignumber.equal(decrement);
-      });
-      it('should emit a ShareDecreased event', async () => {
-        expectEvent.inLogs(tx.logs, 'ShareDecreased', {
-          account: payee.address,
-          sharesRemoved: decrement
+          sender: lender.address
         });
       });
     });
   });
-  describe('totalShares', async () => {
+
+  describe('totalContributed', async () => {
     let original;
     let lender;
+
     beforeEach(async () => {
       [lender] = lenders;
       original = generateRandomPaddedBN(MAX_CROWDFUND);
-      await repaymentManager.increaseShares(lender.address, original, {from: controller});
+      await crowdloan.fund(original, {from: lender.address});
     });
+
     it('increaseShares should increase the total number of shares', async () => {
       const increment = generateRandomPaddedBN(MAX_CROWDFUND);
-      await repaymentManager.increaseShares(lender.address, increment, {from: controller});
-      const increased = await repaymentManager.totalShares();
+      await crowdloan.fund(increment, {from: lender.address});
+
+      const increased = await crowdloan.totalContributed();
       expect(increased.sub(original)).to.be.bignumber.equal(increment);
     });
-    it('decreaseShares should decrease the total number of shares', async () => {
-      const decrement = new BN(10);
-      await repaymentManager.decreaseShares(lender.address, decrement, {from: controller});
-      const decreased = await repaymentManager.totalShares();
-      expect(decreased.add(decrement)).to.be.bignumber.equal(original);
-    });
   });
-  describe('shares', async () => {
-    xit('implicitly tested in increaseShares and decreaseShares tests');
-  });
-  describe('pay', async () => {
+  describe('repay', async () => {
     beforeEach(async () => {
       repayments = [
         {address: borrower, value: repayments[0]},
@@ -238,34 +169,33 @@ contract('RepaymentManager', accounts => {
       );
       await Promise.all(
         repayments.map(({address, value}) => {
-          paymentToken.approve(repaymentManager.address, value, {from: address});
+          paymentToken.approve(crowdloan.address, value, {from: address});
         })
       );
+
+      // Get the loan into a repaying state
+      // Create crowdfund with 100 duration
+      // Start crowdfund
+      // Add all the funding
+      // Ensure that it's over
     });
     context('validations', async () => {
       xit('should not allow zero pay amount ', async () => {
-        await termsContract.setLoanStatus(loanStatuses.REPAYMENT_CYCLE, {from: controller});
-        await expectRevert(
-          repaymentManager.pay(new BN(0), {from: borrower}),
-          'No amount set to pay'
-        );
+        await expectRevert(crowdloan.repay(new BN(0), {from: borrower}), 'No amount set to pay');
       });
       xit('should only allow repayment after crowdfund has started', async () => {
         const {address, value} = repayments[0];
         await expectRevert(
-          repaymentManager.pay(value, {from: address}),
+          crowdloan.pay(value, {from: address}),
           'Action only allowed while loan is Active'
         );
       });
       xit('should only allow pay if payer has at least amount in balance', async () => {});
     });
     context('functionality', async () => {
-      beforeEach(async () => {
-        await termsContract.setLoanStatus(loanStatuses.REPAYMENT_CYCLE, {from: controller});
-      });
       xit('should let any address pay into contract multiple times', async () => {
         for (let i = 0; i < repayments.length; i += 1) {
-          const original = await repaymentManager.totalPaid(); // eslint-disable-line no-await-in-loop
+          const original = await crowdloan.totalPaid(); // eslint-disable-line no-await-in-loop
           const {address, value} = repayments[i];
           const status = await termsContract.getLoanStatus(); // eslint-disable-line no-await-in-loop
           const principal = await termsContract.getPrincipalDisbursed(); // eslint-disable-line no-await-in-loop
@@ -274,11 +204,11 @@ contract('RepaymentManager', accounts => {
               `Repayment: ${i}  |  original: ${original}  |  paid: ${value}  |  currentLoanStatus: ${status}  |  principalDisbursed: ${principal}`
             );
 
-          await repaymentManager.pay(value, {from: address}); // eslint-disable-line no-await-in-loop
-          const after = await repaymentManager.totalPaid(); // eslint-disable-line no-await-in-loop
+          await crowdloan.pay(value, {from: address}); // eslint-disable-line no-await-in-loop
+          const after = await crowdloan.totalPaid(); // eslint-disable-line no-await-in-loop
           expect(after.sub(value)).to.be.bignumber.equals(original);
         }
-        const final = await paymentToken.balanceOf(repaymentManager.address); // Removes dependency on totalPaid();
+        const final = await paymentToken.balanceOf(crowdloan.address); // Removes dependency on totalPaid();
         const expectedBalance = repayments.reduce(
           (total, payment) => total.add(payment.value),
           new BN(0)
@@ -287,7 +217,7 @@ contract('RepaymentManager', accounts => {
       });
       xit('should emit a PaymentReceived event', async () => {
         const {address, value} = repayments[0];
-        const tx = await repaymentManager.pay(value, {from: address});
+        const tx = await crowdloan.pay(value, {from: address});
         expectEvent.inLogs(tx.logs, 'PaymentReceived', {
           from: address,
           amount: value
@@ -298,38 +228,38 @@ contract('RepaymentManager', accounts => {
 
   /** TODO(Dan): This is more of an e2e test */
   describe('releaseAllowance', async () => {
-    let totalShares;
+    let totalContributed;
     let totalRepayments;
     beforeEach(async () => {
       /** Create random share allocation among lenders */
       await Promise.all(
         lenders.map(({address, shares}) => {
-          return repaymentManager.increaseShares(address, shares, {from: controller});
+          return crowdloan.increaseShares(address, shares, {from: controller});
         })
       );
-      totalShares = lenders.reduce((total, lender) => total.add(lender.shares), new BN(0));
+      totalContributed = lenders.reduce((total, lender) => total.add(lender.shares), new BN(0));
 
-      /** Create simulated repaymentby borrower to repaymentManager */
+      /** Create simulated repaymentby borrower to crowdloan */
       await termsContract.setLoanStatus(loanStatuses.REPAYMENT_CYCLE, {from: controller});
       totalRepayments = repayments.reduce((total, repayment) => total.add(repayment), new BN(0));
       if (verbose) {
-        console.log(`Shares: ${await repaymentManager.shares(lender1)}`);
-        console.log(`Total Shares: ${totalShares}`);
+        console.log(`Shares: ${await crowdloan.shares(lender1)}`);
+        console.log(`Total Shares: ${totalContributed}`);
         console.log('totalRepayments: ', totalRepayments);
       }
       await paymentToken.mint(borrower, totalRepayments, {from: minter});
-      await paymentToken.approve(repaymentManager.address, totalRepayments, {from: borrower});
+      await paymentToken.approve(crowdloan.address, totalRepayments, {from: borrower});
     });
     xit('should calculate correct releaseAllowance for lender after 1 repayment', async () => {
-      await repaymentManager.pay(repayments[0], {from: borrower});
-      const allowance = await repaymentManager.releaseAllowance.call(lenders[0].address);
+      await crowdloan.pay(repayments[0], {from: borrower});
+      const allowance = await crowdloan.releaseAllowance.call(lenders[0].address);
       const releaseAllowances = await Promise.all(
-        lenders.map(lender => repaymentManager.releaseAllowance(lender.address))
+        lenders.map(lender => crowdloan.releaseAllowance(lender.address))
       );
       releaseAllowances.map((releaseAllowance, i) => {
         const expected = repayments[0]
           .mul(lenders[i].shares)
-          .div(totalShares)
+          .div(totalContributed)
           .sub(new BN(0)); // No other withdrawals
         if (verbose) {
           console.log(`releaseAllowance: ${releaseAllowance}  |  expected: ${expected}`);
@@ -340,16 +270,16 @@ contract('RepaymentManager', accounts => {
     xit('should calculate correct releaseAllowance for lender after multiple repayments', async () => {
       await Promise.all(
         repayments.map(repayment => {
-          repaymentManager.pay(repayment, {from: borrower});
+          crowdloan.pay(repayment, {from: borrower});
         })
       );
       const releaseAllowances = await Promise.all(
-        lenders.map(lender => repaymentManager.releaseAllowance(lender.address))
+        lenders.map(lender => crowdloan.releaseAllowance(lender.address))
       );
       releaseAllowances.map((releaseAllowance, i) => {
         const expected = totalRepayments
           .mul(lenders[i].shares)
-          .div(totalShares)
+          .div(totalContributed)
           .sub(new BN(0)); // No other withdrawals
         if (verbose) {
           console.log(`releaseAllowance: ${releaseAllowance}  |  expected: ${expected}`);
@@ -361,23 +291,23 @@ contract('RepaymentManager', accounts => {
     xit('should calculate correct releaseAllowance for lender after multiple repayments including external (i.e. native ERC20) transfers', async () => {
       await Promise.all(
         repayments.map(repayment => {
-          repaymentManager.pay(repayment, {from: borrower});
+          crowdloan.pay(repayment, {from: borrower});
         })
       );
       // Send external (native ERC20) transfer
       const externalPayment = generateRandomPaddedBN(100);
       await paymentToken.mint(borrower, externalPayment, {from: minter});
-      await paymentToken.transfer(repaymentManager.address, externalPayment, {from: borrower});
+      await paymentToken.transfer(crowdloan.address, externalPayment, {from: borrower});
       const total = totalRepayments.add(externalPayment);
 
       // Calculate release allowances
       const releaseAllowances = await Promise.all(
-        lenders.map(lender => repaymentManager.releaseAllowance(lender.address))
+        lenders.map(lender => crowdloan.releaseAllowance(lender.address))
       );
       releaseAllowances.map((releaseAllowance, i) => {
         const expected = total
           .mul(lenders[i].shares)
-          .div(totalShares)
+          .div(totalContributed)
           .sub(new BN(0)); // No other withdrawals
         if (verbose) {
           console.log(`releaseAllowance: ${releaseAllowance}  |  expected: ${expected}`);
@@ -392,17 +322,17 @@ contract('RepaymentManager', accounts => {
       /* eslint-disable */ // TODO(Dan): Clean up the no-await-in-loop and no-func-in-loop problems below
       for (let i = 0; i < repayments.length; i += 1) {
         if (verbose) console.log(`repayment cycle: ${i}`);
-        await repaymentManager.pay(repayments[i], {from: borrower});
+        await crowdloan.pay(repayments[i], {from: borrower});
 
         // Check releaseAllowances
         const releaseAllowances = await Promise.all(
-          lenders.map(lender => repaymentManager.releaseAllowance(lender.address))
+          lenders.map(lender => crowdloan.releaseAllowance(lender.address))
         );
         releaseAllowances.map(async (releaseAllowance, j) => {
-          await repaymentManager.totalReleased();
+          await crowdloan.totalReleased();
           const expected = repayments[i]
             .mul(lenders[j].shares)
-            .div(totalShares)
+            .div(totalContributed)
             .sub(new BN(0)); // No other withdrawals
           if (verbose) {
             console.log(
@@ -413,8 +343,8 @@ contract('RepaymentManager', accounts => {
           expect(releaseAllowance).to.be.bignumber.lessThan(expected.add(tolerance));
         });
 
-        await Promise.all(lenders.map(lender => repaymentManager.release(lender.address)));
-        const balance = await paymentToken.balanceOf(repaymentManager.address);
+        await Promise.all(lenders.map(lender => crowdloan.release(lender.address)));
+        const balance = await paymentToken.balanceOf(crowdloan.address);
         if (verbose) console.log('Balance after repayment cycle: ' + balance);
         expect(balance).to.be.bignumber.lessThan(tolerance);
       }
@@ -426,16 +356,19 @@ contract('RepaymentManager', accounts => {
       /** Create random share allocation among lenders */
       await Promise.all(
         lenders.map(({address, shares}) => {
-          return repaymentManager.increaseShares(address, shares, {from: controller});
+          return crowdloan.increaseShares(address, shares, {from: controller});
         })
       );
-      const totalShares = lenders.reduce((total, lender) => total.add(lender.shares), new BN(0));
+      const totalContributed = lenders.reduce(
+        (total, lender) => total.add(lender.shares),
+        new BN(0)
+      );
 
-      /** Create simulated repaymentby borrower to repaymentManager */
+      /** Create simulated repaymentby borrower to crowdloan */
       await termsContract.setLoanStatus(loanStatuses.REPAYMENT_CYCLE, {from: controller});
-      await paymentToken.mint(borrower, totalShares, {from: minter});
-      await paymentToken.approve(repaymentManager.address, totalShares, {from: borrower});
-      await repaymentManager.pay(totalShares, {from: borrower});
+      await paymentToken.mint(borrower, totalContributed, {from: minter});
+      await paymentToken.approve(crowdloan.address, totalContributed, {from: borrower});
+      await crowdloan.pay(totalContributed, {from: borrower});
     });
     context('validations', async () => {
       xit('should not allow release if notActiveLoan', async () => {
@@ -444,21 +377,21 @@ contract('RepaymentManager', accounts => {
           loanStatuses.FUNDING_STARTED
         );
         await expectRevert(
-          repaymentManager.release(lenders[0].address, {from: lenders[0].address}),
+          crowdloan.release(lenders[0].address, {from: lenders[0].address}),
           'Action only allowed while loan is Active' // TODO(Dan): Should be changed to onlyActiveLoan
         );
       });
       xit('should not allow lender with 0 shares to withdraw', async () => {
         await expectRevert(
-          repaymentManager.release(nonLender, {from: nonLender}),
+          crowdloan.release(nonLender, {from: nonLender}),
           'Account has zero shares'
         );
       });
       xit('should not allow lender with zero allowance to withdraw', async () => {
         const {address} = lenders[0];
-        await repaymentManager.release(address, {from: address});
+        await crowdloan.release(address, {from: address});
         await expectRevert(
-          repaymentManager.release(address, {from: address}),
+          crowdloan.release(address, {from: address}),
           'Account has zero release allowance'
         );
       });
@@ -474,10 +407,10 @@ contract('RepaymentManager', accounts => {
       beforeEach(async () => {
         [{address}] = lenders;
         lenderBalanceBefore = await paymentToken.balanceOf(address);
-        releasedBefore = await repaymentManager.released(address);
-        totalReleasedBefore = await repaymentManager.totalReleased();
-        releaseAllowance = await repaymentManager.releaseAllowance(address);
-        tx = await repaymentManager.release(address, {from: address});
+        releasedBefore = await crowdloan.released(address);
+        totalReleasedBefore = await crowdloan.totalReleased();
+        releaseAllowance = await crowdloan.releaseAllowance(address);
+        tx = await crowdloan.release(address, {from: address});
       });
       xit('should transfer releaseAllowance to account', async () => {
         const lenderBalanceAfter = await paymentToken.balanceOf(address);
@@ -486,15 +419,15 @@ contract('RepaymentManager', accounts => {
         );
       });
       xit('should have a 0 releaseAllowance after', async () => {
-        const releaseAllowanceAfter = await repaymentManager.releaseAllowance(address);
+        const releaseAllowanceAfter = await crowdloan.releaseAllowance(address);
         expect(releaseAllowanceAfter).to.be.a.bignumber.equals(new BN(0));
       });
       xit('should increase releasedAfter to account', async () => {
-        const releasedAfter = await repaymentManager.released(address);
+        const releasedAfter = await crowdloan.released(address);
         expect(releasedAfter.sub(releasedBefore)).to.be.a.bignumber.equals(releaseAllowance);
       });
-      xit('should increase totalReleased by repaymentManager', async () => {
-        const totalReleasedAfter = await repaymentManager.totalReleased();
+      xit('should increase totalReleased by crowdloan', async () => {
+        const totalReleasedAfter = await crowdloan.totalReleased();
         expect(totalReleasedAfter.sub(totalReleasedBefore)).to.be.a.bignumber.equals(
           releaseAllowance
         );
@@ -520,31 +453,31 @@ contract('RepaymentManager', accounts => {
     beforeEach(async () => {
       await Promise.all(
         lenders.map(({address, shares}) => {
-          return repaymentManager.increaseShares(address, shares, {from: controller});
+          return crowdloan.increaseShares(address, shares, {from: controller});
         })
       );
       await termsContract.setLoanStatus(loanStatuses.REPAYMENT_CYCLE, {from: controller});
-      totalPaidBefore = await repaymentManager.totalPaid();
+      totalPaidBefore = await crowdloan.totalPaid();
       randomPayment = generateRandomPaddedBN(MAX_CROWDFUND);
       await paymentToken.mint(borrower, randomPayment, {from: minter});
-      await paymentToken.approve(repaymentManager.address, randomPayment, {from: borrower});
+      await paymentToken.approve(crowdloan.address, randomPayment, {from: borrower});
     });
     xit('should increase totalPaid by correct amount', async () => {
-      await repaymentManager.pay(randomPayment, {from: borrower});
-      const totalPaidAfter = await repaymentManager.totalPaid();
+      await crowdloan.pay(randomPayment, {from: borrower});
+      const totalPaidAfter = await crowdloan.totalPaid();
       expect(totalPaidAfter.sub(totalPaidBefore)).to.be.a.bignumber.equals(randomPayment);
     });
     xit('should account for native ERC20 transfers', async () => {
-      await paymentToken.transfer(repaymentManager.address, randomPayment, {from: borrower});
-      const totalPaidAfter = await repaymentManager.totalPaid();
+      await paymentToken.transfer(crowdloan.address, randomPayment, {from: borrower});
+      const totalPaidAfter = await crowdloan.totalPaid();
       expect(totalPaidAfter.sub(totalPaidBefore)).to.be.a.bignumber.equals(randomPayment);
     });
     xit('should not change with withdrawals', async () => {
-      await repaymentManager.pay(randomPayment, {from: borrower});
+      await crowdloan.pay(randomPayment, {from: borrower});
       const [{address}] = lenders;
-      const before = await repaymentManager.totalPaid();
-      await repaymentManager.release(address, {from: address});
-      const after = await repaymentManager.totalPaid();
+      const before = await crowdloan.totalPaid();
+      await crowdloan.release(address, {from: address});
+      const after = await crowdloan.totalPaid();
       expect(before).to.be.a.bignumber.equals(after);
     });
   });
@@ -583,19 +516,19 @@ contract('RepaymentManager', accounts => {
 
         // Create money for borrower
         await paymentToken.mint(borrower, expected, {from: minter});
-        await paymentToken.approve(repaymentManager.address, expected, {from: borrower});
+        await paymentToken.approve(crowdloan.address, expected, {from: borrower});
       });
       // Don't make enough payment
       xit('should return DEFAULT if insufficient payment', async () => {
         const insufficient = expected.sub(new BN(100));
-        await repaymentManager.pay(insufficient, {from: borrower});
-        const status = await repaymentManager.getRepaymentStatus.call();
+        await crowdloan.pay(insufficient, {from: borrower});
+        const status = await crowdloan.getRepaymentStatus.call();
         if (verbose) console.log(`Repayment Status: ${status}`);
         expect(status).to.be.bignumber.equals(repaymentStatuses.DEFAULT);
       });
       xit('should return ON_TIME if sufficient payment', async () => {
-        await repaymentManager.pay(expected, {from: borrower});
-        const status = await repaymentManager.getRepaymentStatus.call();
+        await crowdloan.pay(expected, {from: borrower});
+        const status = await crowdloan.getRepaymentStatus.call();
         if (verbose) console.log(`Repayment Status: ${status}`);
         expect(status).to.be.bignumber.equals(repaymentStatuses.ON_TIME);
       });
@@ -615,18 +548,18 @@ contract('RepaymentManager', accounts => {
         if (verbose) console.log(`Expected: ${expected}`);
 
         await paymentToken.mint(borrower, expected, {from: minter});
-        await paymentToken.approve(repaymentManager.address, expected, {from: borrower});
+        await paymentToken.approve(crowdloan.address, expected, {from: borrower});
       });
       xit('should return ON_TIME if loan is fully paid off', async () => {
         const insufficient = expected.sub(new BN(100));
-        await repaymentManager.pay(insufficient, {from: borrower});
-        const status = await repaymentManager.getRepaymentStatus();
+        await crowdloan.pay(insufficient, {from: borrower});
+        const status = await crowdloan.getRepaymentStatus();
         if (verbose) console.log(`Repayment Status: ${status}`);
         expect(status).to.be.bignumber.equals(repaymentStatuses.DEFAULT);
       });
       xit('should return DEFAULT if loan is not fully paid off', async () => {
-        await repaymentManager.pay(expected, {from: borrower});
-        const status = await repaymentManager.getRepaymentStatus();
+        await crowdloan.pay(expected, {from: borrower});
+        const status = await crowdloan.getRepaymentStatus();
         if (verbose) console.log(`Repayment Status: ${status}`);
         expect(status).to.be.bignumber.equals(repaymentStatuses.ON_TIME);
       });
