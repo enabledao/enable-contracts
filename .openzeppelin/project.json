@@ -10,7 +10,7 @@
     "openzeppelin-eth": "2.2.0"
   },
   "name": "enable-credit",
-  "version": "0.1.4-alpha.0",
+  "version": "0.1.5-alpha.0",
   "compiler": {
     "manager": "openzeppelin",
     "solcVersion": "0.5.11",
