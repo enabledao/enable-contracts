@@ -91,7 +91,8 @@ async function crowdloanFactoryUnitTests(accounts, loanParams, paymentTokenParam
         expect(await crowdloan.borrower()).to.be.equal(borrower);
       });
 
-      xit('we want the borrower to start loan rather than automatic?!', async () => {
+      it('should not have crowdfund time initialized', async () => {
+        expect(await crowdloan.crowdfundStart()).to.be.bignumber.equal(new BN(0));
         expect(await crowdloan.crowdfundEnd()).to.be.bignumber.equal(new BN(0));
       });
 
@@ -103,6 +104,12 @@ async function crowdloanFactoryUnitTests(accounts, loanParams, paymentTokenParam
 
       it('should initialize principal token parameter correctly on successful deploy', async () => {
         expect(await crowdloan.token()).to.be.equal(paymentToken.address);
+      });
+
+      it('should initialize crowdfund length parameter correctly on successful deploy', async () => {
+        expect(await crowdloan.crowdfundDuration()).to.be.bignumber.equal(
+          loanParams.crowdfundLength
+        );
       });
     });
   });

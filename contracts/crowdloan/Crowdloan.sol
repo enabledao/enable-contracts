@@ -48,8 +48,11 @@ contract Crowdloan is Initializable {
         loanMetadataUrl = _loanMetadataUrl;
     }
 
+    /// @dev During the crowdfund, anyone can fund and get repayment rights in proportion to their contribution
     function fund(uint256 amount) external {
-        require(now <= crowdfundEnd, "The contribution period has ended.");
+        _onlyAfterCrowdfundStart();
+        _onlyBeforeCrowdfundEnd();
+
         require(amount > 0, "Fund amount cannot be zero");
 
         totalContributed = totalContributed.add(amount);
@@ -65,23 +68,38 @@ contract Crowdloan is Initializable {
         emit Fund(msg.sender, amount);
     }
 
-    function withdrawPrincipal() external {
-        require(msg.sender == borrower, "Only the borrower can withdraw principal.");
-        uint256 amount = totalContributed.sub(principalWithdrawn);
-        principalWithdrawn = totalContributed;
-        require(token.transfer(msg.sender, amount));
+    /// @dev Borrower can withdraw currently aquired principal in any proportion, and any time during the crowdfund for flexibility.
+    /// This DOES NOT affect the total principal that can be raised or the loan terms, it merely provides cash flow.
+    function withdrawPrincipal(uint256 amount) external {
+        _onlyBorrower();
+        _onlyAfterCrowdfundStart();
+
+        require(
+            amount <= totalContributed.sub(principalWithdrawn),
+            "Insufficent principal to withdraw"
+        );
+
+        principalWithdrawn = principalWithdrawn.add(amount);
+
+        token.safeTransfer(msg.sender, amount);
 
         emit WithdrawPrincipal(msg.sender, amount);
     }
 
+    /// @dev Anyone can make repayments on behalf of the borrower
     function repay(uint256 amount) external {
+        _onlyAfterCrowdfundStart();
+
         amountRepaid = amountRepaid.add(amount);
         token.safeTransferFrom(msg.sender, address(this), amount);
 
         emit Repay(amount);
     }
 
+    /// @dev Lenders can withdraw their proportional stake from repayments after the crowdfund ends
     function withdrawRepayment() external {
+        _onlyAfterCrowdfundEnd();
+
         uint256 totalOwed = amountRepaid.mul(amountContributed[msg.sender]).div(totalContributed);
         uint256 amount = totalOwed.sub(repaymentWithdrawn[msg.sender]);
         repaymentWithdrawn[msg.sender] = totalOwed;
@@ -91,13 +109,34 @@ contract Crowdloan is Initializable {
         emit WithdrawRepayment(msg.sender, amount);
     }
 
+    /// @dev Borrower can start the crowdfund once
     function startCrowdfund() external {
-        require(msg.sender == borrower, "Only the borrower can start crowdfund.");
-        require(crowdfundStart == 0, "Crowdfund must not have already been started.");
+        _onlyBorrower();
+        _onlyBeforeCrowdfundStart();
 
         crowdfundStart = now;
         crowdfundEnd = now + crowdfundDuration;
 
         emit StartCrowdfund(now);
+    }
+
+    function _onlyBorrower() internal view {
+        require(msg.sender == borrower, "Only the borrower can call function.");
+    }
+
+    function _onlyBeforeCrowdfundStart() internal view {
+        require(crowdfundStart == 0, "Only before crowdfund start");
+    }
+
+    function _onlyAfterCrowdfundStart() internal view {
+        require(crowdfundStart != 0, "Only after crowdfund start");
+    }
+
+    function _onlyBeforeCrowdfundEnd() internal view {
+        require(now <= crowdfundEnd, "Only before crowdfund end");
+    }
+
+    function _onlyAfterCrowdfundEnd() internal view {
+        require(crowdfundStart != 0 && now > crowdfundEnd, "Only after crowdfund end.");
     }
 }

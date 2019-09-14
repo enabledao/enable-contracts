@@ -20,7 +20,7 @@ const repaymentStatuses = {
 
 const loanParams = {
   principalRequested: web3.utils.toWei('60000', 'ether'), // TODO(Dan): Replace with actual number 60000 * 10 ** 18
-  crowdfundLength: 600,
+  crowdfundLength: new BN(600),
   loanMetadataURL: 'ipfsHash'
 };
 
