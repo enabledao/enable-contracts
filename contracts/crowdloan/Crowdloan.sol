@@ -29,7 +29,7 @@ contract Crowdloan is Initializable {
 
     // Events
     event Fund(address sender, uint256 amount);
-    event WithdrawPrincipal(address sender, uint256 amount);
+    event WithdrawPrincipal(address borrower, uint256 amount);
     event WithdrawRepayment(address sender, uint256 amount);
     event Repay(uint256 amount);
     event StartCrowdfund(uint256 crowdfundStart);
