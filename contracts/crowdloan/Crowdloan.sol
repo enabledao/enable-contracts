@@ -90,6 +90,8 @@ contract Crowdloan is Initializable {
     function repay(uint256 amount) external {
         _onlyAfterCrowdfundStart();
 
+        require(amount > 0, "Repayment amount cannot be zero");
+
         amountRepaid = amountRepaid.add(amount);
         token.safeTransferFrom(msg.sender, address(this), amount);
 
