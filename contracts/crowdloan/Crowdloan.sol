@@ -1,7 +1,8 @@
-pragma solidity >=0.4.22 <0.6.0;
+pragma solidity 0.5.11;
 
 import "openzeppelin-eth/contracts/math/SafeMath.sol";
 import "openzeppelin-eth/contracts/token/ERC20/IERC20.sol";
+import "openzeppelin-eth/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-eth/contracts/utils/ReentrancyGuard.sol";
 import "zos-lib/contracts/Initializable.sol";
 import "../interface/ITermsContract.sol";
@@ -11,6 +12,7 @@ import "../debt-contracts/TermsContractLib.sol";
 
 contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     using SafeMath for uint256;
+    using SafeERC20 for IERC20;
 
     using TermsContractLib for TermsContractLib.LoanParams;
     using TermsContractLib for TermsContractLib.LoanStatus;
@@ -24,6 +26,8 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
 
     ITermsContract public termsContract;
     IRepaymentManager public repaymentManager;
+
+    uint256 public constant WITHDRAW_WINDOW = 259200; //72 hours (3 days) wait time after crowdfund End, to allow borrower accept loan, otherwise allow refund from lenders
 
     modifier trackCrowdfundStatus() {
         _updateCrowdfundStatus();
@@ -50,20 +54,23 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         return (crowdfundParams.crowdfundStart.add(crowdfundParams.crowdfundLength));
     }
 
-    /** TODO(Dan): Refactor while implementing Donation capability */
-    function getTotalCrowdfunded() public view returns (uint256 total) {
-        /** Note: this may return more than principalRequested because of native ERC20 transfers */
-        total = _getPrincipalToken().balanceOf(address(this));
-    }
-
     function getBorrower() public view returns (address) {
-        return termsContract.borrower();
+        return termsContract.getBorrower();
     }
 
     // @notice additional payment does not exceed the pricipal Amount
     function _isBelowMaxSupply(uint256 amount) internal view returns (bool) {
         uint256 principalRequested = termsContract.getPrincipalRequested();
         return repaymentManager.totalShares().add(amount) <= principalRequested;
+    }
+
+    function _rejectCrowdfund() internal {
+        if (
+            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE &&
+            now >= getCrowdfundEnd().add(WITHDRAW_WINDOW)
+        ) {
+            termsContract.setLoanStatus(TermsContractLib.LoanStatus.FUNDING_FAILED);
+        }
     }
 
     // @notice reconcile the loans funding status
@@ -83,21 +90,6 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         }
     }
 
-    function _validatedERC20Transfer(IERC20 token, address _from, address _to, uint256 _amount)
-        internal
-    {
-        uint256 balance = token.balanceOf(_to);
-        if (_from == address(this)) {
-            token.transfer(_to, _amount);
-        } else {
-            token.transferFrom(_from, _to, _amount);
-        }
-        require(
-            token.balanceOf(_to) >= balance.add(_amount),
-            "Recipient's token count did not increase"
-        );
-    }
-
     function _getPrincipalToken() internal view returns (IERC20 token) {
         return IERC20(termsContract.getPrincipalToken());
     }
@@ -112,6 +104,20 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
         termsContract.setLoanStatus(TermsContractLib.LoanStatus.FUNDING_STARTED);
     }
 
+    function rejectCrowdfund() public {
+        require(msg.sender == getBorrower(), "Only borrower can reject crowdfund");
+        require(
+            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
+            "Crowdfund can only be rejected before repayment cycle"
+        );
+
+        _rejectCrowdfund();
+        require(
+            termsContract.getLoanStatus() == TermsContractLib.LoanStatus.FUNDING_FAILED,
+            "Crowdfund not successfully rejected"
+        );
+    }
+
     /// @notice Fund the loan in exchange for a debt token
     /// @return repaymentManagerId Issued debt token ID
     function fund(uint256 amount) public trackCrowdfundStatus returns (uint256) {
@@ -120,13 +126,15 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
                 crowdfundParams.crowdfundStart >= now,
             "Crowdfund not yet started"
         );
+
         require(
             termsContract.getLoanStatus() < TermsContractLib.LoanStatus.FUNDING_FAILED,
             "Crowdfund completed or failed"
         );
         // require( getCrowdfundEnd() < now, "Crowdfund period over");
         require(_isBelowMaxSupply(amount), "Amount exceeds capital");
-        _validatedERC20Transfer(_getPrincipalToken(), msg.sender, address(this), amount);
+        _getPrincipalToken().safeTransferFrom(msg.sender, address(this), amount);
+
         //Mint new debt token and transfer to sender
         repaymentManager.increaseShares(msg.sender, amount);
         emit Fund(msg.sender, amount);
@@ -135,14 +143,22 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
     /// @notice Get a refund for a debt token owned by the sender
     function refund(uint256 amount) public {
         require(
-            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.FUNDING_COMPLETE,
+            termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
             "Funding already complete. Refund Impossible"
+        );
+
+        _rejectCrowdfund();
+
+        require(
+            termsContract.getLoanStatus() == TermsContractLib.LoanStatus.FUNDING_FAILED,
+            "Refund only allowed if funding failed"
         );
 
         require(repaymentManager.shares(msg.sender) >= amount, "Amount exceeds owned shares");
 
         repaymentManager.decreaseShares(msg.sender, amount);
-        _validatedERC20Transfer(_getPrincipalToken(), address(this), msg.sender, amount);
+        _getPrincipalToken().safeTransfer(msg.sender, amount);
+
         emit Refund(msg.sender, amount);
     }
 
@@ -159,13 +175,18 @@ contract Crowdloan is Initializable, ICrowdloan, ReentrancyGuard {
             termsContract.getLoanStatus() > TermsContractLib.LoanStatus.FUNDING_FAILED,
             "Crowdfund not completed"
         );
-        require(msg.sender == termsContract.borrower(), "Withdrawal only allowed for Borrower");
+
+        address borrower = termsContract.getBorrower();
+
+        require(msg.sender == termsContract.getBorrower(), "Withdrawal only allowed for Borrower");
+
         uint256 contractBalance = _getPrincipalToken().balanceOf(address(this));
         require(amount <= contractBalance, "Amount exceeds available balance");
         if (termsContract.getLoanStatus() < TermsContractLib.LoanStatus.REPAYMENT_CYCLE) {
             termsContract.startRepaymentCycle(contractBalance);
         }
-        _validatedERC20Transfer(_getPrincipalToken(), address(this), msg.sender, amount);
+
+        _getPrincipalToken().safeTransfer(borrower, amount);
         emit ReleaseFunds(msg.sender, amount);
     }
 

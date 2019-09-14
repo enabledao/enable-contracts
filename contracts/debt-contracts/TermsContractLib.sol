@@ -1,4 +1,4 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.11;
 
 library TermsContractLib {
     /** NOTE: Update testConstants.js file if changed! */
@@ -12,11 +12,14 @@ library TermsContractLib {
     }
 
     struct LoanParams {
+        address borrower;
         address principalToken;
         uint256 principalRequested;
         LoanStatus loanStatus;
         uint256 loanPeriod;
         uint256 interestRate; // NOTE(Dan): in months
+        uint256 minimumRepayment;
+        uint256 maximumRepayment;
         uint256 principalDisbursed;
         uint256 loanStartTimestamp;
     }

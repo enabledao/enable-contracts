@@ -1,4 +1,4 @@
-pragma solidity >=0.4.22 <0.6.0;
+pragma solidity 0.5.11;
 
 import "../debt-contracts/TermsContractLib.sol";
 
@@ -7,7 +7,7 @@ contract ITermsContract {
 
     event LoanStatusUpdated(TermsContractLib.LoanStatus status);
 
-    function borrower() external view returns (address);
+    function getBorrower() external view returns (address);
     function getInterestRate() external view returns (uint256);
     function getLoanStatus() external view returns (TermsContractLib.LoanStatus);
     function getLoanStartTimestamp() external view returns (uint256);
@@ -28,21 +28,21 @@ contract ITermsContract {
     function getExpectedRepaymentValue(uint256 timestamp) external view returns (uint256);
 
     function getLoanParams()
-        external
+        public
         view
         returns (
-            address,
+            address borrower,
             address principalToken,
             uint256 principalRequested,
             uint256 loanStatus,
             uint256 loanPeriod,
             uint256 interestRate,
+            uint256 minimumRepayment,
+            uint256 maximumRepayment,
             uint256 principalDisbursed,
             uint256 loanStartTimestamp
         );
 
     function setLoanStatus(TermsContractLib.LoanStatus _status) external;
-    function startRepaymentCycle(uint256)
-        external
-        returns (uint256);
+    function startRepaymentCycle(uint256) external returns (uint256);
 }

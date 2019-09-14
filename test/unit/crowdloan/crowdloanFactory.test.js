@@ -23,6 +23,7 @@ async function crowdloanFactoryUnitTests(
   let paymentToken;
   const appAddress = getAppAddress();
   const borrower = accounts[0];
+  const contractAdmin = accounts[9];
 
   beforeEach(async () => {
     // Create a factory via App
@@ -54,12 +55,15 @@ async function crowdloanFactoryUnitTests(
 
     beforeEach(async () => {
       deployTx = await crowdloanFactory.deploy(
-        crowdloanFactory.address,
+        paymentToken.address,
         loanParams.principalRequested,
         loanParams.loanPeriod,
         loanParams.interestRate,
+        loanParams.minimumRepayment,
+        loanParams.maximumRepayment,
         crowdfundParams.crowdfundLength,
         crowdfundParams.crowdfundStart,
+        contractAdmin,
         {from: borrower}
       );
     });
@@ -80,6 +84,13 @@ async function crowdloanFactoryUnitTests(
       assert.exists(repaymentManager.address, 'repayment manager was not successfully deployed');
     });
 
+    it('should emit admin address on successful deploy', async () => {
+      const loanCreatedEvent = expectEvent.inLogs(deployTx.logs, 'LoanCreated');
+      const adminAddress = loanCreatedEvent.args.contractAdmin;
+
+      expect(adminAddress).to.be.equal(contractAdmin);
+    });
+
     it('should revert if invalid arguments', async () => {});
 
     describe('Crowdfund post-deployment', async () => {
@@ -95,9 +106,47 @@ async function crowdloanFactoryUnitTests(
         repaymentManager = await RepaymentManager.at(loanCreatedEvent.args.repaymentManager);
       });
 
-      it('should initialize terms contract correctly on successful deploy', async () => {
+      it('should initialize borrower parameter correctly on successful deploy', async () => {
+        expect(await termsContract.getBorrower()).to.be.equal(borrower);
+      });
+
+      it('should initialize terms interest rate parameter on successful deploy', async () => {
+        expect(await termsContract.getInterestRate()).to.be.bignumber.equal(
+          new BN(loanParams.interestRate)
+        );
+      });
+
+      it('should initialize loan status parameter correctly on successful deploy', async () => {
+        expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(new BN(0));
+      });
+
+      it('should initialize loan start timestamp parameter correctly on successful deploy', async () => {
+        expect(await termsContract.getLoanStartTimestamp()).to.be.bignumber.equal(new BN(0));
+      });
+
+      it('should initialize principal requested parameter correctly on successful deploy', async () => {
         expect(await termsContract.getPrincipalRequested()).to.be.bignumber.equal(
           new BN(loanParams.principalRequested)
+        );
+      });
+
+      it('should initialize principal disbursed parameter correctly on successful deploy', async () => {
+        expect(await termsContract.getPrincipalDisbursed()).to.be.bignumber.equal(new BN(0));
+      });
+
+      it('should initialize principal token parameter correctly on successful deploy', async () => {
+        expect(await termsContract.getPrincipalToken()).to.be.equal(paymentToken.address);
+      });
+
+      it('should initialize minimum repayment parameter correctly on successful deploy', async () => {
+        expect(await termsContract.getMinimumRepayment()).to.be.bignumber.equal(
+          new BN(loanParams.minimumRepayment)
+        );
+      });
+
+      it('should initialize maximum repayment parameter correctly on successful deploy', async () => {
+        expect(await termsContract.getMaximumRepayment()).to.be.bignumber.equal(
+          new BN(loanParams.maximumRepayment)
         );
       });
 
@@ -110,7 +159,9 @@ async function crowdloanFactoryUnitTests(
         };
 
         expect(params.crowdfundStart).to.be.bignumber.equal(new BN(crowdfundParams.crowdfundStart));
-        expect(params.crowdfundLength).to.be.bignumber.equal(new BN(crowdfundParams.crowdfundLength));
+        expect(params.crowdfundLength).to.be.bignumber.equal(
+          new BN(crowdfundParams.crowdfundLength)
+        );
       });
 
       it('should initialize repayment manager correctly on successful deploy', async () => {
@@ -121,6 +172,5 @@ async function crowdloanFactoryUnitTests(
 }
 
 contract('CrowdloanFactory', async accounts => {
-
   await crowdloanFactoryUnitTests(accounts, crowdfundParams, loanParams, paymentTokenParams);
 });

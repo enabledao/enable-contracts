@@ -1,4 +1,4 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.11;
 
 import "openzeppelin-eth/contracts/math/SafeMath.sol";
 import "openzeppelin-eth/contracts/token/ERC20/IERC20.sol";
@@ -18,8 +18,6 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     uint256 private constant MONTHSINYEAR = 12;
     uint256 private constant TENTHOUSAND = 10000;
 
-    address private _borrower;
-
     modifier onlyBeforeRepaymentCycle() {
         require(
             loanParams.loanStatus < TermsContractLib.LoanStatus.REPAYMENT_CYCLE,
@@ -29,32 +27,37 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     }
 
     function initialize(
-        address borrower_,
-        address _principalTokenAddr,
-        uint256 _principalRequested,
-        uint256 _loanPeriod,
-        uint256 _interestRate,
+        address borrower,
+        address principalToken,
+        uint256 principalRequested,
+        uint256 loanPeriod,
+        uint256 interestRate,
+        uint256 minimumRepayment,
+        uint256 maximumRepayment,
         address[] memory _controllers
     ) public initializer {
-        require(_principalTokenAddr != address(0), "Loaned token must be an ERC20 token"); //TODO(Dan): More rigorous way of testing ERC20?
-        require(_principalRequested != 0, "PrincipalRequested must be greater than 0");
-        require(_loanPeriod > 0, "Loan period must be higher than 0");
+        require(principalToken != address(0), "Loaned token must be an ERC20 token"); //TODO(Dan): More rigorous way of testing ERC20?
+        require(principalRequested != 0, "PrincipalRequested must be greater than 0");
+        require(loanPeriod > 0, "Loan period must be higher than 0");
         require(
-            _interestRate > 9,
+            interestRate > 9,
             "Interest rate should be in basis points and have minimum of 10 (0.1%)"
         );
         require(
-            _interestRate < 10000,
+            interestRate < 10000,
             "Interest rate be in basis points and less than 10,000 (100%)"
         );
-        _borrower = borrower_;
+
         ControllerRole.initialize(_controllers);
         loanParams = TermsContractLib.LoanParams({
-            principalToken: _principalTokenAddr,
-            principalRequested: _principalRequested,
+            borrower: borrower,
+            principalToken: principalToken,
+            principalRequested: principalRequested,
             loanStatus: TermsContractLib.LoanStatus.NOT_STARTED,
-            loanPeriod: _loanPeriod,
-            interestRate: _interestRate,
+            loanPeriod: loanPeriod,
+            interestRate: interestRate,
+            minimumRepayment: minimumRepayment,
+            maximumRepayment: maximumRepayment,
             principalDisbursed: 0,
             loanStartTimestamp: 0
         });
@@ -66,8 +69,8 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
 
     /** Public view functions
      */
-    function borrower() public view returns (address) {
-        return _borrower;
+    function getBorrower() public view returns (address) {
+        return loanParams.borrower;
     }
 
     function getInterestRate() public view returns (uint256) {
@@ -98,6 +101,14 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         return loanParams.principalToken;
     }
 
+    function getMinimumRepayment() public view returns (uint256) {
+        return loanParams.minimumRepayment;
+    }
+
+    function getMaximumRepayment() public view returns (uint256) {
+        return loanParams.maximumRepayment;
+    }
+
     function getLoanEndTimestamp() public view returns (uint256 end) {
         require(loanParams.loanStartTimestamp != 0, "Loan hasn't been started yet");
         end = BokkyPooBahsDateTimeLibrary.addMonths(
@@ -113,23 +124,27 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         public
         view
         returns (
-            address,
+            address borrower,
             address principalToken,
             uint256 principalRequested,
             uint256 loanStatus,
             uint256 loanPeriod,
             uint256 interestRate,
+            uint256 minimumRepayment,
+            uint256 maximumRepayment,
             uint256 principalDisbursed,
             uint256 loanStartTimestamp
         )
     {
         return (
-            _borrower,
-            address(loanParams.principalToken),
+            loanParams.borrower,
+            loanParams.principalToken,
             loanParams.principalRequested,
             uint256(loanParams.loanStatus),
             loanParams.loanPeriod,
             loanParams.interestRate,
+            loanParams.minimumRepayment,
+            loanParams.maximumRepayment,
             loanParams.principalDisbursed,
             loanParams.loanStartTimestamp
         );
@@ -143,12 +158,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         public
         view
         returns (uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
-    {
-        (principalPayment, interestPayment, totalPayment) = _calcScheduledPayment(
-            period,
-            loanParams.principalRequested
-        );
-    }
+    {}
 
     /**
      * @dev Gets finalized payment schedule based on principalDisbursed
@@ -163,13 +173,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
             uint256 interestPayment,
             uint256 totalPayment
         )
-    {
-        (principalPayment, interestPayment, totalPayment) = _calcScheduledPayment(
-            period,
-            loanParams.principalDisbursed
-        );
-        dueTimestamp = BokkyPooBahsDateTimeLibrary.addMonths(loanParams.loanStartTimestamp, period);
-    }
+    {}
 
     /**
      * @dev Begins loan and writes timestamps to the payment table
@@ -196,9 +200,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
     /**
      * @dev Overloaded function. `now` will be the block's timestamp as reported by the miner
      */
-    function getExpectedRepaymentValue() public view returns (uint256 total) {
-        total = getExpectedRepaymentValue(now);
-    }
+    function getExpectedRepaymentValue() public view returns (uint256 total) {}
 
     /**
      * @dev returns the expected repayment value for a given timestamp for the loan's scheduled payments
@@ -206,15 +208,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
      * @param timestamp uint256
      * @return uint256 total number of currencyTokens expected to be repaid
      */
-    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256 total) {
-        total = 0;
-        for (uint256 i = 0; i < loanParams.loanPeriod; i++) {
-            (uint256 due, , , uint256 amount) = getScheduledPayment(i + 1);
-            if (due <= timestamp) {
-                total = total.add(amount);
-            }
-        }
-    }
+    function getExpectedRepaymentValue(uint256 timestamp) public view returns (uint256 total) {}
 
     /**
      * @dev Calculates the scheduled payment for a given period
@@ -224,20 +218,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         internal
         view
         returns (uint256 principalPayment, uint256 interestPayment, uint256 totalPayment)
-    {
-        require(
-            period > 0 && period <= loanParams.loanPeriod,
-            "The requested period is outside loan period"
-        );
-        interestPayment = _calcMonthlyInterest(principal, loanParams.interestRate);
-        /** Principal is only paid during the last period */
-        if (period == loanParams.loanPeriod) {
-            principalPayment = principal;
-        } else {
-            principalPayment = 0;
-        }
-        totalPayment = interestPayment.add(principalPayment);
-    }
+    {}
 
     /**
      * @dev calculates monthly interest payment
@@ -247,9 +228,7 @@ contract TermsContract is Initializable, ITermsContract, ControllerRole {
         public
         pure
         returns (uint256 result)
-    {
-        result = principal.mul(interestRate).div(MONTHSINYEAR).div(TENTHOUSAND);
-    }
+    {}
 
     /**
      * @dev internal method to set the loanStatus of the loan

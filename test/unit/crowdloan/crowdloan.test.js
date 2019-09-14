@@ -7,7 +7,7 @@
 // Lender should not be able to contribute after loan is fully funded
 // Lender should not be able to contribute after loan is withdrawn by borrower
 
-import {BN, expectEvent, expectRevert} from 'openzeppelin-test-helpers';
+import {BN, expectEvent, expectRevert, time} from 'openzeppelin-test-helpers';
 
 const {expect} = require('chai');
 
@@ -22,6 +22,8 @@ const {
   loanParams,
   paymentTokenParams
 } = require('../../testConstants');
+
+const { revertEvm ,snapShotEvm } = require('../../testHelpers');
 
 contract('Crowdloan', accounts => {
   let crowdloan;
@@ -234,34 +236,33 @@ contract('Crowdloan', accounts => {
         await crowdloan.fund(partialAmount, {from: contributor.address});
         remainder = new BN(10); // TODO(Dan): make random number smaller than partialAmount
         refundedAmount = partialAmount.sub(remainder);
-        tx = await crowdloan.refund(refundedAmount, {from: contributor.address});
       });
 
-      it('should trigger a refund event in logs', async () => {
-        expectEvent.inLogs(tx.logs, 'Refund', {
-          sender: contributor.address,
-          amount: refundedAmount
-        });
-      });
-
-      it('should transfer correct units of currencyToken back to lender', async () => {
-        const balance = await paymentToken.balanceOf.call(contributor.address);
-        expect(balance).to.be.bignumber.equal(contributor.value.sub(remainder));
-      });
-
-      it('should decrease totalCrowdfunded', async () => {
-        const totalRemainder = await repaymentManager.totalShares();
-        expect(totalRemainder).to.be.bignumber.equal(remainder);
+      it('should revert unless crowdfunding failed', async () => {
+        await expectRevert.unspecified(
+          crowdloan.refund(refundedAmount, {from: contributor.address}),
+          'Refund only allowed if funding failed'
+        );
       });
     });
 
     context('if crowdfunding failed', async () => {
       let tx;
+      let remainder;
+      let refundedAmount;
+      let snapshotId;
 
       beforeEach(async () => {
+        snapshotId = await snapShotEvm();
+        remainder = new BN(10); // TODO(Dan): make random number smaller than partialAmount
+        refundedAmount = partialAmount.sub(remainder);
         await crowdloan.fund(partialAmount, {from: contributor.address});
         termsContract.setLoanStatus(loanStatuses.FUNDING_FAILED);
       });
+
+      afterEach( async () => {
+        await revertEvm(snapshotId);
+      })
 
       it('should allow refund if crowdfunding failed', async () => {
         tx = await crowdloan.refund(partialAmount, {from: contributor.address});
@@ -272,24 +273,56 @@ contract('Crowdloan', accounts => {
         const balance = await paymentToken.balanceOf.call(contributor.address);
         expect(balance).to.be.bignumber.equal(contributor.value);
       });
+
+      it('should decrease totalCrowdfunded', async () => {
+        await crowdloan.refund(refundedAmount, {from: contributor.address});
+        const totalRemainder = await repaymentManager.totalShares();
+        expect(totalRemainder).to.be.bignumber.equal(remainder);
+      });
     });
 
     context('after crowdfunding phase', async () => {
+      beforeEach(async () => {
+        await termsContract.setLoanStatus(loanStatuses.FUNDING_STARTED); // FUNDING_STARTED
+        await crowdloan.fund(contributor.value, {from: contributor.address});
+      })
       it('should not allow refund if funding is complete', async () => {
-        termsContract.setLoanStatus(loanStatuses.FUNDING_STARTED); // FUNDING_STARTED
-        crowdloan.fund(contributor.value, {from: contributor.address});
-
+        await termsContract.setLoanStatus(loanStatuses.REPAYMENT_CYCLE); // REPAYMENT_CYCLE
         // console.log(contributor)
         // const current = await repaymentManager.totalShares();
         // console.log(`Just funded: ${current.toNumber()}`);
-        expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(
-          loanStatuses.FUNDING_COMPLETE
-        );
 
         await expectRevert.unspecified(
           crowdloan.refund(contributor.value, {from: contributor.address}),
           'Funding already complete. Refund Impossible'
         );
+
+      });
+
+      it('should allow refund after Withdraw timeout', async () => {
+        const WITHDRAW_TIMEOUT = 86400 * 3; // Refund delay: 3 days
+        const crowdfundEnd =  await crowdloan.getCrowdfundEnd.call();
+        await termsContract.setLoanStatus(loanStatuses.FUNDING_COMPLETE); // FUNDING_COMPLETE
+        expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(
+          loanStatuses.FUNDING_COMPLETE
+        );
+
+        const snapshotId = await snapShotEvm();
+        await expectRevert.unspecified(
+          crowdloan.refund(contributor.value, {from: contributor.address}),
+          'Refund only allowed if funding failed'
+        );
+
+        const now = Math.floor(new Date().getTime()/1000);
+        const timeTillTimeout = (crowdfundEnd.add(new BN(WITHDRAW_TIMEOUT)).toNumber())
+          - now;
+        await time.increase(timeTillTimeout + 5);
+
+        await crowdloan.refund(partialAmount, {from: contributor.address});
+        expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(
+          loanStatuses.FUNDING_FAILED
+        );
+        await revertEvm(snapshotId);
       });
     });
   });
