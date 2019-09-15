@@ -30,7 +30,7 @@ contract Crowdloan is Initializable {
     // Events
     event Fund(address sender, uint256 amount);
     event WithdrawPrincipal(address borrower, uint256 amount);
-    event WithdrawRepayment(address sender, uint256 amount);
+    event WithdrawRepayment(address lender, uint256 amount);
     event Repay(uint256 amount);
     event StartCrowdfund(uint256 crowdfundStart);
 
@@ -102,6 +102,8 @@ contract Crowdloan is Initializable {
 
         uint256 totalOwed = amountRepaid.mul(amountContributed[msg.sender]).div(totalContributed);
         uint256 amount = totalOwed.sub(repaymentWithdrawn[msg.sender]);
+        require(amount > 0, "Withdrawal amount cannot be zero");
+
         repaymentWithdrawn[msg.sender] = totalOwed;
 
         token.safeTransfer(msg.sender, amount);
