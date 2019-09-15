@@ -18,6 +18,11 @@ const {loanParams, paymentTokenParams} = require('../../testConstants');
 
 const {revertEvm, snapShotEvm} = require('../../testHelpers');
 
+const getLastBlockTime = async () => {
+    await time.advanceBlock();
+    return await time.latest();
+}
+
 contract('Crowdloan', accounts => {
   let crowdloan;
   let paymentToken;
@@ -46,6 +51,7 @@ contract('Crowdloan', accounts => {
   });
 
   it('Crowdloan should deploy successfully', async () => {
+    assert.exists(crowdloan.address, 'Crowdloan was not successfully deployed');
     expect(await crowdloan.borrower.call()).to.equal(borrower);
     assert.exists(crowdloan.address, 'Crowdloan was not successfully deployed');
   });
@@ -57,7 +63,7 @@ contract('Crowdloan', accounts => {
   it('should not allow non-borrower to start crowdfund', async () => {
     await expectRevert.unspecified(
       crowdloan.startCrowdfund({from: accounts[4]}),
-      'Only borrower can start crowdfund'
+      'Only the borrower can call function.'
     );
   });
 
@@ -71,14 +77,16 @@ contract('Crowdloan', accounts => {
 
     await expectRevert.unspecified(
       crowdloan.startCrowdfund({from: borrower}),
-      'KickOff already passed'
+      'Only before crowdfund start'
     );
   });
 
-  xit('should register correct start time', async () => {
+  it('should register correct start time', async () => {
+    await crowdloan.startCrowdfund({from: borrower});
+    const now = await getLastBlockTime();
     expect(
-      (await crowdloan.getCrowdfundParams.call())[1] // crowdfundStart
-    ).to.be.bignumber.gt(new BN(time));
+      await crowdloan.crowdfundStart.call() // crowdfundStart
+    ).to.be.bignumber.gte(new BN(now));
   });
 
   /** TODO(Dan) */
@@ -97,15 +105,15 @@ contract('Crowdloan', accounts => {
       it('should fail to fund before crowdfund starts', async () => {
         await expectRevert.unspecified(
           crowdloan.fund(contributor.value, {from: contributor.address}),
-          'Crowdfund not yet started'
+          'Only after crowdfund start'
         );
       });
     });
 
     describe('after crowdfund starts', async () => {
-      let time;
+      let now;
       beforeEach(async () => {
-        time = Math.floor(new Date().getTime / 1000);
+        now = await getLastBlockTime();
         await crowdloan.startCrowdfund({from: borrower});
         await paymentToken.mint(contributor.address, new BN(loanParams.principalRequested));
         await paymentToken.approve(crowdloan.address, new BN(loanParams.principalRequested), {
@@ -142,21 +150,16 @@ contract('Crowdloan', accounts => {
         });
       });
 
-      it('should successfully fund valid value equal to principal requested', async () => {
-        const amount = new BN(loanParams.principalRequested);
-        const tx = await crowdloan.fund(amount, {from: contributor.address});
-
-        expectEvent.inLogs(tx.logs, 'Fund', {
-          sender: contributor.address,
-          amount: amount
-        });
-      });
-
       it('should not allow to fund with amount exceeding capital', async () => {
         const amount = new BN(loanParams.principalRequested).mul(new BN(2));
+        await paymentToken.mint(contributor.address, new BN(loanParams.principalRequested));
+        await paymentToken.approve(crowdloan.address, amount, {
+          from: contributor.address
+        });
+
         await expectRevert.unspecified(
           crowdloan.fund(new BN(loanParams.principalRequested), {from: contributor.address}),
-          'Amount exceeds capital'
+          'Your contribution would exceed the total amount requested.'
         );
       });
 
