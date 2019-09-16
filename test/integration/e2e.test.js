@@ -1,5 +1,3 @@
-// TODO(Dan): Create end-to-end integration test
-
 /*
     Setup
 */
@@ -31,22 +29,22 @@ import {BN, expectEvent, expectRevert, time} from 'openzeppelin-test-helpers';
 const {expect} = require('chai');
 
 const {appCreate, getAppAddress, encodeCall, revertEvm, snapShotEvm} = require('../testHelpers');
-const {crowdfundParams, loanParams, loanStatuses, paymentTokenParams} = require('../testConstants');
+const {DECIMAL_SHIFT, TENTHOUSAND, crowdfundParams, loanParams, loanStatuses, paymentTokenParams} = require('../testConstants');
 
 const CrowdloanFactory = artifacts.require('CrowdloanFactory');
-const TermsContract = artifacts.require('TermsContract');
 const Crowdloan = artifacts.require('Crowdloan');
-const RepaymentManager = artifacts.require('RepaymentManager');
 const PaymentToken = artifacts.require('StandaloneERC20');
+
+const MONTH = 86400 * 30; // seconds in a month: 30 days
+const REPAYEMENT_PERIOD = 6 * 12 // Number of months for repayment
+const REPAYMENT_START_WAIT = 2 * 12 //Number of months befor the repayment period is expected to begin
 
 contract('Enable Suite', accounts => {
   let crowdloanFactory;
   let paymentToken;
   let crowdloan;
-  let termsContract;
-  let repaymentManager;
+  let snapShotId;
 
-  const TENTHOUSAND = new BN(10000);
   const borrower = accounts[2];
   const contractAdmin = accounts[6];
   const appAddress = getAppAddress();
@@ -81,8 +79,15 @@ contract('Enable Suite', accounts => {
     }
   ];
 
-  const expectedTranchRepayment = async tranch =>
-    (await termsContract.getScheduledPayment.call(new BN(tranch + 1)))[3];
+  const randomAmount = () => new BN(
+    (Number(loanParams.principalRequested)*Math.random).toFixed()
+  );
+  const totalShares = () => lenders.reduce((a, b) => a.add(b.shares), new BN(0));
+  const expectedWithdrawal = (shares, payment, previousRelease) =>
+    shares
+      .mul(payment)
+      .div(totalShares())
+      .sub(previousRelease);
 
   before(async () => {
     // Create a factory via App
@@ -98,6 +103,13 @@ contract('Enable Suite', accounts => {
       [accounts[0]], // minters
       [] // pausers
     );
+    // Take evm snapshot, to be reverted, so as not to distort other tests (time manipulation)
+    snapShotId = await snapShotEvm();
+  });
+
+  after(async() => {
+    // Revert EVm to snapshot
+    await revertEvm(snapShotId);
   });
 
   it('Factory should deploy successfully', async () => {
@@ -121,20 +133,18 @@ contract('Enable Suite', accounts => {
 
     const loanCreated = expectEvent.inLogs(tx.logs, 'LoanCreated', {
       borrower,
-      amount: new BN(loanParams.principalRequested)
+      principalRequested: new BN(loanParams.principalRequested)
     });
-
-    expect(loanCreated.args.amount).to.be.bignumber.equal(new BN(loanParams.principalRequested));
 
     crowdloan = await Crowdloan.at(loanCreated.args.crowdloan);
   });
 
   it('should successfully startCrowdfund', async () => {
+    expect(await crowdloan.crowdfundStart.call()).to.be.bignumber.be.equal(new BN(0));
     const tx = await crowdloan.startCrowdfund({from: borrower});
 
     await expectEvent.inTransaction(tx.tx, Crowdloan, 'StartCrowdfund');
-
-    expect(await crowdloan.crowdfundStart()).to.be.bignumber.greater.than(new BN(0));
+    expect(await crowdloan.crowdfundStart.call()).to.be.bignumber.gt(new BN(0));
   });
 
   it('should successfully fund crowdloan', async () => {
@@ -154,98 +164,74 @@ contract('Enable Suite', accounts => {
     expect(await paymentToken.balanceOf.call(crowdloan.address)).to.be.bignumber.equal(
       new BN(loanParams.principalRequested)
     );
-    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(
-      new BN(loanStatuses.FUNDING_COMPLETE)
-    ); // FUNDING_COMPLETE
   });
 
-  it('should successfully withdraw', async () => {
+  it('should successfully withdrawPrincipal', async () => {
     const test = new BN(1);
     const balance = await paymentToken.balanceOf(borrower);
-    const tx = await crowdloan.methods['withdraw(uint256)'](test, {from: borrower});
+    const tx = await crowdloan.withdrawPrincipal(test, {from: borrower});
 
-    expectEvent.inLogs(tx.logs, 'ReleaseFunds', {
+    expectEvent.inLogs(tx.logs, 'WithdrawPrincipal', {
       borrower,
       amount: test
     });
 
     expect(await paymentToken.balanceOf(borrower)).to.be.bignumber.equal(test.add(balance));
-    expect(await termsContract.getLoanStatus()).to.be.bignumber.equal(
-      new BN(loanStatuses.REPAYMENT_CYCLE)
-    ); // REPAYMENT_CYCLE
 
-    const leftover = await paymentToken.balanceOf(crowdloan.address);
-    await crowdloan.methods['withdraw(uint256)'](leftover, {from: borrower});
+    const leftover = await paymentToken.balanceOf.call(crowdloan.address);
+    await crowdloan.withdrawPrincipal(leftover, {from: borrower});
 
     expect(await paymentToken.balanceOf(borrower)).to.be.bignumber.gte(
       new BN(loanParams.principalRequested).add(balance)
     );
   });
 
-  xit('should successfully pay RepaymentManager from borrower', async () => {
-    const monthPayment = await expectedTranchRepayment(0);
+  it('should successfully pay RepaymentManager from borrower', async () => {
+
+    const monthPayment = new BN(100).mul(DECIMAL_SHIFT);
+
+    await time.increase(loanParams.crowdfundLength); //Accelerate to end of loan term
 
     await paymentToken.mint(borrower, monthPayment);
-    await paymentToken.approve(repaymentManager.address, monthPayment, {from: borrower});
+    await paymentToken.approve(crowdloan.address, monthPayment, {from: borrower});
 
-    const tx = await repaymentManager.pay(monthPayment, {from: borrower});
-    expectEvent.inLogs(tx.logs, 'PaymentReceived', {
-      from: borrower,
+    const tx = await crowdloan.repay(monthPayment, {from: borrower});
+    expectEvent.inLogs(tx.logs, 'Repay', {
       amount: monthPayment
     });
 
-    expect(await repaymentManager.totalPaid()).to.be.bignumber.equal(monthPayment);
+    expect(await crowdloan.amountRepaid()).to.be.bignumber.equal(monthPayment);
   });
 
-  xit('should successfully release from RepaymentManager', async () => {
-    const monthPayment = await expectedTranchRepayment(0);
-    const totalShares = () => lenders.reduce((a, b) => a.add(b.shares), new BN(0));
-    const expectedRepayment = (shares, payment, previousRelease) =>
-      shares
-        .mul(payment)
-        .div(totalShares())
-        .sub(previousRelease);
-
-    expect(await repaymentManager.totalPaid()).to.be.bignumber.equal(monthPayment);
+  it('should successfully withdrawRepayment from RepaymentManager', async () => {
+    const amountRepaid = await crowdloan.amountRepaid.call();
 
     await Promise.all(
       lenders.map(async lender => {
-        const balance = await paymentToken.balanceOf(lender.address);
-        const previousRelease = await repaymentManager.released.call(lender.address);
-        const expectedRelease = expectedRepayment(lender.shares, monthPayment, previousRelease);
+        const balance = await paymentToken.balanceOf.call(lender.address);
+        const repaymentWithdrawn = await crowdloan.repaymentWithdrawn.call(lender.address);
+        const dueWithdrawal = expectedWithdrawal(lender.shares, amountRepaid, repaymentWithdrawn);
 
-        expect(await repaymentManager.releaseAllowance.call(lender.address)).to.be.bignumber.equal(
-          expectedRelease
-        );
-
-        if (expectedRelease.gt(new BN(0))) {
-          const tx = await repaymentManager.release(lender.address, {from: lender.address});
-          expectEvent.inLogs(tx.logs, 'PaymentReleased', {
-            to: lender.address,
-            amount: expectedRelease
+        if (dueWithdrawal.gt(new BN(0))) {
+          const tx = await crowdloan.withdrawRepayment({from: lender.address});
+          expectEvent.inLogs(tx.logs, 'WithdrawRepayment', {
+            lender: lender.address,
+            amount: dueWithdrawal
           });
         } else {
           await expectRevert.unspecified(
-            repaymentManager.release(lender.address, {from: lender.address}),
-            'Account has zero release allowance'
+            crowdloan.withdrawRepayment({from: lender.address}),
+            'Withdrawal amount cannot be zero'
           );
         }
         expect(await paymentToken.balanceOf(lender.address)).to.be.bignumber.gte(
-          expectedRelease.add(balance)
+          dueWithdrawal.add(balance)
         );
       })
     );
   });
-  xit('should successfully complete loan repayment', async () => {
-    const MONTH = 86400 * 30; // seconds in a month: 30 days
-    const BULKPERIOD = 2;
+  it('should successfully complete loan repayment', async () => {
 
-    const totalShares = () => lenders.reduce((a, b) => a.add(b.shares), new BN(0));
-    const expectedRepayment = (shares, payment, previousRelease) =>
-      shares
-        .mul(payment)
-        .div(totalShares())
-        .sub(previousRelease);
     const serializePromise = promiseArray =>
       promiseArray.reduce((previousPromise, nextPromiseFn) => {
         return previousPromise.then(() => {
@@ -253,80 +239,47 @@ contract('Enable Suite', accounts => {
         });
       }, Promise.resolve());
 
-    const bulkTranchRepayment = async tranch => {
-      const total = new BN(0);
-      await Promise.all(
-        new Array(tranch)
-          .fill('')
-          .map(async (empty, ind) => total.iadd(await expectedTranchRepayment(ind)))
-      );
-      return total;
-    };
+    await time.increase(REPAYMENT_START_WAIT); //Acelerate to expected repayment begin
+    const remainderMonths = REPAYEMENT_PERIOD; //Number of months for repayment
 
-    // Take evm snapshot, to be reverted, so as not to distort other tests (time manipulation)
-    const snapShotId = await snapShotEvm();
-
-    // Make bulk payment for BULKPERIOD
-    const bulkpayment = (await bulkTranchRepayment(BULKPERIOD + 1)).sub(
-      await expectedTranchRepayment(0)
-    ); // +1 previously paid month
-    await paymentToken.mint(borrower, bulkpayment);
-    await paymentToken.approve(repaymentManager.address, bulkpayment, {from: borrower});
-
-    await repaymentManager.pay(bulkpayment, {from: borrower});
-    await time.increase(MONTH * 2);
-
-    const remainderMonths = loanParams.loanPeriod - (BULKPERIOD + 1);
     const monthCycles = new Array(remainderMonths).fill('').map((empty, ind) => () =>
       new Promise(async resolve => {
         await time.increase(MONTH);
-        const tranch = loanParams.loanPeriod - (remainderMonths - ind);
-        const expectedTranch = await expectedTranchRepayment(tranch);
-        await paymentToken.mint(borrower, expectedTranch);
-        await paymentToken.approve(repaymentManager.address, expectedTranch, {from: borrower});
+        const expectedPayment = randomAmount();
+        await paymentToken.mint(borrower, expectedPayment);
+        await paymentToken.approve(crowdloan.address, expectedPayment, {from: borrower});
 
-        await repaymentManager.pay(expectedTranch, {from: borrower});
+        await crowdloan.repay(expectedPayment, {from: borrower});
         resolve();
       })
     );
 
     await serializePromise(monthCycles);
-    expect(await termsContract.getLoanStatus.call()).to.be.bignumber.equal(
-      new BN(loanStatuses.REPAYMENT_COMPLETE)
-    ); // REPAYMENT_COMPLETE
 
-    const totalPaid = await repaymentManager.totalPaid.call();
-    expect(totalPaid).to.be.bignumber.equals(await bulkTranchRepayment(loanParams.loanPeriod));
+    const amountRepaid = await crowdloan.amountRepaid.call();
 
     await Promise.all(
       lenders.map(async lender => {
-        const balance = await paymentToken.balanceOf(lender.address);
-        const previousRelease = await repaymentManager.released.call(lender.address);
-        const expectedRelease = expectedRepayment(lender.shares, totalPaid, previousRelease);
+        const balance = await paymentToken.balanceOf.call(lender.address);
+        const repaymentWithdrawn = await crowdloan.repaymentWithdrawn.call(lender.address);
+        const dueWithdrawal = expectedWithdrawal(lender.shares, amountRepaid, repaymentWithdrawn);
 
-        expect(await repaymentManager.releaseAllowance.call(lender.address)).to.be.bignumber.equal(
-          expectedRelease
-        );
-
-        if (expectedRelease.gt(new BN(0))) {
-          const tx = await repaymentManager.release(lender.address, {from: lender.address});
-          expectEvent.inLogs(tx.logs, 'PaymentReleased', {
-            to: lender.address,
-            amount: expectedRelease
+        if (dueWithdrawal.gt(new BN(0))) {
+          const tx = await crowdloan.withdrawRepayment({from: lender.address});
+          expectEvent.inLogs(tx.logs, 'WithdrawRepayment', {
+            lender: lender.address,
+            amount: dueWithdrawal
           });
         } else {
           await expectRevert.unspecified(
-            repaymentManager.release(lender.address, {from: lender.address}),
-            'Account has zero release allowance'
+            crowdloan.withdrawRepayment({from: lender.address}),
+            'Withdrawal amount cannot be zero'
           );
         }
-        expect(await paymentToken.balanceOf(lender.address)).to.be.bignumber.gte(
-          expectedRelease.add(balance)
+        expect(await paymentToken.balanceOf.call(lender.address)).to.be.bignumber.gte(
+          dueWithdrawal.add(balance)
         );
       })
     );
-
-    // Revert EVm to snapshot
-    await revertEvm(snapShotId);
   });
 });
