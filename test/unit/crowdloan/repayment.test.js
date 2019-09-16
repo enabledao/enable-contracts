@@ -7,15 +7,14 @@
 // Lender should not be able to contribute after loan is fully funded
 // Lender should not be able to contribute after loan is withdrawn by borrower
 
-import {BN, expectEvent, expectRevert, time} from 'openzeppelin-test-helpers';
-
 const {expect} = require('chai');
+
+import {BN, expectEvent, expectRevert, time} from 'openzeppelin-test-helpers';
 
 const Crowdloan = artifacts.require('Crowdloan');
 const PaymentToken = artifacts.require('StandaloneERC20');
 
-const {loanParams, paymentTokenParams} = require('../../testConstants');
-
+const {DECIMAL_SHIFT, loanParams, paymentTokenParams} = require('../../testConstants');
 const {revertEvm, snapShotEvm} = require('../../testHelpers');
 
 contract('Repayment', accounts => {
@@ -47,28 +46,100 @@ contract('Repayment', accounts => {
 
   /** TODO(Dan) */
   context('Repayment Functionality', async () => {
+    const nonBorrower = accounts[2];
     let contributor;
+
     beforeEach(async () => {
       contributor = {
         address: accounts[1],
-        value: new BN(150)
+        value: new BN(150).mul(DECIMAL_SHIFT)
       };
       await paymentToken.mint(contributor.address, contributor.value);
       await paymentToken.approve(crowdloan.address, contributor.value, {from: contributor.address});
     });
 
     context('Before crowdfund starts', async () => {
+      const bit = () => contributor.value.div(new BN(5));
+
       describe('Repayment Access', async () => {
-        xit('borrower should not be able to repay before crowdfund starts', async () => {});
-        xit('non-borrower should not be able to repay before crowdfund starts', async () => {});
+        it('borrower should not be able to repay before crowdfund starts', async () => {
+          await expectRevert.unspecified(
+            crowdloan.repay(bit(), {from: borrower}),
+            "Only after crowdfund end.");
+        });
+
+        it('non-borrower should not be able to repay before crowdfund starts', async () => {
+          await expectRevert.unspecified(
+            crowdloan.repay(bit(), {from: nonBorrower}),
+            "Only after crowdfund end.");
+
+          await expectRevert.unspecified(
+              crowdloan.repay(bit(), {from: contributor.address}),
+              "Only after crowdfund end.");
+        });
       });
+
       describe('Withdraw Repayment Access', async () => {
-        xit('lender should not be able to withdraw repayment before crowdfund starts', async () => {});
-        xit('non-lender should not be able to repayment before crowdfund starts', async () => {});
+
+        beforeEach(async () => {
+          await paymentToken.mint(borrower, bit());
+          await paymentToken.transfer(crowdloan.address, bit(), {
+            from: borrower
+          });
+
+          expect(
+            await crowdloan.crowdfundStart.call()
+          ).to.be.bignumber.equal(new BN(0));
+        });
+
+        it('borrower should not be able to withdraw repayment before crowdfund starts', async () => {
+          await expectRevert(
+              crowdloan.withdrawRepayment({from: borrower}),
+              "Only after crowdfund end.");
+        });
+
+        it('lender should not be able to withdraw repayment before crowdfund starts', async () => {
+          await expectRevert(
+              crowdloan.withdrawRepayment({from: contributor.address}),
+              "Only after crowdfund end.");
+        });
+        it('non-lender should not be able to withdraw repayment before crowdfund starts', async () => {
+          await expectRevert(
+              crowdloan.withdrawRepayment({from: nonBorrower}),
+              "Only after crowdfund end.");
+        });
       });
     });
 
-    context('During crowdfund', async () => {});
+    context('During crowdfund', async () => {
+      const bit = () => contributor.value.div(new BN(5));
+
+      beforeEach(async () => {
+        await crowdloan.startCrowdfund({from: borrower});
+        await crowdloan.fund(bit(), {from: contributor.address});
+
+        expect(
+          await crowdloan.crowdfundStart.call()
+        ).to.be.bignumber.gt(new BN(0));
+      });
+
+      it('borrower should not be able to withdraw repayment during crowdfund', async () => {
+        await expectRevert(
+            crowdloan.withdrawRepayment({from: borrower}),
+            "Only after crowdfund end.");
+      });
+
+      it('lender should not be able to withdraw repayment during crowdfund', async () => {
+        await expectRevert(
+            crowdloan.withdrawRepayment({from: contributor.address}),
+            "Only after crowdfund end.");
+      });
+      it('non-lender should not be able to withdraw repayment during crowdfund', async () => {
+        await expectRevert(
+            crowdloan.withdrawRepayment({from: nonBorrower}),
+            "Only after crowdfund end.");
+      });
+    });
 
     context('After crowdfund ends', async () => {});
 
