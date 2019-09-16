@@ -14,9 +14,12 @@ const {expect} = require('chai');
 const Crowdloan = artifacts.require('Crowdloan');
 const PaymentToken = artifacts.require('StandaloneERC20');
 
-const {loanParams, paymentTokenParams} = require('../../testConstants');
+const {DECIMAL_SHIFT, loanParams, paymentTokenParams} = require('../../testConstants');
 
-const {revertEvm, snapShotEvm} = require('../../testHelpers');
+const getLastBlockTime = async () => {
+    await time.advanceBlock();
+    return await time.latest();
+}
 
 contract('Crowdloan', accounts => {
   let crowdloan;
@@ -46,6 +49,7 @@ contract('Crowdloan', accounts => {
   });
 
   it('Crowdloan should deploy successfully', async () => {
+    assert.exists(crowdloan.address, 'Crowdloan was not successfully deployed');
     expect(await crowdloan.borrower.call()).to.equal(borrower);
     assert.exists(crowdloan.address, 'Crowdloan was not successfully deployed');
   });
@@ -57,7 +61,7 @@ contract('Crowdloan', accounts => {
   it('should not allow non-borrower to start crowdfund', async () => {
     await expectRevert.unspecified(
       crowdloan.startCrowdfund({from: accounts[4]}),
-      'Only borrower can start crowdfund'
+      'Only the borrower can call function.'
     );
   });
 
@@ -71,14 +75,16 @@ contract('Crowdloan', accounts => {
 
     await expectRevert.unspecified(
       crowdloan.startCrowdfund({from: borrower}),
-      'KickOff already passed'
+      'Only before crowdfund start'
     );
   });
 
-  xit('should register correct start time', async () => {
+  it('should register correct start time', async () => {
+    await crowdloan.startCrowdfund({from: borrower});
+    const now = await getLastBlockTime();
     expect(
-      (await crowdloan.getCrowdfundParams.call())[1] // crowdfundStart
-    ).to.be.bignumber.gt(new BN(time));
+      await crowdloan.crowdfundStart.call() // crowdfundStart
+    ).to.be.bignumber.gte(new BN(now));
   });
 
   /** TODO(Dan) */
@@ -97,15 +103,13 @@ contract('Crowdloan', accounts => {
       it('should fail to fund before crowdfund starts', async () => {
         await expectRevert.unspecified(
           crowdloan.fund(contributor.value, {from: contributor.address}),
-          'Crowdfund not yet started'
+          'Only after crowdfund start'
         );
       });
     });
 
     describe('after crowdfund starts', async () => {
-      let time;
       beforeEach(async () => {
-        time = Math.floor(new Date().getTime / 1000);
         await crowdloan.startCrowdfund({from: borrower});
         await paymentToken.mint(contributor.address, new BN(loanParams.principalRequested));
         await paymentToken.approve(crowdloan.address, new BN(loanParams.principalRequested), {
@@ -142,25 +146,27 @@ contract('Crowdloan', accounts => {
         });
       });
 
-      it('should successfully fund valid value equal to principal requested', async () => {
-        const amount = new BN(loanParams.principalRequested);
-        const tx = await crowdloan.fund(amount, {from: contributor.address});
-
-        expectEvent.inLogs(tx.logs, 'Fund', {
-          sender: contributor.address,
-          amount: amount
-        });
-      });
-
       it('should not allow to fund with amount exceeding capital', async () => {
         const amount = new BN(loanParams.principalRequested).mul(new BN(2));
+        await paymentToken.mint(contributor.address, new BN(loanParams.principalRequested));
+        await paymentToken.approve(crowdloan.address, amount, {
+          from: contributor.address
+        });
+
         await expectRevert.unspecified(
-          crowdloan.fund(new BN(loanParams.principalRequested), {from: contributor.address}),
-          'Amount exceeds capital'
+          crowdloan.fund(new BN(amount), {from: contributor.address}),
+          'Your contribution would exceed the total amount requested.'
         );
       });
 
-      xit('should not allow to fund after crowdfund is complete', async () => {});
+      it('should not allow to fund after crowdfund is complete', async () => {
+        await time.increase(loanParams.crowdfundLength + 1);
+
+        await expectRevert.unspecified(
+          crowdloan.fund(new BN(loanParams.principalRequested), {from: contributor.address}),
+          'Only before crowdfund end'
+        );
+      });
     });
   });
 
@@ -172,56 +178,109 @@ contract('Crowdloan', accounts => {
     const lender = accounts[3];
 
     context('Before crowdfund', async () => {
-      beforeEach(async () => {});
-      xit('borrower should not be able to withdraw before crowdfund starts', async () => {
-        await expectRevert.unspecified(crowdloan.withdrawPrincipal({from: borrower}));
+      const amount = new BN(100).mul(DECIMAL_SHIFT);
+
+      beforeEach(async () => {
+        await paymentToken.mint(lender, amount);
+        await paymentToken.transfer(crowdloan.address, amount, {
+          from: lender
+        });
+
+        expect(
+          await paymentToken.balanceOf.call(crowdloan.address)
+        ).to.be.bignumber.gt(new BN(0));
+        expect(
+          await crowdloan.crowdfundStart.call()
+        ).to.be.bignumber.equal(new BN(0));
+      });
+      it('borrower should be able to withdraw before crowdfund starts', async () => {
+          const tx = await crowdloan.withdrawPrincipal(amount, {from: borrower});
+
+          expectEvent.inLogs(tx.logs, 'WithdrawPrincipal', {
+            borrower,
+            amount: amount
+          });
       });
 
-      xit('non-borrower should not be able to withdraw before crowdfund starts', async () => {
-        await expectRevert.unspecified(crowdloan.withdrawPrincipal({from: borrower}));
+      it('non-borrower should not be able to withdraw before crowdfund starts', async () => {
+        await expectRevert.unspecified(
+          crowdloan.withdrawPrincipal(amount, {from: nonBorrower}),
+          "Only the borrower can call function.");
       });
-      xit('lender should not be able to withdraw before crowdfund starts', async () => {});
-    });
 
-    beforeEach(async () => {
-      await crowdloan.startCrowdfund({from: borrower});
-      await paymentToken.mint(contributor.address, new BN(loanParams.principalRequested));
-      await paymentToken.approve(crowdloan.address, new BN(loanParams.principalRequested), {
-        from: contributor.address
+      it('lender should not be able to withdraw before crowdfund starts', async () => {
+        await expectRevert.unspecified(
+          crowdloan.withdrawPrincipal(amount, {from: lender}),
+          "Only the borrower can call function.");
       });
     });
 
     context('During crowdfund', async () => {
-      xit('non-borrower should not be able to withdraw before crowdfund ends', async () => {
-        await expectRevert.unspecified(crowdloan.withdrawPrincipal({from: borrower}));
+      const value = new BN(loanParams.principalRequested);
+
+      beforeEach(async () => {
+        await crowdloan.startCrowdfund({from: borrower});
+        await paymentToken.mint(lender, value);
+        await paymentToken.approve(crowdloan.address, value, {
+          from: lender
+        });
+        await crowdloan.fund(value, {from: lender});
       });
-      xit('lender should not be able to withdraw before crowdfund ends', async () => {});
-      xit('borrower should not be able to withdraw before crowdfund ends', async () => {
-        await expectRevert.unspecified(crowdloan.withdrawPrincipal({from: borrower}));
+
+      it('non-borrower should not be able to withdraw before crowdfund ends', async () => {
+        await expectRevert.unspecified(
+          crowdloan.withdrawPrincipal(value, {from: nonBorrower}),
+          "Only the borrower can call function.");
+      });
+
+      it('lender should not be able to withdraw before crowdfund ends', async () => {
+        await expectRevert.unspecified(
+          crowdloan.withdrawPrincipal(value, {from: lender}),
+          "Only the borrower can call function.");
+      });
+
+      it('borrower should be able to withdraw before crowdfund ends', async () => {
+        const tx = await crowdloan.withdrawPrincipal(value, {from: borrower});
+
+        expectEvent.inLogs(tx.logs, 'WithdrawPrincipal', {
+          borrower,
+          amount: value
+        });
       });
     });
 
     context('After crowdfund', async () => {
+      const value = new BN(loanParams.principalRequested);
+
       beforeEach(async () => {
         await crowdloan.startCrowdfund({from: borrower});
-        await paymentToken.mint(contributor.address, new BN(loanParams.principalRequested));
+        await paymentToken.mint(lender, new BN(loanParams.principalRequested));
         await paymentToken.approve(crowdloan.address, new BN(loanParams.principalRequested), {
-          from: contributor.address
+          from: lender
         });
+        await crowdloan.fund(value, {from: lender});
+        await time.increase(loanParams.crowdfundLength + 1);
       });
 
-      xit('non-borrower should not be able to withdraw after crowdfund ends', async () => {
-        await expectRevert.unspecified(crowdloan.withdrawPrincipal({from: nonBorrower}));
+      it('non-borrower should not be able to withdraw after crowdfund ends', async () => {
+        await expectRevert.unspecified(
+          crowdloan.withdrawPrincipal(value, {from: nonBorrower}),
+          "Only the borrower can call function.");
       });
-      xit('lender should not be able to withdraw after crowdfund ends', async () => {});
-      xit('borrower should be able to withdraw after crowdfund ends', async () => {
-        await crowdloan.withdrawPrincipal({from: borrower});
+
+      it('lender should not be able to withdraw after crowdfund ends', async () => {
+        await expectRevert.unspecified(
+          crowdloan.withdrawPrincipal(value, {from: lender}),
+          "Only the borrower can call function.");
       });
-      xit('should register event', async () => {
-        await crowdloan.withdrawPrincipal({from: borrower});
-      });
-      xit('should update state variables', async () => {
-        await crowdloan.withdrawPrincipal({from: borrower});
+
+      it('borrower should be able to withdraw after crowdfund ends', async () => {
+        const tx = await crowdloan.withdrawPrincipal(value, {from: borrower});
+
+        expectEvent.inLogs(tx.logs, 'WithdrawPrincipal', {
+          borrower,
+          amount: value
+        });
       });
     });
   });
