@@ -23,6 +23,12 @@ contract('Repayment', accounts => {
 
   const borrower = accounts[0];
 
+  const expectedWithdrawal = (shares, previousRelease, payment, totalShares) =>
+    shares
+      .mul(payment)
+      .div(totalShares)
+      .sub(previousRelease);
+
   beforeEach(async () => {
     paymentToken = await PaymentToken.new();
     await paymentToken.initialize(
@@ -44,7 +50,6 @@ contract('Repayment', accounts => {
     );
   });
 
-  /** TODO(Dan) */
   context('Repayment Functionality', async () => {
     const nonBorrower = accounts[2];
     let contributor;
@@ -93,18 +98,19 @@ contract('Repayment', accounts => {
         });
 
         it('borrower should not be able to withdraw repayment before crowdfund starts', async () => {
-          await expectRevert(
+          await expectRevert.unspecified(
               crowdloan.withdrawRepayment({from: borrower}),
               "Only after crowdfund end.");
         });
 
         it('lender should not be able to withdraw repayment before crowdfund starts', async () => {
-          await expectRevert(
+          await expectRevert.unspecified(
               crowdloan.withdrawRepayment({from: contributor.address}),
               "Only after crowdfund end.");
         });
+
         it('non-lender should not be able to withdraw repayment before crowdfund starts', async () => {
-          await expectRevert(
+          await expectRevert.unspecified(
               crowdloan.withdrawRepayment({from: nonBorrower}),
               "Only after crowdfund end.");
         });
@@ -124,43 +130,139 @@ contract('Repayment', accounts => {
       });
 
       it('borrower should not be able to withdraw repayment during crowdfund', async () => {
-        await expectRevert(
+        await expectRevert.unspecified(
             crowdloan.withdrawRepayment({from: borrower}),
             "Only after crowdfund end.");
       });
 
       it('lender should not be able to withdraw repayment during crowdfund', async () => {
-        await expectRevert(
+        await expectRevert.unspecified(
             crowdloan.withdrawRepayment({from: contributor.address}),
             "Only after crowdfund end.");
       });
+
       it('non-lender should not be able to withdraw repayment during crowdfund', async () => {
-        await expectRevert(
+        await expectRevert.unspecified(
             crowdloan.withdrawRepayment({from: nonBorrower}),
             "Only after crowdfund end.");
       });
     });
 
-    context('After crowdfund ends', async () => {});
+    context('After crowdfund ends', async () => {
+      const bit = () => contributor.value.div(new BN(5));
+
+      beforeEach(async () => {
+        await crowdloan.startCrowdfund({from: borrower});
+        await crowdloan.fund(bit(), {from: contributor.address});
+        await crowdloan.withdrawPrincipal(bit(), {from: borrower});
+
+        await time.increase(loanParams.crowdfundLength + 1);
+
+        await paymentToken.approve(crowdloan.address, bit(), {
+          from: borrower
+        });
+        await crowdloan.repay(bit(), {from: borrower})
+      });
+
+      it('borrower should not be able to withdraw repayment after crowdfund', async () => {
+        await expectRevert(
+            crowdloan.withdrawPrincipal(new BN(1), {from: borrower}),
+            "Withdrawal will lead to repayment inbalance");
+      });
+
+      it('borrower should not be able to withdraw principal from amountRepaid after crowdfund', async () => {
+        await expectRevert.unspecified(
+            crowdloan.withdrawRepayment({from: borrower}),
+            "Withdrawal amount cannot be zero");
+      });
+
+      it('non-lender should not be able to withdraw repayment after crowdfund', async () => {
+        await expectRevert.unspecified(
+            crowdloan.withdrawRepayment({from: nonBorrower}),
+            "Only after crowdfund end.");
+      });
+
+      it('lender should be able to withdraw repayment after crowdfund', async () => {
+        const totalContributed = await crowdloan.totalContributed.call();
+        const amountContributed = await crowdloan.amountContributed.call(contributor.address);
+        const previousWithdrawal = await crowdloan.repaymentWithdrawn.call(contributor.address);
+        const dueWithdrawal = expectedWithdrawal(amountContributed, previousWithdrawal, bit(), totalContributed);
+
+        const tx = await crowdloan.withdrawRepayment({from: contributor.address});
+
+        expectEvent.inLogs(tx.logs, 'WithdrawRepayment', {
+          lender: contributor.address,
+          amount: dueWithdrawal
+        });
+      });
+    });
 
     context('repay function', async () => {
-      beforeEach(async () => {});
+      const bit = () => contributor.value.div(new BN(4));
+
+      beforeEach(async () => {
+          await crowdloan.startCrowdfund({from: borrower});
+          await crowdloan.fund(contributor.value, {from: contributor.address});
+          await crowdloan.withdrawPrincipal(contributor.value, {from: borrower});
+
+          await time.increase(loanParams.crowdfundLength + 1);
+          await paymentToken.approve(crowdloan.address, contributor.value, {
+            from: borrower
+          });
+      });
 
       context('Case: borrower repays', async () => {
-        beforeEach(async () => {});
-        xit('borrower should be able to repay after crowdfund ends', async () => {});
+        it('borrower should be able to repay after crowdfund ends', async () => {
+          const tx = await crowdloan.repay(bit(), {from: borrower});
+
+          expectEvent.inLogs(tx.logs, 'Repay', {
+            amount: bit()
+          });
+          await expectEvent.inTransaction(tx.tx, PaymentToken, 'Transfer', {
+            from: borrower,
+            to: crowdloan.address,
+            value: bit()
+          });
+        });
 
         describe('Repay Logic', async () => {
-          xit('repayment should be recorded successfully', async () => {});
-          xit('should register event', async () => {});
-          xit('lender should be able to withdraw proportional share', async () => {});
-          xit('non-lender should be not able to withdraw proportional share', async () => {});
+          beforeEach(async () => {
+            await crowdloan.repay(bit(), {from: borrower});
+          });
+
+          it('repayment should be recorded successfully', async () => {
+            expect(
+              await crowdloan.amountRepaid.call()
+            ).to.be.bignumber.equal(bit());
+          });
+
+          it('lender should be able to withdraw proportional share', async () => {
+            const totalContributed = await crowdloan.totalContributed.call();
+            const amountContributed = await crowdloan.amountContributed.call(contributor.address);
+            const previousWithdrawal = await crowdloan.repaymentWithdrawn.call(contributor.address);
+            const dueWithdrawal = expectedWithdrawal(amountContributed, previousWithdrawal, bit(), totalContributed);
+
+            const tx = await crowdloan.withdrawRepayment({from: contributor.address});
+
+            expectEvent.inLogs(tx.logs, 'WithdrawRepayment', {
+              lender: contributor.address,
+              amount: dueWithdrawal
+            });
+          });
+
+          it('non-lender should be not able to withdraw proportional share', async () => {
+            await expectRevert.unspecified(
+                crowdloan.withdrawRepayment({from: nonBorrower}),
+                "Only after crowdfund end.");
+          });
         });
       });
 
       context('Case: non-borrower repays', async () => {
         beforeEach(async () => {});
-        xit('non-borrower should be able to repay before crowdfund starts', async () => {});
+        xit('non-borrower should not be able to repay before crowdfund starts', async () => {
+
+        });
         xit('non-borrower should not be able to repay before crowdfund ends', async () => {});
         xit('non-borrower should not be able to repay after crowdfund ends', async () => {});
         xit('should register event', async () => {});
