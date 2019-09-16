@@ -187,14 +187,19 @@ contract('Crowdloan', accounts => {
         });
 
         expect(
+          await paymentToken.balanceOf.call(crowdloan.address)
+        ).to.be.bignumber.gt(new BN(0));
+        expect(
           await crowdloan.crowdfundStart.call()
         ).to.be.bignumber.equal(new BN(0));
       });
-      it('borrower should not be able to withdraw before crowdfund starts', async () => {
-        await expectRevert.unspecified(
-          crowdloan.withdrawPrincipal(amount, {from: borrower}),
-          "Only after crowdfund start"
-        );
+      it('borrower should be able to withdraw before crowdfund starts', async () => {
+          const tx = await crowdloan.withdrawPrincipal(amount, {from: borrower});
+
+          expectEvent.inLogs(tx.logs, 'WithdrawPrincipal', {
+            borrower,
+            amount: amount
+          });
       });
 
       it('non-borrower should not be able to withdraw before crowdfund starts', async () => {

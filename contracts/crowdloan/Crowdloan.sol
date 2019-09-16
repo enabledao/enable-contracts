@@ -26,6 +26,7 @@ contract Crowdloan is Initializable {
     // Repayment tracking
     uint256 public amountRepaid;
     mapping(address => uint256) public repaymentWithdrawn;
+    uint256 public totalRepaymentWithdrawn;
 
     // Events
     event Fund(address sender, uint256 amount);
@@ -72,12 +73,18 @@ contract Crowdloan is Initializable {
     /// This DOES NOT affect the total principal that can be raised or the loan terms, it merely provides cash flow.
     function withdrawPrincipal(uint256 amount) external {
         _onlyBorrower();
-        _onlyAfterCrowdfundStart();
 
         // FIX DONATIONS!
         uint256 tokenBalance = token.balanceOf(address(this));
 
         require(amount <= tokenBalance, "Insufficent tokens to withdraw");
+
+        if (amountRepaid > 0) {
+          require(
+            tokenBalance.sub(amount) >= amountRepaid.sub(totalRepaymentWithdrawn),
+            "Withdrawal will lead to repayment inbalance"
+          );
+        }
 
         token.safeTransfer(msg.sender, amount);
 
@@ -105,6 +112,7 @@ contract Crowdloan is Initializable {
         require(amount > 0, "Withdrawal amount cannot be zero");
 
         repaymentWithdrawn[msg.sender] = totalOwed;
+        totalRepaymentWithdrawn = totalRepaymentWithdrawn.add(amount);
 
         token.safeTransfer(msg.sender, amount);
 
