@@ -1,11 +1,11 @@
 {
   "contracts": {
-    "RepaymentManager": {
-      "address": "0xd20BEba18ECa8CC89a1506875bD2d09d021a4696",
-      "constructorCode": "608060405234801561001057600080fd5b50612031806100206000396000f3fe",
-      "bodyBytecodeHash": "f530ce1e9f117f6b1ff883788418747b21dac00302a0b299fca2d1b279854abb",
-      "localBytecodeHash": "200a155b95b2d0059061f974f6c5853443f4d327f2b609759cb7f7860c84c15b",
-      "deployedBytecodeHash": "200a155b95b2d0059061f974f6c5853443f4d327f2b609759cb7f7860c84c15b",
+    "CrowdloanFactory": {
+      "address": "0xC62e18fc7A13b2824252266DC9EA24ED384938a8",
+      "constructorCode": "60806040523480156100115760006000fd5b50610017565b61086a806100266000396000f3fe",
+      "bodyBytecodeHash": "5da01c7a884f5d7ab0851ad1f0695ef229bf064bf2ff3ebd2ec6178c167dee2f",
+      "localBytecodeHash": "b61c9a9f40a5cfeec4bc34a3f0daa6ef8e381968cb0ba98d606dc9a43d09e949",
+      "deployedBytecodeHash": "b61c9a9f40a5cfeec4bc34a3f0daa6ef8e381968cb0ba98d606dc9a43d09e949",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -24,31 +24,6 @@
           "kind": "array",
           "label": "uint256[50]"
         },
-        "t_struct<Roles.Role>": {
-          "id": "t_struct<Roles.Role>",
-          "kind": "struct",
-          "label": "Roles.Role",
-          "members": [
-            {
-              "label": "bearer",
-              "astId": 3944,
-              "type": "t_mapping<t_bool>",
-              "src": "150:32:12"
-            }
-          ]
-        },
-        "t_mapping<t_bool>": {
-          "id": "t_mapping<t_bool>",
-          "valueType": "t_bool",
-          "label": "mapping(key => bool)",
-          "kind": "mapping"
-        },
-        "t_mapping<t_uint256>": {
-          "id": "t_mapping<t_uint256>",
-          "valueType": "t_uint256",
-          "label": "mapping(key => uint256)",
-          "kind": "mapping"
-        },
         "t_address": {
           "id": "t_address",
           "kind": "elementary",
@@ -60,81 +35,33 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5801,
+          "astId": 2507,
           "type": "t_bool",
-          "src": "757:24:27"
+          "src": "757:24:18"
         },
         {
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5803,
+          "astId": 2509,
           "type": "t_bool",
-          "src": "876:25:27"
+          "src": "876:25:18"
         },
         {
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 5859,
+          "astId": 2565,
           "type": "t_array:50<t_uint256>",
-          "src": "1951:29:27"
+          "src": "1951:29:18"
         },
         {
-          "contract": "ControllerRole",
-          "path": "contracts/access/ControllerRole.sol",
-          "label": "_minters",
-          "astId": 22,
-          "type": "t_struct<Roles.Role>",
-          "src": "416:27:0"
-        },
-        {
-          "contract": "ControllerRole",
-          "path": "contracts/access/ControllerRole.sol",
-          "label": "______gap",
-          "astId": 100,
-          "type": "t_array:50<t_uint256>",
-          "src": "1048:29:0"
-        },
-        {
-          "contract": "RepaymentManager",
-          "path": "contracts/debt-contracts/RepaymentManager.sol",
-          "label": "_totalShares",
-          "astId": 688,
-          "type": "t_uint256",
-          "src": "798:28:2"
-        },
-        {
-          "contract": "RepaymentManager",
-          "path": "contracts/debt-contracts/RepaymentManager.sol",
-          "label": "_totalReleased",
-          "astId": 690,
-          "type": "t_uint256",
-          "src": "832:30:2"
-        },
-        {
-          "contract": "RepaymentManager",
-          "path": "contracts/debt-contracts/RepaymentManager.sol",
-          "label": "_shares",
-          "astId": 694,
-          "type": "t_mapping<t_uint256>",
-          "src": "869:43:2"
-        },
-        {
-          "contract": "RepaymentManager",
-          "path": "contracts/debt-contracts/RepaymentManager.sol",
-          "label": "_released",
-          "astId": 698,
-          "type": "t_mapping<t_uint256>",
-          "src": "918:45:2"
-        },
-        {
-          "contract": "RepaymentManager",
-          "path": "contracts/debt-contracts/RepaymentManager.sol",
-          "label": "termsContract",
-          "astId": 700,
+          "contract": "CrowdloanFactory",
+          "path": "contracts/factory/CrowdloanFactory.sol",
+          "label": "app",
+          "astId": 406,
           "type": "t_address",
-          "src": "970:35:2"
+          "src": "627:14:1"
         }
       ],
       "warnings": {
@@ -146,134 +73,11 @@
       }
     },
     "Crowdloan": {
-      "address": "0x9C8826dD617740fEEDEE66521569aaADa9CE9035",
-      "constructorCode": "608060405234801561001057600080fd5b50612cf2806100206000396000f3fe",
-      "bodyBytecodeHash": "32fccd51ef870ffee1034114a7e6278caa246d40ac0d4966c76e7ea477c3336d",
-      "localBytecodeHash": "c51c790ae9f3335938bfcba50b095d1ed828c9bf13878071f23831e93ae77028",
-      "deployedBytecodeHash": "c51c790ae9f3335938bfcba50b095d1ed828c9bf13878071f23831e93ae77028",
-      "types": {
-        "t_bool": {
-          "id": "t_bool",
-          "kind": "elementary",
-          "label": "bool"
-        },
-        "t_uint256": {
-          "id": "t_uint256",
-          "kind": "elementary",
-          "label": "uint256"
-        },
-        "t_array:50<t_uint256>": {
-          "id": "t_array:50<t_uint256>",
-          "valueType": "t_uint256",
-          "length": "50",
-          "kind": "array",
-          "label": "uint256[50]"
-        },
-        "t_struct<Crowdloan.CrowdfundParams>": {
-          "id": "t_struct<Crowdloan.CrowdfundParams>",
-          "kind": "struct",
-          "label": "Crowdloan.CrowdfundParams",
-          "members": [
-            {
-              "label": "crowdfundLength",
-              "astId": 132,
-              "type": "t_uint256",
-              "src": "786:23:1"
-            },
-            {
-              "label": "crowdfundStart",
-              "astId": 134,
-              "type": "t_uint256",
-              "src": "819:22:1"
-            }
-          ]
-        },
-        "t_address": {
-          "id": "t_address",
-          "kind": "elementary",
-          "label": "address"
-        }
-      },
-      "storage": [
-        {
-          "contract": "Initializable",
-          "path": "zos-lib/contracts/Initializable.sol",
-          "label": "initialized",
-          "astId": 5801,
-          "type": "t_bool",
-          "src": "757:24:27"
-        },
-        {
-          "contract": "Initializable",
-          "path": "zos-lib/contracts/Initializable.sol",
-          "label": "initializing",
-          "astId": 5803,
-          "type": "t_bool",
-          "src": "876:25:27"
-        },
-        {
-          "contract": "Initializable",
-          "path": "zos-lib/contracts/Initializable.sol",
-          "label": "______gap",
-          "astId": 5859,
-          "type": "t_array:50<t_uint256>",
-          "src": "1951:29:27"
-        },
-        {
-          "contract": "ReentrancyGuard",
-          "path": "openzeppelin-eth/contracts/utils/ReentrancyGuard.sol",
-          "label": "_guardCounter",
-          "astId": 5764,
-          "type": "t_uint256",
-          "src": "415:29:26"
-        },
-        {
-          "contract": "ReentrancyGuard",
-          "path": "openzeppelin-eth/contracts/utils/ReentrancyGuard.sol",
-          "label": "______gap",
-          "astId": 5796,
-          "type": "t_array:50<t_uint256>",
-          "src": "1210:29:26"
-        },
-        {
-          "contract": "Crowdloan",
-          "path": "contracts/crowdloan/Crowdloan.sol",
-          "label": "crowdfundParams",
-          "astId": 137,
-          "type": "t_struct<Crowdloan.CrowdfundParams>",
-          "src": "854:31:1"
-        },
-        {
-          "contract": "Crowdloan",
-          "path": "contracts/crowdloan/Crowdloan.sol",
-          "label": "termsContract",
-          "astId": 139,
-          "type": "t_address",
-          "src": "892:35:1"
-        },
-        {
-          "contract": "Crowdloan",
-          "path": "contracts/crowdloan/Crowdloan.sol",
-          "label": "repaymentManager",
-          "astId": 141,
-          "type": "t_address",
-          "src": "933:41:1"
-        }
-      ],
-      "warnings": {
-        "hasConstructor": false,
-        "hasSelfDestruct": false,
-        "hasDelegateCall": false,
-        "hasInitialValuesInDeclarations": false,
-        "uninitializedBaseContracts": []
-      }
-    },
-    "CrowdloanFactory": {
-      "address": "0x354711463CD68065c6c866Fe80bD07C4e0f2aDf8",
-      "constructorCode": "608060405234801561001057600080fd5b506113cb806100206000396000f3fe",
-      "bodyBytecodeHash": "372b7ded17386331f4b524e1e0958364987c4c208689a5df7fcea0b33940ec93",
-      "localBytecodeHash": "adc7a9f7d36d65778651d32865879bf01c8cd06b6cbcae84f472b0a3c839f24e",
-      "deployedBytecodeHash": "adc7a9f7d36d65778651d32865879bf01c8cd06b6cbcae84f472b0a3c839f24e",
+      "address": "0xAA9A6532e925c4A3f29b22065562427615b21319",
+      "constructorCode": "60806040523480156100115760006000fd5b50610017565b6118fd806100266000396000f3fe",
+      "bodyBytecodeHash": "44afdad7fd3aa82cf06d5602677c48876efb8bd669d0d149859019230c6da746",
+      "localBytecodeHash": "a3618f01ca838fae2e7205f4365ac86476f09b951d91c8e06a0ab41fa57c7cf7",
+      "deployedBytecodeHash": "a3618f01ca838fae2e7205f4365ac86476f09b951d91c8e06a0ab41fa57c7cf7",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -296,177 +100,17 @@
           "id": "t_address",
           "kind": "elementary",
           "label": "address"
-        }
-      },
-      "storage": [
-        {
-          "contract": "Initializable",
-          "path": "zos-lib/contracts/Initializable.sol",
-          "label": "initialized",
-          "astId": 5801,
-          "type": "t_bool",
-          "src": "757:24:27"
         },
-        {
-          "contract": "Initializable",
-          "path": "zos-lib/contracts/Initializable.sol",
-          "label": "initializing",
-          "astId": 5803,
-          "type": "t_bool",
-          "src": "876:25:27"
-        },
-        {
-          "contract": "Initializable",
-          "path": "zos-lib/contracts/Initializable.sol",
-          "label": "______gap",
-          "astId": 5859,
-          "type": "t_array:50<t_uint256>",
-          "src": "1951:29:27"
-        },
-        {
-          "contract": "CrowdloanFactory",
-          "path": "contracts/factory/CrowdloanFactory.sol",
-          "label": "app",
-          "astId": 1609,
-          "type": "t_address",
-          "src": "662:14:5"
-        }
-      ],
-      "warnings": {
-        "hasConstructor": false,
-        "hasSelfDestruct": false,
-        "hasDelegateCall": false,
-        "hasInitialValuesInDeclarations": false,
-        "uninitializedBaseContracts": []
-      }
-    },
-    "TermsContract": {
-      "address": "0x6d9E1AAd0d086659b2e8e948268EdbE0d5752978",
-      "constructorCode": "608060405234801561001057600080fd5b50611aec806100206000396000f3fe",
-      "bodyBytecodeHash": "0e9b881df2bbc8d528edae193534d22acfe59e4a1348877cca891819d0aa1365",
-      "localBytecodeHash": "e23c7a5395fa0038717a40e8dba9c36d8b1369ea6303abde53c336804a948619",
-      "deployedBytecodeHash": "e23c7a5395fa0038717a40e8dba9c36d8b1369ea6303abde53c336804a948619",
-      "types": {
-        "t_bool": {
-          "id": "t_bool",
+        "t_string": {
+          "id": "t_string",
           "kind": "elementary",
-          "label": "bool"
+          "label": "string"
         },
-        "t_uint256": {
-          "id": "t_uint256",
-          "kind": "elementary",
-          "label": "uint256"
-        },
-        "t_array:50<t_uint256>": {
-          "id": "t_array:50<t_uint256>",
+        "t_mapping<t_uint256>": {
+          "id": "t_mapping<t_uint256>",
           "valueType": "t_uint256",
-          "length": "50",
-          "kind": "array",
-          "label": "uint256[50]"
-        },
-        "t_struct<Roles.Role>": {
-          "id": "t_struct<Roles.Role>",
-          "kind": "struct",
-          "label": "Roles.Role",
-          "members": [
-            {
-              "label": "bearer",
-              "astId": 3944,
-              "type": "t_mapping<t_bool>",
-              "src": "150:32:12"
-            }
-          ]
-        },
-        "t_mapping<t_bool>": {
-          "id": "t_mapping<t_bool>",
-          "valueType": "t_bool",
-          "label": "mapping(key => bool)",
+          "label": "mapping(key => uint256)",
           "kind": "mapping"
-        },
-        "t_struct<TermsContractLib.LoanParams>": {
-          "id": "t_struct<TermsContractLib.LoanParams>",
-          "kind": "struct",
-          "label": "TermsContractLib.LoanParams",
-          "members": [
-            {
-              "label": "borrower",
-              "astId": 1564,
-              "type": "t_address",
-              "src": "319:16:4"
-            },
-            {
-              "label": "principalToken",
-              "astId": 1566,
-              "type": "t_address",
-              "src": "345:22:4"
-            },
-            {
-              "label": "principalRequested",
-              "astId": 1568,
-              "type": "t_uint256",
-              "src": "377:26:4"
-            },
-            {
-              "label": "loanStatus",
-              "astId": 1570,
-              "type": "t_enum<TermsContractLib.LoanStatus>",
-              "src": "413:21:4"
-            },
-            {
-              "label": "loanPeriod",
-              "astId": 1572,
-              "type": "t_uint256",
-              "src": "444:18:4"
-            },
-            {
-              "label": "interestRate",
-              "astId": 1574,
-              "type": "t_uint256",
-              "src": "472:20:4"
-            },
-            {
-              "label": "minimumRepayment",
-              "astId": 1576,
-              "type": "t_uint256",
-              "src": "526:24:4"
-            },
-            {
-              "label": "maximumRepayment",
-              "astId": 1578,
-              "type": "t_uint256",
-              "src": "560:24:4"
-            },
-            {
-              "label": "principalDisbursed",
-              "astId": 1580,
-              "type": "t_uint256",
-              "src": "594:26:4"
-            },
-            {
-              "label": "loanStartTimestamp",
-              "astId": 1582,
-              "type": "t_uint256",
-              "src": "630:26:4"
-            }
-          ]
-        },
-        "t_address": {
-          "id": "t_address",
-          "kind": "elementary",
-          "label": "address"
-        },
-        "t_enum<TermsContractLib.LoanStatus>": {
-          "id": "t_enum<TermsContractLib.LoanStatus>",
-          "kind": "enum",
-          "label": "TermsContractLib.LoanStatus",
-          "members": [
-            "NOT_STARTED",
-            "FUNDING_STARTED",
-            "FUNDING_FAILED",
-            "FUNDING_COMPLETE",
-            "REPAYMENT_CYCLE",
-            "REPAYMENT_COMPLETE"
-          ]
         }
       },
       "storage": [
@@ -474,49 +118,121 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5801,
+          "astId": 2507,
           "type": "t_bool",
-          "src": "757:24:27"
+          "src": "757:24:18"
         },
         {
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5803,
+          "astId": 2509,
           "type": "t_bool",
-          "src": "876:25:27"
+          "src": "876:25:18"
         },
         {
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 5859,
+          "astId": 2565,
           "type": "t_array:50<t_uint256>",
-          "src": "1951:29:27"
+          "src": "1951:29:18"
         },
         {
-          "contract": "ControllerRole",
-          "path": "contracts/access/ControllerRole.sol",
-          "label": "_minters",
-          "astId": 22,
-          "type": "t_struct<Roles.Role>",
-          "src": "416:27:0"
+          "contract": "Crowdloan",
+          "path": "contracts/crowdloan/Crowdloan.sol",
+          "label": "crowdfundStart",
+          "astId": 15,
+          "type": "t_uint256",
+          "src": "375:29:0"
         },
         {
-          "contract": "ControllerRole",
-          "path": "contracts/access/ControllerRole.sol",
-          "label": "______gap",
-          "astId": 100,
-          "type": "t_array:50<t_uint256>",
-          "src": "1048:29:0"
+          "contract": "Crowdloan",
+          "path": "contracts/crowdloan/Crowdloan.sol",
+          "label": "crowdfundEnd",
+          "astId": 17,
+          "type": "t_uint256",
+          "src": "410:27:0"
         },
         {
-          "contract": "TermsContract",
-          "path": "contracts/debt-contracts/TermsContract.sol",
-          "label": "loanParams",
-          "astId": 1135,
-          "type": "t_struct<TermsContractLib.LoanParams>",
-          "src": "584:45:3"
+          "contract": "Crowdloan",
+          "path": "contracts/crowdloan/Crowdloan.sol",
+          "label": "crowdfundDuration",
+          "astId": 19,
+          "type": "t_uint256",
+          "src": "483:32:0"
+        },
+        {
+          "contract": "Crowdloan",
+          "path": "contracts/crowdloan/Crowdloan.sol",
+          "label": "borrower",
+          "astId": 21,
+          "type": "t_address",
+          "src": "521:23:0"
+        },
+        {
+          "contract": "Crowdloan",
+          "path": "contracts/crowdloan/Crowdloan.sol",
+          "label": "token",
+          "astId": 23,
+          "type": "t_address",
+          "src": "550:19:0"
+        },
+        {
+          "contract": "Crowdloan",
+          "path": "contracts/crowdloan/Crowdloan.sol",
+          "label": "principalRequested",
+          "astId": 25,
+          "type": "t_uint256",
+          "src": "575:33:0"
+        },
+        {
+          "contract": "Crowdloan",
+          "path": "contracts/crowdloan/Crowdloan.sol",
+          "label": "loanMetadataUrl",
+          "astId": 27,
+          "type": "t_string",
+          "src": "614:29:0"
+        },
+        {
+          "contract": "Crowdloan",
+          "path": "contracts/crowdloan/Crowdloan.sol",
+          "label": "amountContributed",
+          "astId": 31,
+          "type": "t_mapping<t_uint256>",
+          "src": "678:52:0"
+        },
+        {
+          "contract": "Crowdloan",
+          "path": "contracts/crowdloan/Crowdloan.sol",
+          "label": "totalContributed",
+          "astId": 33,
+          "type": "t_uint256",
+          "src": "736:31:0"
+        },
+        {
+          "contract": "Crowdloan",
+          "path": "contracts/crowdloan/Crowdloan.sol",
+          "label": "principalWithdrawn",
+          "astId": 35,
+          "type": "t_uint256",
+          "src": "773:33:0"
+        },
+        {
+          "contract": "Crowdloan",
+          "path": "contracts/crowdloan/Crowdloan.sol",
+          "label": "amountRepaid",
+          "astId": 37,
+          "type": "t_uint256",
+          "src": "839:27:0"
+        },
+        {
+          "contract": "Crowdloan",
+          "path": "contracts/crowdloan/Crowdloan.sol",
+          "label": "repaymentWithdrawn",
+          "astId": 41,
+          "type": "t_mapping<t_uint256>",
+          "src": "872:53:0"
         }
       ],
       "warnings": {
@@ -532,32 +248,32 @@
   "proxies": {
     "enable-credit/CrowdloanFactory": [
       {
-        "address": "0x71Aa62D1221551577fedB28e16aa8CeC4B71D6A1",
-        "version": "0.1.2-alpha.0",
-        "implementation": "0x354711463CD68065c6c866Fe80bD07C4e0f2aDf8",
-        "admin": "0x7A3319070104667B9ebf22f133A3a195aaFBFcc9",
+        "address": "0x3645A628377748d11BE55cc3c84C52CA14A4E3E0",
+        "version": "0.1.4-alpha.0",
+        "implementation": "0xC62e18fc7A13b2824252266DC9EA24ED384938a8",
+        "admin": "0xd91b2F3121AF2224a77F68dE3F031c68c4C9d443",
         "kind": "Upgradeable"
       }
     ]
   },
   "manifestVersion": "2.2",
-  "version": "0.1.2-alpha.0",
-  "app": {
-    "address": "0xc34b9cc098C4f45366AEDC47f9DF503Ce1996374"
-  },
-  "package": {
-    "address": "0x73F48FA5740cc115EAB838980F5eC0fbF348c9B2"
-  },
-  "provider": {
-    "address": "0xfE397b47dE84563894457868E117D8226fb97Ee4"
-  },
+  "version": "0.1.4-alpha.0",
   "dependencies": {
     "openzeppelin-eth": {
       "package": "0xb6f8f11b166d526932ee04ffe4d25b810f619e34",
       "version": "2.2.0"
     }
   },
+  "app": {
+    "address": "0x5de9d752519935C0D837Ae10bDD09446ae198d8C"
+  },
+  "package": {
+    "address": "0x49c6b84a49ACAAfCa72190042B8C3f3Cd4fe285b"
+  },
+  "provider": {
+    "address": "0x0DeA10ADC54ed0E7aBdD8c26A5E2e2B9D11Cb527"
+  },
   "proxyAdmin": {
-    "address": "0x7A3319070104667B9ebf22f133A3a195aaFBFcc9"
+    "address": "0xd91b2F3121AF2224a77F68dE3F031c68c4C9d443"
   }
 }
