@@ -18,6 +18,7 @@ contract CrowdloanFactory is Initializable {
     event LoanCreated(
         address indexed borrower,
         uint256 indexed principalRequested,
+        uint256 repaymentCap,
         address crowdloan,
         string loanMetadataUrl,
         address contractAdmin
@@ -35,6 +36,7 @@ contract CrowdloanFactory is Initializable {
         address borrower,
         IERC20 principalToken,
         uint256 principalRequested,
+        uint256 repaymentCap,
         uint256 crowdfundLength,
         string calldata loanMetadataUrl,
         address contractAdmin
@@ -45,10 +47,18 @@ contract CrowdloanFactory is Initializable {
             borrower,
             principalToken,
             principalRequested,
+            repaymentCap,
             crowdfundLength,
             loanMetadataUrl
         );
 
-        emit LoanCreated(borrower, principalRequested, crowdloan, loanMetadataUrl, contractAdmin);
+        emit LoanCreated(
+            borrower,
+            principalRequested,
+            repaymentCap,
+            crowdloan,
+            loanMetadataUrl,
+            contractAdmin
+        );
     }
 }

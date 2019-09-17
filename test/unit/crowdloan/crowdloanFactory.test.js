@@ -50,6 +50,7 @@ async function crowdloanFactoryUnitTests(accounts, loanParams, paymentTokenParam
       deployTx = await crowdloanFactory.deploy(
         paymentToken.address,
         loanParams.principalRequested.toString(),
+        loanParams.repaymentCap.toString(),
         loanParams.crowdfundLength.toString(),
         loanParams.loanMetadataURL,
         contractAdmin,

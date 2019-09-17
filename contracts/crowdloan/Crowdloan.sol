@@ -16,6 +16,7 @@ contract Crowdloan is Initializable {
     address public borrower;
     IERC20 public token;
     uint256 public principalRequested;
+    uint256 public repaymentCap;
     string public loanMetadataUrl;
 
     // Contributor tracking
@@ -39,6 +40,7 @@ contract Crowdloan is Initializable {
         address _borrower,
         IERC20 _token,
         uint256 _principalRequested,
+        uint256 _repaymentCap,
         uint256 _duration,
         string calldata _loanMetadataUrl
     ) external initializer {
@@ -47,6 +49,7 @@ contract Crowdloan is Initializable {
         token = _token;
         principalRequested = _principalRequested;
         loanMetadataUrl = _loanMetadataUrl;
+        repaymentCap = _repaymentCap;
     }
 
     /// @dev During the crowdfund, anyone can fund and get repayment rights in proportion to their contribution
@@ -80,10 +83,10 @@ contract Crowdloan is Initializable {
         require(amount <= tokenBalance, "Insufficent tokens to withdraw");
 
         if (amountRepaid > 0) {
-          require(
-            tokenBalance.sub(amount) >= amountRepaid.sub(totalRepaymentWithdrawn),
-            "Withdrawal will lead to repayment inbalance"
-          );
+            require(
+                tokenBalance.sub(amount) >= amountRepaid.sub(totalRepaymentWithdrawn),
+                "Withdrawal will lead to repayment inbalance"
+            );
         }
 
         principalWithdrawn = principalWithdrawn.add(amount);
@@ -97,6 +100,7 @@ contract Crowdloan is Initializable {
         _onlyAfterCrowdfundEnd();
 
         require(amount > 0, "Repayment amount cannot be zero");
+        require(amountRepaid.add(amount) <= repaymentCap, "Must not exceed repayment cap");
 
         amountRepaid = amountRepaid.add(amount);
         token.safeTransferFrom(msg.sender, address(this), amount);
