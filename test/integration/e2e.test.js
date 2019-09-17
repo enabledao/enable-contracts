@@ -203,7 +203,7 @@ contract('Enable Suite', accounts => {
     expect(await crowdloan.amountRepaid()).to.be.bignumber.equal(monthPayment);
   });
 
-  it('should successfully withdrawRepayment from RepaymentManager', async () => {
+  it('should successfully withdrawRepayment', async () => {
     const amountRepaid = await crowdloan.amountRepaid.call();
 
     await Promise.all(

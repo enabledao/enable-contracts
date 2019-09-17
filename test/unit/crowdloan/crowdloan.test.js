@@ -282,6 +282,12 @@ contract('Crowdloan', accounts => {
           amount: value
         });
       });
+
+      it('borrower should not be able to withdraw more than balance', async () => {
+        await expectRevert.unspecified(
+          crowdloan.withdrawPrincipal(value.add(new BN(1)), {from: lender}),
+          "Insufficent tokens to withdraw");
+      });
     });
   });
 });
