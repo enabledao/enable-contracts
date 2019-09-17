@@ -32,6 +32,7 @@ contract CrowdloanFactory is Initializable {
     }
 
     function deploy(
+        address borrower,
         IERC20 principalToken,
         uint256 principalRequested,
         uint256 crowdfundLength,
@@ -41,13 +42,13 @@ contract CrowdloanFactory is Initializable {
         address crowdloan = _createCrowdloan("", contractAdmin);
 
         Crowdloan(crowdloan).initialize(
-            msg.sender,
+            borrower,
             principalToken,
             principalRequested,
             crowdfundLength,
             loanMetadataUrl
         );
 
-        emit LoanCreated(msg.sender, principalRequested, crowdloan, loanMetadataUrl, contractAdmin);
+        emit LoanCreated(borrower, principalRequested, crowdloan, loanMetadataUrl, contractAdmin);
     }
 }

@@ -86,6 +86,7 @@ contract Crowdloan is Initializable {
           );
         }
 
+        principalWithdrawn = principalWithdrawn.add(amount);
         token.safeTransfer(msg.sender, amount);
 
         emit WithdrawPrincipal(msg.sender, amount);
