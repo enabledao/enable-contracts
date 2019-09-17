@@ -48,13 +48,13 @@ async function crowdloanFactoryUnitTests(accounts, loanParams, paymentTokenParam
 
     beforeEach(async () => {
       deployTx = await crowdloanFactory.deploy(
+        borrower,
         paymentToken.address,
         loanParams.principalRequested.toString(),
         loanParams.repaymentCap.toString(),
         loanParams.crowdfundLength.toString(),
         loanParams.loanMetadataURL,
         contractAdmin,
-        {from: borrower}
       );
     });
 

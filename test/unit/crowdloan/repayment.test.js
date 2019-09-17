@@ -45,6 +45,7 @@ contract('Repayment', accounts => {
       borrower,
       paymentToken.address,
       loanParams.principalRequested,
+      loanParams.repaymentCap,
       loanParams.crowdfundLength,
       loanParams.loanMetadataURL
     );
@@ -236,6 +237,10 @@ contract('Repayment', accounts => {
                 lender: contributor.address,
                 amount: dueWithdrawal
               });
+
+              expect(
+                await crowdloan.totalRepaymentWithdrawn()
+              ).to.be.bignumber.equal(dueWithdrawal);
             });
 
             it('non-lender should be not able to withdraw proportional share', async () => {

@@ -43,6 +43,7 @@ contract('Crowdloan', accounts => {
       borrower,
       paymentToken.address,
       loanParams.principalRequested,
+      loanParams.repaymentCap,
       loanParams.crowdfundLength,
       loanParams.loanMetadataURL
     );
@@ -52,6 +53,9 @@ contract('Crowdloan', accounts => {
     assert.exists(crowdloan.address, 'Crowdloan was not successfully deployed');
     expect(await crowdloan.borrower.call()).to.equal(borrower);
     assert.exists(crowdloan.address, 'Crowdloan was not successfully deployed');
+    expect(
+      await crowdloan.loanMetadataUrl.call()
+    ).to.equal(loanParams.loanMetadataURL);
   });
 
   it('PaymentToken should deploy successfully', async () => {
@@ -200,6 +204,10 @@ contract('Crowdloan', accounts => {
             borrower,
             amount: amount
           });
+
+          expect(
+            await crowdloan.principalWithdrawn.call()
+          ).to.be.bignumber.equal(amount);
       });
 
       it('non-borrower should not be able to withdraw before crowdfund starts', async () => {
