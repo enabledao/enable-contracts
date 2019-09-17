@@ -123,12 +123,14 @@ contract('Enable Suite', accounts => {
 
   it('Borrower should successfully deploy crowdloan', async () => {
     const tx = await crowdloanFactory.deploy(
+      borrower,
       paymentToken.address,
       loanParams.principalRequested.toString(),
+      loanParams.repaymentCap.toString(),
       loanParams.crowdfundLength.toString(),
       loanParams.loanMetadataURL,
       contractAdmin,
-      {from: borrower}
+      { from: borrower }
     );
 
     const loanCreated = expectEvent.inLogs(tx.logs, 'LoanCreated', {
