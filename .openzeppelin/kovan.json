@@ -1,7 +1,7 @@
 {
   "contracts": {
     "CrowdloanFactory": {
-      "address": "0xC62e18fc7A13b2824252266DC9EA24ED384938a8",
+      "address": "0x8CCfFfDD4D4fd6CE0f505d1Fa444916D580a9B12",
       "constructorCode": "60806040523480156100115760006000fd5b50610017565b61086a806100266000396000f3fe",
       "bodyBytecodeHash": "5da01c7a884f5d7ab0851ad1f0695ef229bf064bf2ff3ebd2ec6178c167dee2f",
       "localBytecodeHash": "b61c9a9f40a5cfeec4bc34a3f0daa6ef8e381968cb0ba98d606dc9a43d09e949",
@@ -35,7 +35,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 2507,
+          "astId": 2538,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -43,7 +43,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 2509,
+          "astId": 2540,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -51,7 +51,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 2565,
+          "astId": 2596,
           "type": "t_array:50<t_uint256>",
           "src": "1951:29:18"
         },
@@ -59,7 +59,7 @@
           "contract": "CrowdloanFactory",
           "path": "contracts/factory/CrowdloanFactory.sol",
           "label": "app",
-          "astId": 406,
+          "astId": 437,
           "type": "t_address",
           "src": "627:14:1"
         }
@@ -73,11 +73,11 @@
       }
     },
     "Crowdloan": {
-      "address": "0xAA9A6532e925c4A3f29b22065562427615b21319",
-      "constructorCode": "60806040523480156100115760006000fd5b50610017565b6118fd806100266000396000f3fe",
-      "bodyBytecodeHash": "44afdad7fd3aa82cf06d5602677c48876efb8bd669d0d149859019230c6da746",
-      "localBytecodeHash": "a3618f01ca838fae2e7205f4365ac86476f09b951d91c8e06a0ab41fa57c7cf7",
-      "deployedBytecodeHash": "a3618f01ca838fae2e7205f4365ac86476f09b951d91c8e06a0ab41fa57c7cf7",
+      "address": "0xBE57ca2CF4431fdA704C0e4d06b34F48ee9E0EFb",
+      "constructorCode": "60806040523480156100115760006000fd5b50610017565b611a82806100266000396000f3fe",
+      "bodyBytecodeHash": "fb1d0784df83c6c8607a2dc54114a806d7ea43512695bb8b50449499fdc93312",
+      "localBytecodeHash": "16e5b9411c26c47876c94e8ad4c8ccde4755dc8ff3acdd3db37ccd066b5cce5f",
+      "deployedBytecodeHash": "16e5b9411c26c47876c94e8ad4c8ccde4755dc8ff3acdd3db37ccd066b5cce5f",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -118,7 +118,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 2507,
+          "astId": 2538,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -126,7 +126,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 2509,
+          "astId": 2540,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -134,7 +134,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 2565,
+          "astId": 2596,
           "type": "t_array:50<t_uint256>",
           "src": "1951:29:18"
         },
@@ -233,6 +233,14 @@
           "astId": 41,
           "type": "t_mapping<t_uint256>",
           "src": "872:53:0"
+        },
+        {
+          "contract": "Crowdloan",
+          "path": "contracts/crowdloan/Crowdloan.sol",
+          "label": "totalRepaymentWithdrawn",
+          "astId": 43,
+          "type": "t_uint256",
+          "src": "931:38:0"
         }
       ],
       "warnings": {
@@ -248,32 +256,32 @@
   "proxies": {
     "enable-credit/CrowdloanFactory": [
       {
-        "address": "0x3645A628377748d11BE55cc3c84C52CA14A4E3E0",
-        "version": "0.1.4-alpha.0",
-        "implementation": "0xC62e18fc7A13b2824252266DC9EA24ED384938a8",
-        "admin": "0xd91b2F3121AF2224a77F68dE3F031c68c4C9d443",
+        "address": "0x25c476461c71A76373beA2bb6719c4787BcD3474",
+        "version": "0.2.0",
+        "implementation": "0x8CCfFfDD4D4fd6CE0f505d1Fa444916D580a9B12",
+        "admin": "0x39cCb245CF7d9920D92D8CBCFe2BF092e9133a69",
         "kind": "Upgradeable"
       }
     ]
   },
   "manifestVersion": "2.2",
-  "version": "0.1.4-alpha.0",
+  "version": "0.2.0",
+  "app": {
+    "address": "0xf6fC340446d4447E4851b52172C152Bc8111e9dB"
+  },
+  "package": {
+    "address": "0xEd91c03bdE5bD591ebF91d0Dd7c520C7Ca2975d8"
+  },
+  "provider": {
+    "address": "0x3DAB5888B32552F2d9501075fD2838b4F5F68bc4"
+  },
   "dependencies": {
     "openzeppelin-eth": {
       "package": "0xb6f8f11b166d526932ee04ffe4d25b810f619e34",
       "version": "2.2.0"
     }
   },
-  "app": {
-    "address": "0x5de9d752519935C0D837Ae10bDD09446ae198d8C"
-  },
-  "package": {
-    "address": "0x49c6b84a49ACAAfCa72190042B8C3f3Cd4fe285b"
-  },
-  "provider": {
-    "address": "0x0DeA10ADC54ed0E7aBdD8c26A5E2e2B9D11Cb527"
-  },
   "proxyAdmin": {
-    "address": "0xd91b2F3121AF2224a77F68dE3F031c68c4C9d443"
+    "address": "0x39cCb245CF7d9920D92D8CBCFe2BF092e9133a69"
   }
 }
