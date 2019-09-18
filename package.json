@@ -1,6 +1,6 @@
 {
   "name": "@enabledao/enable-contracts",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Borderless peer-to-peer loans with social attestation",
   "main": "truffle-config.js",
   "scripts": {
