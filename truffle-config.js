@@ -51,12 +51,11 @@ module.exports = {
     main: {
       provider: () =>
         new HDWalletProvider(
-          process.env.MNEMONIC,
+          process.env.MAINNET_MNEMONIC,
           `https://mainnet.infura.io/v3/${infuraProjectId}`
         ),
       network_id: 1,
-      gas: 3000000,
-      gasPrice: 10000000000
+      gas: 4465030
     }
   },
   mocha: {
