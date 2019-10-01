@@ -55,7 +55,8 @@ module.exports = {
           `https://mainnet.infura.io/v3/${infuraProjectId}`
         ),
       network_id: 1,
-      gas: 4465030
+      gas: 4465030,
+      gasPrice: 10000000000
     }
   },
   mocha: {

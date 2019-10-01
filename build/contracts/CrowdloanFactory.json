@@ -1738,6 +1738,12 @@
     "evmVersion": "constantinople"
   },
   "networks": {
+    "1": {
+      "links": {},
+      "events": {},
+      "address": "0x1a3058D8E07b1127b855854550658aE803A4Bdec",
+      "updated_at": 1569920281158
+    },
     "42": {
       "links": {},
       "events": {},

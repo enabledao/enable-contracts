@@ -261,7 +261,17 @@
     }
   },
   "solidityLibs": {},
-  "proxies": {},
+  "proxies": {
+    "enable-credit/CrowdloanFactory": [
+      {
+        "address": "0x1a3058D8E07b1127b855854550658aE803A4Bdec",
+        "version": "0.2.1",
+        "implementation": "0x65De1fD784eBDB2FD30C5F081D92127feB996A4F",
+        "admin": "0x3fBfF76F415afa5f2cA463601Ad4d6647739Fc03",
+        "kind": "Upgradeable"
+      }
+    ]
+  },
   "manifestVersion": "2.2",
   "version": "0.2.1",
   "dependencies": {
@@ -278,5 +288,8 @@
   },
   "provider": {
     "address": "0x54B8aB29aD1F6173F985B5bE20C98124959f04Cb"
+  },
+  "proxyAdmin": {
+    "address": "0x3fBfF76F415afa5f2cA463601Ad4d6647739Fc03"
   }
 }
