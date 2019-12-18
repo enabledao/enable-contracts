@@ -25,7 +25,7 @@ jobs:
       - save_cache:
           paths:
             - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
+          key: v1-{{ .Branch }}-dependencies-{{ checksum "package.json" }}
       - run: npx truffle compile --all
       - run: npx zos push --network development
       - run: npx zos publish --network development
