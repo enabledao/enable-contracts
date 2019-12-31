@@ -9,7 +9,7 @@ contract ICrowdloan {
     function principalRequested () external returns (uint256);
     function repaymentCap () external returns (uint256);
     function totalRepaymentWithdrawn () external returns (uint256);
-    function loanMetadataUrl () external returns (string);
+    function loanMetadataUrl () external returns (string memory);
 
     function amountContributed (address) external returns (uint256);
     function repaymentWithdrawn (address) external returns (uint256);
