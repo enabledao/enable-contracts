@@ -41,7 +41,7 @@
   },
   "homepage": "https://github.com/onggunhao/enable#readme",
   "dependencies": {
-    "@0x/sol-trace": "^2.0.13",
+    "@0x/sol-trace": "^3.0.46",
     "@babel/polyfill": "^7.4.4",
     "@babel/register": "^7.4.4",
     "dotenv": "^6.2.0",
